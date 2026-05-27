@@ -74,7 +74,7 @@ export default function LoginPage() {
           <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--rust)' }} />
           </div>
-          <span style={{ fontSize: 14, color: '#fff' }}>shinzou</span>
+          <span style={{ fontSize: 14, color: '#fff' }}>Datafood</span>
         </div>
 
         <div style={{ position: 'absolute', bottom: -120, right: -80, width: 500, height: 500, borderRadius: '50%', border: '1px solid #1e1e1e', opacity: 0.6 }} />

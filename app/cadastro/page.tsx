@@ -139,7 +139,7 @@ export default function CadastroPage() {
           }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--rust)' }} />
           </div>
-          <span style={{ fontSize: 14, color: '#fff' }}>shinzou</span>
+          <span style={{ fontSize: 14, color: '#fff' }}>Datafood</span>
         </div>
 
         <div style={{ position: 'absolute', bottom: -80, right: -60, width: 440, height: 440, borderRadius: '50%', border: '1px solid #1e1e1e', opacity: 0.7 }} />

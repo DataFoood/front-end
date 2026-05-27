@@ -1,7 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import image from "../assets/imgs/logo1noBg.png"
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -14,15 +16,28 @@ export default function HomePage() {
         padding: '20px 48px', position: 'sticky', top: 0, zIndex: 50,
         background: 'var(--cream)', borderBottom: '1px solid transparent'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 10, height: 10, borderRadius: '50%',
-            background: 'var(--rust)'
-          }} />
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 15, fontWeight: 400, letterSpacing: '-0.01em' }}>
-            datafood
-          </span>
-        </div>
+        
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      {/* Logo */}
+      <Image 
+        className='rounded-full overflow-hidden'
+        src={image}
+        width={75}
+        height={75}
+        alt="logo"
+      />
+      
+      <span
+        style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 15,
+          fontWeight: 400,
+          letterSpacing: '-0.01em',
+        }}
+      >
+        Datafood
+      </span>
+    </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
           <a href="#como-funciona" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>como funciona</a>
