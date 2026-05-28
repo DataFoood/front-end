@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import Image from 'next/image'
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -14,26 +15,29 @@ export default function HomePage() {
         padding: '20px 48px', position: 'sticky', top: 0, zIndex: 50,
         background: 'var(--cream)', borderBottom: '1px solid transparent'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 10, height: 10, borderRadius: '50%',
-            background: 'var(--rust)'
-          }} />
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 15, fontWeight: 500, letterSpacing: '0.02em', color: '#111' }}>
-            datafood
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+          <Image
+            src="/imgs/logo1noBg.png"
+            alt="datafood"
+            width={75}
+            height={75}
+            style={{ objectFit: 'contain' }}
+          />
+          <span style={{ fontSize: 20, fontWeight: 500, color: '#111', letterSpacing: '0.02em' }}>
+            DATAFOOD
           </span>
-        </div>
+        </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
           <a href="#como-funciona" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>como funciona</a>
           <a href="#restaurantes" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>para restaurantes</a>
           <a href="#manifesto" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>manifesto</a>
           <Link href="/chat" style={{
-            fontSize: 13, background: '#0D0D0D', color: '#fff',
+            fontSize: 13, background: '#000000', color: '#ffffff',
             padding: '9px 20px', borderRadius: 24, textDecoration: 'none',
             fontWeight: 400, letterSpacing: '0.01em'
           }}>
-            abrir o app
+            abrir o app →
           </Link>
         </div>
       </nav>
@@ -56,15 +60,16 @@ export default function HomePage() {
         </p>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
           <Link href="/chat" style={{
-            background: '#0D0D0D', color: '#fff', padding: '14px 28px',
-            borderRadius: 4, textDecoration: 'none', fontSize: 14, fontWeight: 400,
-            display: 'inline-flex', alignItems: 'center', gap: 8
+            fontSize: 13, background: '#000000', color: '#ffffff',
+            padding: '9px 20px', borderRadius: 24, textDecoration: 'none',
+            fontWeight: 400, letterSpacing: '0.01em'
           }}>
             abrir o app →
           </Link>
           <Link href="/chat" style={{
-            color: '#333', textDecoration: 'none', fontSize: 14,
-            borderBottom: '1px solid #ccc', paddingBottom: 1
+            fontSize: 13, background: '#ffffff', color: '#000000',
+            padding: '9px 20px', borderRadius: 24, textDecoration: 'none',
+            fontWeight: 400, letterSpacing: '0.01em'
           }}>
             ver demonstração →
           </Link>

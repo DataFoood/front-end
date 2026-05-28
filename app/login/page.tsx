@@ -30,11 +30,11 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
 
-  const [email, setEmail]             = useState('')
-  const [password, setPassword]       = useState('')
-  const [showPass, setShowPass]       = useState(false)
-  const [loading, setLoading]         = useState(false)
-  const [toast, setToast]             = useState<Toast>(null)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPass, setShowPass] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<Toast>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const showToast = (t: NonNullable<Toast>) => {
@@ -85,18 +85,18 @@ export default function LoginPage() {
         overflow: 'hidden'
       }}>
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
           <Image
-            src="/imgs/logo1noBg.png"
+            src="/imgs/logo2noBg.png"
             alt="datafood"
-            width={50}
-            height={50}
+            width={75}
+            height={75}
             style={{ objectFit: 'contain' }}
           />
-          <span style={{ fontSize: 14, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
+          <span style={{ fontSize: 26, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
             DATAFOOD
           </span>
-        </div>
+        </Link>
         <div style={{ marginTop: 'auto', marginBottom: 'auto' }}>
           <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(40px, 5vw, 64px)', fontWeight: 300, color: '#fff', lineHeight: 1.15 }}>
             bem-vindo de<br />volta.<br />

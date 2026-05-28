@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getRestaurant, type Restaurant } from '../../data/restaurants'
 
@@ -121,11 +122,17 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
         padding: '18px 48px', background: 'var(--cream)',
         borderBottom: '1px solid #e8e4dc', position: 'sticky', top: 0, zIndex: 50
       }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rust)' }} />
-          </div>
-          <span style={{ fontSize: 14, color: '#333', fontWeight: 400 }}>datafood</span>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <Image
+            src="/imgs/logo1noBg.png"
+            alt="datafood"
+            width={50}
+            height={50}
+            style={{ objectFit: 'contain' }}
+          />
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#111', letterSpacing: '0.02em' }}>
+            DATAFOOD
+          </span>
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
@@ -133,7 +140,9 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
           <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>salvos</a>
           <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>histórico</a>
           <Link href="/login" style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
           </Link>
         </div>
       </nav>
@@ -142,21 +151,21 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
 
         {/* Back link */}
         <Link href="/chat" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 28 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
           voltar para resultados
         </Link>
 
         {/* Hero */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start', marginBottom: 56 }}>
-          {/* Image */}
           <div style={{ background: '#111', borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BigIllus />
           </div>
 
-          {/* Info */}
           <div>
             <p style={{ fontSize: 11, letterSpacing: '0.1em', color: '#aaa', marginBottom: 12 }}>
-              RECOMENDADO POR SHINZOU · {restaurant.match}% MATCH
+              RECOMENDADO POR DATAFOOD · {restaurant.match}% MATCH
             </p>
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 400, color: '#111', lineHeight: 1.05, marginBottom: 16 }}>
               {restaurant.name}
@@ -170,17 +179,20 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
               {restaurant.tags.map((tag, i) => (
                 <span key={i} style={{
                   display: 'inline-flex', alignItems: 'center', gap: 5,
-                  border: '1px solid #ddd', borderRadius: 24, padding: '6px 14px',
-                  fontSize: 12, color: '#444',
+                  border: `1px solid ${tag === 'aberto agora' ? '#a8d8bc' : '#ddd'}`,
+                  borderRadius: 24, padding: '6px 14px', fontSize: 12,
                   background: tag === 'aberto agora' ? '#f0faf5' : 'transparent',
-                  borderColor: tag === 'aberto agora' ? '#a8d8bc' : '#ddd',
                   color: tag === 'aberto agora' ? '#1a7a45' : '#444',
                 }}>
                   {tag === 'aberto agora' && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                    </svg>
                   )}
-                  {(tag === restaurant.neighborhood || tag === restaurant.price) && !tag.includes('$') && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {tag === restaurant.neighborhood && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
                   )}
                   {tag}
                 </span>
@@ -195,14 +207,18 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
               }}>
                 reservar mesa
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
               </button>
               <button style={{
                 background: 'transparent', color: '#333', border: '1px solid #ddd',
                 padding: '13px 20px', borderRadius: 4, fontSize: 14,
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
               }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+                </svg>
                 salvar
               </button>
             </div>
@@ -220,15 +236,12 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
 
           <div style={{ border: '1px solid #e8e4dc', borderRadius: 6, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', overflow: 'hidden' }}>
             {[
-              { label: 'ENDEREÇO', value: restaurant.address, note: null },
-              { label: 'CAPACIDADE', value: `${restaurant.capacity} lugares`, note: restaurant.capacityNote },
-              { label: 'TICKET MÉDIO', value: restaurant.ticketAvg, note: restaurant.ticketNote },
-              { label: 'CONTATO', value: restaurant.phone, note: restaurant.phoneNote },
+              { label: 'ENDEREÇO',     value: restaurant.address,              note: null },
+              { label: 'CAPACIDADE',   value: `${restaurant.capacity} lugares`, note: restaurant.capacityNote },
+              { label: 'TICKET MÉDIO', value: restaurant.ticketAvg,             note: restaurant.ticketNote },
+              { label: 'CONTATO',      value: restaurant.phone,                 note: restaurant.phoneNote },
             ].map((item, i) => (
-              <div key={i} style={{
-                padding: '20px 20px 24px',
-                borderRight: i < 3 ? '1px solid #e8e4dc' : 'none',
-              }}>
+              <div key={i} style={{ padding: '20px 20px 24px', borderRight: i < 3 ? '1px solid #e8e4dc' : 'none' }}>
                 <p style={{ fontSize: 10, letterSpacing: '0.1em', color: '#bbb', marginBottom: 12 }}>{item.label}</p>
                 <p style={{ fontSize: 15, color: '#111', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{item.value}</p>
                 {item.note && <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{item.note}</p>}
@@ -262,7 +275,9 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
                     <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6, marginBottom: 14 }}>{item.description}</p>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {item.tags.map((tag, j) => (
-                        <span key={j} style={{ fontSize: 11, color: '#888', border: '1px solid #e0dbd2', borderRadius: 12, padding: '3px 10px' }}>{tag}</span>
+                        <span key={j} style={{ fontSize: 11, color: '#888', border: '1px solid #e0dbd2', borderRadius: 12, padding: '3px 10px' }}>
+                          {tag}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -274,7 +289,7 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
 
         <div style={{ height: 1, background: '#e8e4dc', marginBottom: 48 }} />
 
-        {/* About & Hours */}
+        {/* Sobre & Horários */}
         <section>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 28 }}>
             <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 400, color: '#111' }}>sobre & horários</h2>
@@ -282,14 +297,11 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64 }}>
-            {/* About */}
             <div>
               {restaurant.longDescription.map((p, i) => (
                 <p key={i} style={{ fontSize: 14, color: '#555', lineHeight: 1.75, marginBottom: 20 }}>{p}</p>
               ))}
             </div>
-
-            {/* Schedule */}
             <div>
               {restaurant.schedule.map((item, i) => (
                 <div key={i} style={{

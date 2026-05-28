@@ -216,20 +216,18 @@ export default function DashboardPage() {
       {/* ── SIDEBAR ── */}
       <aside style={{ width: 160, background: '#0D0D0D', display: 'flex', flexDirection: 'column', padding: '20px 0', flexShrink: 0 }}>
         {/* Logo */}
-        <div style={{ padding: '0 10px 24px', borderBottom: '1px solid #1a1a1a' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Image
-              src="/imgs/logo1noBg.png"
-              alt="datafood"
-              width={50}
-              height={50}
-              style={{ objectFit: 'contain' }}
-            />
-            <span style={{ fontSize: 14, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
-              DATAFOOD
-            </span>
-          </div>
-        </div>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <Image
+            src="/imgs/logo1noBg.png"
+            alt="datafood"
+            width={50}
+            height={50}
+            style={{ objectFit: 'contain' }}
+          />
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
+            DATAFOOD
+          </span>
+        </Link>
 
         {/* Restaurant info */}
         {restaurantData && (

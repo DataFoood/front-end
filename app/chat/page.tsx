@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { slugify } from '../data/restaurants'
 import { useAuth } from '../context/AuthContext'
+import Image from 'next/image'
 
 interface Restaurant {
   name: string
@@ -163,16 +164,16 @@ function IllustrationBowl() {
   return (
     <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       {/* Steam lines */}
-      <path d="M130 60 Q125 45 130 30" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M150 55 Q145 38 150 22" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M170 60 Q165 45 170 30" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M130 60 Q125 45 130 30" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M150 55 Q145 38 150 22" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M170 60 Q165 45 170 30" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round" />
       {/* Bowl shadow */}
-      <ellipse cx="150" cy="158" rx="68" ry="10" fill="#1a1a1a"/>
+      <ellipse cx="150" cy="158" rx="68" ry="10" fill="#1a1a1a" />
       {/* Bowl */}
-      <ellipse cx="150" cy="130" rx="60" ry="18" fill="#C0603A"/>
-      <path d="M90 130 Q90 175 150 175 Q210 175 210 130" fill="#C0603A"/>
+      <ellipse cx="150" cy="130" rx="60" ry="18" fill="#C0603A" />
+      <path d="M90 130 Q90 175 150 175 Q210 175 210 130" fill="#C0603A" />
       {/* Bowl rim shine */}
-      <ellipse cx="150" cy="130" rx="60" ry="18" fill="none" stroke="#d4704a" strokeWidth="1"/>
+      <ellipse cx="150" cy="130" rx="60" ry="18" fill="none" stroke="#d4704a" strokeWidth="1" />
     </svg>
   )
 }
@@ -181,20 +182,20 @@ function IllustrationGlass() {
   return (
     <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       {/* Floating dots */}
-      <circle cx="80" cy="80" r="4" fill="#8B7355" opacity="0.6"/>
-      <circle cx="220" cy="110" r="3" fill="#8B7355" opacity="0.5"/>
-      <circle cx="60" cy="130" r="2.5" fill="#8B7355" opacity="0.4"/>
-      <circle cx="235" cy="70" r="2" fill="#8B7355" opacity="0.4"/>
+      <circle cx="80" cy="80" r="4" fill="#8B7355" opacity="0.6" />
+      <circle cx="220" cy="110" r="3" fill="#8B7355" opacity="0.5" />
+      <circle cx="60" cy="130" r="2.5" fill="#8B7355" opacity="0.4" />
+      <circle cx="235" cy="70" r="2" fill="#8B7355" opacity="0.4" />
       {/* Stem */}
-      <line x1="150" y1="155" x2="150" y2="175" stroke="#C0603A" strokeWidth="2"/>
+      <line x1="150" y1="155" x2="150" y2="175" stroke="#C0603A" strokeWidth="2" />
       {/* Base */}
-      <ellipse cx="150" cy="175" rx="28" ry="5" fill="#C0603A"/>
+      <ellipse cx="150" cy="175" rx="28" ry="5" fill="#C0603A" />
       {/* Glass body */}
-      <path d="M122 80 Q118 130 138 155 L162 155 Q182 130 178 80 Z" fill="#C0603A"/>
+      <path d="M122 80 Q118 130 138 155 L162 155 Q182 130 178 80 Z" fill="#C0603A" />
       {/* Glass top ellipse */}
-      <ellipse cx="150" cy="80" rx="28" ry="6" fill="#d4704a"/>
+      <ellipse cx="150" cy="80" rx="28" ry="6" fill="#d4704a" />
       {/* Glass shine */}
-      <path d="M126 95 Q124 120 130 145" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M126 95 Q124 120 130 145" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="3" strokeLinecap="round" />
     </svg>
   )
 }
@@ -203,16 +204,16 @@ function IllustrationPlate() {
   return (
     <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
       {/* Outer plate */}
-      <ellipse cx="150" cy="130" rx="80" ry="22" fill="#1e1e1e"/>
-      <ellipse cx="150" cy="126" rx="80" ry="22" fill="#2a2a2a"/>
+      <ellipse cx="150" cy="130" rx="80" ry="22" fill="#1e1e1e" />
+      <ellipse cx="150" cy="126" rx="80" ry="22" fill="#2a2a2a" />
       {/* Plate rim */}
-      <ellipse cx="150" cy="122" rx="80" ry="22" fill="none" stroke="#333" strokeWidth="1"/>
+      <ellipse cx="150" cy="122" rx="80" ry="22" fill="none" stroke="#333" strokeWidth="1" />
       {/* Inner plate */}
-      <ellipse cx="150" cy="120" rx="60" ry="16" fill="#C0603A"/>
+      <ellipse cx="150" cy="120" rx="60" ry="16" fill="#C0603A" />
       {/* Food dots */}
-      <circle cx="145" cy="118" r="8" fill="#8B3E20"/>
-      <circle cx="158" cy="121" r="5" fill="#2d7a3a" opacity="0.9"/>
-      <circle cx="140" cy="124" r="3.5" fill="#d4704a"/>
+      <circle cx="145" cy="118" r="8" fill="#8B3E20" />
+      <circle cx="158" cy="121" r="5" fill="#2d7a3a" opacity="0.9" />
+      <circle cx="140" cy="124" r="3.5" fill="#d4704a" />
     </svg>
   )
 }
@@ -284,7 +285,7 @@ function RestaurantCard({ restaurant, index }: { restaurant: Restaurant; index: 
 
         <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 4, color: '#C0603A', fontSize: 12 }}>
           <span>ver detalhes</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
         </div>
       </div>
     </Link>
@@ -354,10 +355,10 @@ export default function ChatPage() {
     setChats(prev => prev.map(c =>
       c.id === chatId
         ? {
-            ...c,
-            title: c.title === 'novo chat' ? text.slice(0, 40) : c.title,
-            messages: [...c.messages, userMsg]
-          }
+          ...c,
+          title: c.title === 'novo chat' ? text.slice(0, 40) : c.title,
+          messages: [...c.messages, userMsg]
+        }
         : c
     ))
 
@@ -396,16 +397,22 @@ export default function ChatPage() {
         <div style={{ padding: '20px 16px 12px', whiteSpace: 'nowrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             {/* Always show datafood logo — not user info */}
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid #e0dbd2', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--rust)' }} />
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 500, color: '#111', letterSpacing: '0.01em' }}>datafood</span>
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+              <Image
+                src="/imgs/logo1noBg.png"
+                alt="datafood"
+                width={50}
+                height={50}
+                style={{ objectFit: 'contain' }}
+              />
+              <span style={{ fontSize: 14, fontWeight: 500, color: '#111', letterSpacing: '0.02em' }}>
+                DATAFOOD
+              </span>
             </Link>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', padding: 4, borderRadius: 4, display: 'flex' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M9 3v18"/>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 3v18" />
               </svg>
             </button>
           </div>
@@ -415,8 +422,8 @@ export default function ChatPage() {
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 4px', marginBottom: 16 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="procurar chats" style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: '#444', width: '100%' }}/>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="procurar chats" style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: '#444', width: '100%' }} />
           </div>
 
           <p style={{ fontSize: 10, letterSpacing: '0.1em', color: '#bbb', marginBottom: 8, paddingLeft: 4 }}>RECENTES</p>
@@ -465,16 +472,16 @@ export default function ChatPage() {
                 onMouseLeave={e => e.currentTarget.style.color = '#bbb'}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-                  <polyline points="16 17 21 12 16 7"/>
-                  <line x1="21" y1="12" x2="9" y2="12"/>
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
                 sair da conta
               </button>
             </div>
           ) : (
             <Link href="/login" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: '#555', fontSize: 13, padding: '8px 4px', whiteSpace: 'nowrap' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
               minha conta
             </Link>
           )}
@@ -486,7 +493,7 @@ export default function ChatPage() {
 
         {!sidebarOpen && (
           <button onClick={() => setSidebarOpen(true)} style={{ position: 'absolute', top: 20, left: 16, zIndex: 10, background: '#fff', border: '1px solid #e8e4dc', borderRadius: 6, padding: '6px 8px', cursor: 'pointer', color: '#666', display: 'flex', alignItems: 'center' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /></svg>
           </button>
         )}
 
@@ -498,7 +505,7 @@ export default function ChatPage() {
                 Encontre o lugar perfeito para o momento
               </h1>
               <p style={{ fontSize: 15, color: '#888', marginBottom: 40 }}>
-                descreva o momento — ocasião, companhia, vibe.<br/>datafood cuida do resto.
+                descreva o momento — ocasião, companhia, vibe.<br />datafood cuida do resto.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 700 }}>
                 {SUGGESTIONS.map((s, i) => (
@@ -530,7 +537,7 @@ export default function ChatPage() {
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C0603A' }} />
                   </div>
                   <div style={{ background: '#fff', padding: '14px 18px', borderRadius: '4px 18px 18px 18px', display: 'flex', gap: 6, alignItems: 'center', border: '1px solid #e8e4dc' }}>
-                    {[0,1,2].map(j => (
+                    {[0, 1, 2].map(j => (
                       <div key={j} className="typing-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: '#bbb' }} />
                     ))}
                   </div>
@@ -560,7 +567,7 @@ export default function ChatPage() {
               style={{ width: 36, height: 36, borderRadius: '50%', background: input.trim() ? '#111' : '#ddd', border: 'none', cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', flexShrink: 0 }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <path d="M12 19V5M5 12l7-7 7 7"/>
+                <path d="M12 19V5M5 12l7-7 7 7" />
               </svg>
             </button>
           </div>
