@@ -125,7 +125,7 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
           <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rust)' }} />
           </div>
-          <span style={{ fontSize: 14, color: '#333', fontWeight: 400 }}>shinzou</span>
+          <span style={{ fontSize: 14, color: '#333', fontWeight: 400 }}>datafood</span>
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>

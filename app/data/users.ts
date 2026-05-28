@@ -4,6 +4,7 @@ export interface User {
   email: string
   password: string
   type: 'pessoa' | 'restaurante'
+  restaurantSlug?: string // só para type === 'restaurante'
 }
 
 export const USERS: User[] = [
@@ -20,6 +21,7 @@ export const USERS: User[] = [
     email: 'testerestaurante@datafood.com',
     password: 'Teste@123',
     type: 'restaurante',
+    restaurantSlug: 'tuju',
   },
 ]
 

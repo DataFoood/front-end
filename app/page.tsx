@@ -1,9 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
-import image from "../assets/imgs/logo1noBg.png"
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -16,28 +14,15 @@ export default function HomePage() {
         padding: '20px 48px', position: 'sticky', top: 0, zIndex: 50,
         background: 'var(--cream)', borderBottom: '1px solid transparent'
       }}>
-        
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      {/* Logo */}
-      <Image 
-        className='rounded-full overflow-hidden'
-        src={image}
-        width={75}
-        height={75}
-        alt="logo"
-      />
-      
-      <span
-        style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 15,
-          fontWeight: 400,
-          letterSpacing: '-0.01em',
-        }}
-      >
-        Datafood
-      </span>
-    </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 10, height: 10, borderRadius: '50%',
+            background: 'var(--rust)'
+          }} />
+          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 15, fontWeight: 500, letterSpacing: '0.02em', color: '#111' }}>
+            datafood
+          </span>
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
           <a href="#como-funciona" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>como funciona</a>
@@ -137,13 +122,13 @@ export default function HomePage() {
             <p style={{ fontSize: 18, color: '#ccc', lineHeight: 1.7, marginBottom: 32 }}>
               dados anônimos sobre o que os comensais procuram no seu bairro, em qual horário, com qual ocasião, nada pessoal — apenas o tecido de demanda da sua região.
             </p>
-            <button style={{
+            <Link href="/dashboard" style={{
               background: 'transparent', border: '1px solid #444', color: '#fff',
               padding: '12px 24px', borderRadius: 4, fontSize: 14, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 8
+              display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none'
             }}>
               conhecer o intelligence →
-            </button>
+            </Link>
           </div>
 
           <div style={{

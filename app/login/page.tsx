@@ -5,10 +5,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../context/AuthContext'
 import { validateLoginForm } from '../data/validation'
+import Image from 'next/image'
 
 type Toast = { ok: boolean; message: string } | null
 
-function Toast({ toast }: { toast: NonNullable<Toast> }) {
+function ToastBanner({ toast }: { toast: NonNullable<Toast> }) {
   return (
     <div style={{
       position: 'fixed', top: 24, right: 24, zIndex: 100,
@@ -29,11 +30,11 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
 
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
-  const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading]   = useState(false)
-  const [toast, setToast]       = useState<Toast>(null)
+  const [email, setEmail]             = useState('')
+  const [password, setPassword]       = useState('')
+  const [showPass, setShowPass]       = useState(false)
+  const [loading, setLoading]         = useState(false)
+  const [toast, setToast]             = useState<Toast>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const showToast = (t: NonNullable<Toast>) => {
@@ -54,11 +55,20 @@ export default function LoginPage() {
     const result = await login(email, password)
     setLoading(false)
     showToast(result)
-    if (result.ok) setTimeout(() => router.push('/chat'), 1200)
+
+    if (result.ok) {
+      const stored = sessionStorage.getItem('datafood_user')
+      const user = stored ? JSON.parse(stored) : null
+      setTimeout(() => {
+        if (user?.type === 'restaurante') router.push('/dashboard')
+        else router.push('/chat')
+      }, 1200)
+    }
   }
 
   const inputStyle = (field: string) => ({
-    width: '100%', border: `1px solid ${fieldErrors[field] ? '#e53e3e' : '#ddd'}`,
+    width: '100%',
+    border: `1px solid ${fieldErrors[field] ? '#e53e3e' : '#ddd'}`,
     borderRadius: 4, padding: '14px 16px', fontSize: 14, background: '#fff',
     outline: 'none', color: '#333', boxSizing: 'border-box' as const,
     transition: 'border-color 0.2s',
@@ -66,29 +76,37 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: 'var(--font-sans)' }}>
-      {toast && <Toast toast={toast} />}
+      {toast && <ToastBanner toast={toast} />}
 
-      {/* LEFT */}
-      <div style={{ flex: 1, background: '#0D0D0D', position: 'relative', display: 'flex', flexDirection: 'column', padding: '40px 48px', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--rust)' }} />
-          </div>
-          <span style={{ fontSize: 14, color: '#fff' }}>Datafood</span>
+      {/* LEFT PANEL */}
+      <div style={{
+        flex: 1, background: '#0D0D0D', position: 'relative',
+        display: 'flex', flexDirection: 'column', padding: '40px 48px',
+        overflow: 'hidden'
+      }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Image
+            src="/imgs/logo1noBg.png"
+            alt="datafood"
+            width={50}
+            height={50}
+            style={{ objectFit: 'contain' }}
+          />
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
+            DATAFOOD
+          </span>
         </div>
-
-        <div style={{ position: 'absolute', bottom: -120, right: -80, width: 500, height: 500, borderRadius: '50%', border: '1px solid #1e1e1e', opacity: 0.6 }} />
-        <div style={{ position: 'absolute', bottom: -200, right: -160, width: 650, height: 650, borderRadius: '50%', border: '1px solid #1a1a1a', opacity: 0.4 }} />
-
         <div style={{ marginTop: 'auto', marginBottom: 'auto' }}>
           <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(40px, 5vw, 64px)', fontWeight: 300, color: '#fff', lineHeight: 1.15 }}>
             bem-vindo de<br />volta.<br />
             o que você está<br />com{' '}
-            <span style={{ color: 'var(--rust)' }}>vontade</span> hoje?
+            <span style={{ color: 'var(--rust)', fontWeight: 400 }}>vontade</span>
+            {' '}hoje?
           </h1>
         </div>
 
-        {/* Credenciais de teste */}
+        {/* Test accounts */}
         <div style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 8, padding: '16px 20px', marginBottom: 24 }}>
           <p style={{ fontSize: 11, letterSpacing: '0.1em', color: '#555', marginBottom: 12 }}>CONTAS DE TESTE</p>
           {[
@@ -111,21 +129,23 @@ export default function LoginPage() {
         <p style={{ fontSize: 11, color: '#3a3a3a' }}>privacidade por design · LGPD compliant · datafood © 2026</p>
       </div>
 
-      {/* RIGHT */}
+      {/* RIGHT PANEL */}
       <div style={{ width: 580, background: 'var(--cream)', display: 'flex', flexDirection: 'column', padding: '60px 64px', overflowY: 'auto' }}>
         <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#aaa', marginBottom: 24 }}>ENTRAR</p>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: '#111', lineHeight: 1.1, marginBottom: 20 }}>
           seu lugar,<br />seu jeito.
         </h2>
         <p style={{ fontSize: 14, color: '#777', lineHeight: 1.65, marginBottom: 48, maxWidth: 380 }}>
-          use sua conta shinzou para salvar lugares, ver seu histórico e receber sugestões cada vez mais precisas.
+          use sua conta datafood para salvar lugares, ver seu histórico e receber sugestões cada vez mais precisas.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
           {/* Email */}
           <div>
-            <label style={{ display: 'block', fontSize: 10, letterSpacing: '0.12em', color: fieldErrors.email ? '#e53e3e' : '#999', marginBottom: 8 }}>E-MAIL</label>
+            <label style={{ display: 'block', fontSize: 10, letterSpacing: '0.12em', color: fieldErrors.email ? '#e53e3e' : '#999', marginBottom: 8 }}>
+              E-MAIL
+            </label>
             <input
               type="email" value={email}
               onChange={e => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: '' })) }}
@@ -140,7 +160,9 @@ export default function LoginPage() {
 
           {/* Password */}
           <div>
-            <label style={{ display: 'block', fontSize: 10, letterSpacing: '0.12em', color: fieldErrors.password ? '#e53e3e' : '#999', marginBottom: 8 }}>SENHA</label>
+            <label style={{ display: 'block', fontSize: 10, letterSpacing: '0.12em', color: fieldErrors.password ? '#e53e3e' : '#999', marginBottom: 8 }}>
+              SENHA
+            </label>
             <div style={{ position: 'relative' }}>
               <input
                 type={showPass ? 'text' : 'password'} value={password}
@@ -151,7 +173,10 @@ export default function LoginPage() {
                 onFocus={e => e.target.style.borderColor = fieldErrors.password ? '#e53e3e' : '#999'}
                 onBlur={e => e.target.style.borderColor = fieldErrors.password ? '#e53e3e' : '#ddd'}
               />
-              <button onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', fontSize: 12 }}>
+              <button
+                onClick={() => setShowPass(!showPass)}
+                style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', fontSize: 12 }}
+              >
                 {showPass ? 'ocultar' : 'ver'}
               </button>
             </div>
@@ -165,7 +190,7 @@ export default function LoginPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            style={{ width: '100%', background: '#0D0D0D', color: '#fff', border: 'none', padding: '16px', borderRadius: 4, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, transition: 'opacity 0.2s', marginTop: 8 }}
+            style={{ width: '100%', background: '#0D0D0D', color: '#fff', border: 'none', padding: '16px', borderRadius: 4, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', opacity: loading ? 0.7 : 1, transition: 'opacity 0.2s', marginTop: 8 }}
           >
             {loading ? 'verificando...' : 'entrar'}
           </button>
