@@ -124,21 +124,21 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <Image
-            src="/imgs/logo1noBg.png"
+            src="/imgs/icon.svg"
             alt="datafood"
-            width={50}
-            height={50}
+            width={35}
+            height={35}
             style={{ objectFit: 'contain' }}
           />
-          <span style={{ fontSize: 14, fontWeight: 500, color: '#111', letterSpacing: '0.02em' }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#c0603a', letterSpacing: '0.02em' }}>
             DATAFOOD
           </span>
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <Link href="/chat" style={{ fontSize: 13, color: '#111', textDecoration: 'none', fontWeight: 500 }}>descobrir</Link>
-          <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>salvos</a>
-          <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>histórico</a>
+          <Link href="/chat" style={{ fontSize: 13, color: '#111', textDecoration: 'none', fontWeight: 500 }}>Descobrir</Link>
+          <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>Salvos</a>
+          <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>Histórico</a>
           <Link href="/login" style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
               <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -154,7 +154,7 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
-          voltar para resultados
+          Voltar para resultados
         </Link>
 
         {/* Hero */}

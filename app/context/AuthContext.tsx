@@ -30,9 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (found) {
       sessionStorage.setItem('datafood_user', JSON.stringify(found))
       setUser(found)
-      return { ok: true, message: `bem-vindo de volta, ${found.name.split(' ')[0]}.` }
+      return { ok: true, message: `Olá ${found.name.split(' ')[0]}, Bem vindo(a) de volta!` }
     }
-    return { ok: false, message: 'e-mail ou senha incorretos. tente novamente.' }
+    return { ok: false, message: 'E-mail ou senha incorretos. Tente novamente.' }
   }
 
   const logout = () => {

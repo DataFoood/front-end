@@ -35,25 +35,25 @@ interface Chat {
 }
 
 const INITIAL_CHATS: Chat[] = [
-  { id: '1', title: 'jantar romântico em pinheiros', messages: [] },
-  { id: '2', title: 'almoço rápido vila madalena', messages: [] },
-  { id: '3', title: 'café para reunião — itaim', messages: [] },
-  { id: '4', title: 'happy hour com amigos', messages: [] },
-  { id: '5', title: 'brunch domingo de manhã', messages: [] },
+  { id: '1', title: 'Jantar romântico em pinheiros', messages: [] },
+  { id: '2', title: 'Almoço rápido vila madalena', messages: [] },
+  { id: '3', title: 'Café para reunião — itaim', messages: [] },
+  { id: '4', title: 'Happy hour com amigos', messages: [] },
+  { id: '5', title: 'Brunch domingo de manhã', messages: [] },
 ]
 
 const SUGGESTIONS = [
-  'um lugar tranquilo para um jantar',
-  'almoço executivo perto da paulista',
-  'café com wifi para trabalhar',
-  'comemoração de aniversário, 6 pessoas',
-  'vegetariano romântico',
+  'Um lugar tranquilo para um jantar',
+  'Almoço executivo perto da paulista',
+  'Café com wifi para trabalhar',
+  'Comemoração de aniversário, 6 pessoas',
+  'Vegetariano romântico',
 ]
 
 const MOCK_RESULTS: Record<string, AssistantMessage> = {
   default: {
     type: 'restaurants',
-    intro: 'três opções para uma noite tranquila — todas com mesas espaçadas e iluminação baixa.',
+    intro: 'Três opções para uma noite tranquila — Todas com mesas espaçadas e iluminação baixa.',
     restaurants: [
       {
         name: 'tuju',
@@ -335,7 +335,7 @@ export default function ChatPage() {
 
   const startNewChat = () => {
     const id = Date.now().toString()
-    setChats(prev => [{ id, title: 'novo chat', messages: [] }, ...prev])
+    setChats(prev => [{ id, title: 'Novo chat', messages: [] }, ...prev])
     setActiveChatId(id)
   }
 
@@ -356,7 +356,7 @@ export default function ChatPage() {
       c.id === chatId
         ? {
           ...c,
-          title: c.title === 'novo chat' ? text.slice(0, 40) : c.title,
+          title: c.title === 'Novo chat' ? text.slice(0, 40) : c.title,
           messages: [...c.messages, userMsg]
         }
         : c
@@ -397,15 +397,15 @@ export default function ChatPage() {
         <div style={{ padding: '20px 16px 12px', whiteSpace: 'nowrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             {/* Always show datafood logo — not user info */}
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
               <Image
-                src="/imgs/logo1noBg.png"
+                src="/imgs/icon.svg"
                 alt="datafood"
-                width={50}
-                height={50}
+                width={35}
+                height={35}
                 style={{ objectFit: 'contain' }}
               />
-              <span style={{ fontSize: 14, fontWeight: 500, color: '#111', letterSpacing: '0.02em' }}>
+              <span style={{ fontSize: 16, fontWeight: 500, color: '#c0603a', letterSpacing: '0.02em' }}>
                 DATAFOOD
               </span>
             </Link>
@@ -418,12 +418,12 @@ export default function ChatPage() {
           </div>
 
           <button onClick={startNewChat} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px', borderRadius: 6, marginBottom: 4, color: '#444', fontSize: 13, textAlign: 'left' }}>
-            <span style={{ fontSize: 16 }}>+</span> novo chat
+            <span style={{ fontSize: 16 }}>+</span> Novo chat
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 4px', marginBottom: 16 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="procurar chats" style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: '#444', width: '100%' }} />
+            <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Procurar chats" style={{ background: 'none', border: 'none', outline: 'none', fontSize: 13, color: '#444', width: '100%' }} />
           </div>
 
           <p style={{ fontSize: 10, letterSpacing: '0.1em', color: '#bbb', marginBottom: 8, paddingLeft: 4 }}>RECENTES</p>
@@ -504,8 +504,8 @@ export default function ChatPage() {
               <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 400, color: '#111', lineHeight: 1.15, marginBottom: 16, maxWidth: 560 }}>
                 Encontre o lugar perfeito para o momento
               </h1>
-              <p style={{ fontSize: 15, color: '#888', marginBottom: 40 }}>
-                descreva o momento — ocasião, companhia, vibe.<br />datafood cuida do resto.
+              <p className='text-base text-muted-foreground mb-10 italic text-gray-600'>
+                Descreva o momento, ocasião, companhia e vibe. O DataFood cuida do resto.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', maxWidth: 700 }}>
                 {SUGGESTIONS.map((s, i) => (
