@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import Image from 'next/image'
 
 export default function CadastroPage() {
   const [form, setForm] = useState({
@@ -39,15 +40,18 @@ export default function CadastroPage() {
         display: 'flex', flexDirection: 'column', padding: '40px 48px',
         overflow: 'hidden'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: '50%', border: '1px solid #333',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--rust)' }} />
-          </div>
-          <span style={{ fontSize: 14, color: '#fff', fontWeight: 400 }}>shinzou</span>
-        </div>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+          <Image
+            src="/imgs/logo2noBg.png"
+            alt="datafood"
+            width={75}
+            height={75}
+            style={{ objectFit: 'contain' }}
+          />
+          <span style={{ fontSize: 26, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
+            DATAFOOD
+          </span>
+        </Link>
 
         {/* Decorative circles */}
         <div style={{
@@ -94,7 +98,7 @@ export default function CadastroPage() {
           comece pelo<br />momento certo.
         </h2>
         <p style={{ fontSize: 14, color: '#777', lineHeight: 1.65, marginBottom: 40 }}>
-          leva menos de um minuto. você pode usar shinzou sem conta — mas com uma, salvamos suas preferências.
+          leva menos de um minuto. você pode usar datafood sem conta — mas com uma, salvamos suas preferências.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
