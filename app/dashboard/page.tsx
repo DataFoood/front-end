@@ -216,12 +216,12 @@ export default function DashboardPage() {
       {/* ── SIDEBAR ── */}
       <aside style={{ width: 160, background: '#0D0D0D', display: 'flex', flexDirection: 'column', padding: '20px 0', flexShrink: 0 }}>
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+        <Link href="/" className='pl-4' style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', gap: 6 }}>
           <Image
-            src="/imgs/logo1noBg.png"
+            src="/imgs/icon.svg"
             alt="datafood"
-            width={50}
-            height={50}
+            width={25}
+            height={25}
             style={{ objectFit: 'contain' }}
           />
           <span style={{ fontSize: 14, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>

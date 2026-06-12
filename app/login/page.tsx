@@ -85,22 +85,22 @@ export default function LoginPage() {
         overflow: 'hidden'
       }}>
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
           <Image
-            src="/imgs/logo2noBg.png"
+            src="/imgs/icon.svg"
             alt="datafood"
-            width={75}
-            height={75}
+            width={35}
+            height={35}
             style={{ objectFit: 'contain' }}
           />
-          <span style={{ fontSize: 26, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
+          <span style={{ fontSize: 22, fontWeight: 500, color: '#e3a086', letterSpacing: '0.02em' }}>
             DATAFOOD
           </span>
         </Link>
         <div style={{ marginTop: 'auto', marginBottom: 'auto' }}>
-          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(40px, 5vw, 64px)', fontWeight: 300, color: '#fff', lineHeight: 1.15 }}>
-            bem-vindo de<br />volta.<br />
-            o que você está<br />com{' '}
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(35px, 4vw, 60px)', fontWeight: 300, color: '#fff', lineHeight: 1.15 }}>
+            Bem-vindo de<br />volta.<br />
+            O que você está<br />com{' '}
             <span style={{ color: 'var(--rust)', fontWeight: 400 }}>vontade</span>
             {' '}hoje?
           </h1>
@@ -126,17 +126,17 @@ export default function LoginPage() {
           <p style={{ fontSize: 11, color: '#444', marginTop: 8 }}>senha: <span style={{ color: '#666' }}>Teste@123</span></p>
         </div>
 
-        <p style={{ fontSize: 11, color: '#3a3a3a' }}>privacidade por design · LGPD compliant · datafood © 2026</p>
+        <p style={{ fontSize: 11, color: '#3a3a3a' }}>Privacidade por design · LGPD compliant · DataFood © 2026</p>
       </div>
 
       {/* RIGHT PANEL */}
       <div style={{ width: 580, background: 'var(--cream)', display: 'flex', flexDirection: 'column', padding: '60px 64px', overflowY: 'auto' }}>
         <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#aaa', marginBottom: 24 }}>ENTRAR</p>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 400, color: '#111', lineHeight: 1.1, marginBottom: 20 }}>
-          seu lugar,<br />seu jeito.
+          Seu lugar,<br />Seu jeito.
         </h2>
         <p style={{ fontSize: 14, color: '#777', lineHeight: 1.65, marginBottom: 48, maxWidth: 380 }}>
-          use sua conta datafood para salvar lugares, ver seu histórico e receber sugestões cada vez mais precisas.
+          Use sua conta datafood para salvar lugares, ver seu histórico e receber sugestões cada vez mais precisas.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -182,7 +182,7 @@ export default function LoginPage() {
             </div>
             {fieldErrors.password && <p style={{ fontSize: 12, color: '#e53e3e', marginTop: 6 }}>{fieldErrors.password}</p>}
             <div style={{ textAlign: 'right', marginTop: 8 }}>
-              <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'underline' }}>esqueceu a senha?</a>
+              <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'underline' }}>Esqueceu a senha?</a>
             </div>
           </div>
 
@@ -192,21 +192,21 @@ export default function LoginPage() {
             disabled={loading}
             style={{ width: '100%', background: '#0D0D0D', color: '#fff', border: 'none', padding: '16px', borderRadius: 4, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', opacity: loading ? 0.7 : 1, transition: 'opacity 0.2s', marginTop: 8 }}
           >
-            {loading ? 'verificando...' : 'entrar'}
+            {loading ? 'Verificando...' : 'ENTRAR'}
           </button>
         </div>
 
         <p style={{ textAlign: 'center', fontSize: 14, color: '#888', marginTop: 32 }}>
-          ainda não tem conta?{' '}
-          <Link href="/cadastro" style={{ color: '#111', textDecoration: 'underline' }}>criar conta</Link>
+          Ainda não tem conta?{' '}
+          <Link href="/cadastro" style={{ color: '#111', textDecoration: 'underline' }}>Criar conta</Link>
         </p>
 
         <div style={{ marginTop: 'auto', paddingTop: 48, display: 'flex', justifyContent: 'space-between' }}>
-          <Link href="/" style={{ fontSize: 12, color: '#bbb', textDecoration: 'none' }}>← voltar para a página inicial</Link>
+          <Link href="/" style={{ fontSize: 12, color: '#bbb', textDecoration: 'none' }}>← Voltar para a página inicial</Link>
           <div style={{ display: 'flex', gap: 16 }}>
-            <a href="#" style={{ fontSize: 12, color: '#bbb', textDecoration: 'none' }}>privacidade</a>
+            <a href="#" style={{ fontSize: 12, color: '#bbb', textDecoration: 'none' }}>Privacidade</a>
             <span style={{ color: '#ddd' }}>·</span>
-            <a href="#" style={{ fontSize: 12, color: '#bbb', textDecoration: 'none' }}>termos</a>
+            <a href="#" style={{ fontSize: 12, color: '#bbb', textDecoration: 'none' }}>Termos</a>
           </div>
         </div>
       </div>

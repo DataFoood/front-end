@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import Image from 'next/image'
+import heroImage from "../public/imgs/tst.svg"
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -15,66 +16,68 @@ export default function HomePage() {
         padding: '20px 48px', position: 'sticky', top: 0, zIndex: 50,
         background: 'var(--cream)', borderBottom: '1px solid transparent'
       }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
           <Image
-            src="/imgs/logo1noBg.png"
+            src="/imgs/icon.svg"
             alt="datafood"
-            width={75}
-            height={75}
+            width={35}
+            height={35}
             style={{ objectFit: 'contain' }}
           />
-          <span style={{ fontSize: 20, fontWeight: 500, color: '#111', letterSpacing: '0.02em' }}>
+          <span style={{ fontSize: 20, fontWeight: 500, color: '#c0603a', letterSpacing: '0.02em' }}>
             DATAFOOD
           </span>
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
-          <a href="#como-funciona" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>como funciona</a>
-          <a href="#restaurantes" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>para restaurantes</a>
-          <a href="#manifesto" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>manifesto</a>
+          <a href="#como-funciona" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>Como funciona</a>
+          <a href="#restaurantes" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>Para restaurantes</a>
+          <a href="#manifesto" style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>Manifesto</a>
           <Link href="/chat" style={{
-            fontSize: 13, background: '#000000', color: '#ffffff',
+            fontSize: 13, background: '#c0603a', color: '#ffffff',
             padding: '9px 20px', borderRadius: 24, textDecoration: 'none',
             fontWeight: 400, letterSpacing: '0.01em'
           }}>
-            abrir o app →
+            Acessar o APP →
           </Link>
         </div>
       </nav>
 
       {/* HERO */}
-      <section style={{ padding: '80px 48px 100px', maxWidth: 700 }}>
-        <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#999', marginBottom: 24, fontWeight: 400 }}>
-          DATAFOOD · GASTRONOMIC INTELLIGENCE
-        </p>
-        <h1 style={{
-          fontFamily: 'var(--font-serif)', fontSize: 'clamp(48px, 7vw, 80px)',
-          lineHeight: 1.05, fontWeight: 400, color: '#111', marginBottom: 28
-        }}>
-          o jantar começa antes<br />
-          do{' '}
-          <em style={{ color: 'var(--rust)', fontStyle: 'italic' }}>cardápio</em>.
-        </h1>
-        <p style={{ fontSize: 16, color: '#555', lineHeight: 1.65, maxWidth: 340, marginBottom: 40 }}>
-          descreva o momento — uma terça tranquila, um aniversário, um almoço de negócios. datafood encontra o lugar certo.
-        </p>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-          <Link href="/chat" style={{
-            fontSize: 13, background: '#000000', color: '#ffffff',
-            padding: '9px 20px', borderRadius: 24, textDecoration: 'none',
-            fontWeight: 400, letterSpacing: '0.01em'
+      <div className="container mx-auto flex justify-between items-end p-12" style={{maxWidth: 1200 }}>
+        <section className='p-4' style={{maxWidth: 700 }}>
+          <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#999', marginBottom: 24, fontWeight: 400 }}>
+            DATAFOOD · GASTRONOMIC INTELLIGENCE
+          </p>
+          <h1 style={{
+            fontFamily: 'var(--font-serif)', fontSize: 'clamp(48px, 7vw, 80px)',
+            lineHeight: 1.05, fontWeight: 400, color: '#111', marginBottom: 28
           }}>
-            abrir o app →
-          </Link>
-          <Link href="/chat" style={{
-            fontSize: 13, background: '#ffffff', color: '#000000',
-            padding: '9px 20px', borderRadius: 24, textDecoration: 'none',
-            fontWeight: 400, letterSpacing: '0.01em'
-          }}>
-            ver demonstração →
-          </Link>
-        </div>
-      </section>
+            o jantar começa antes<br />
+            do{' '}
+            <em style={{ color: 'var(--rust)', fontStyle: 'italic' }}>cardápio</em>.
+          </h1>
+          <p style={{ fontSize: 16, color: '#555', lineHeight: 1.65, maxWidth: 340, marginBottom: 40 }}>
+            descreva o momento — uma terça tranquila, um aniversário, um almoço de negócios. datafood encontra o lugar certo.
+          </p>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            <Link href="/chat"  style={{
+              fontSize: 13, background: '#c0603a', color: '#ffffff',
+              padding: '14px 28px', borderRadius: 8, textDecoration: 'none',
+              fontWeight: 400, letterSpacing: '0.01em'
+            }}>
+              Acessar →
+            </Link>
+          </div>
+        </section>
+        <Image
+          src={heroImage}
+          alt="heroImage"
+          // width={800}
+          // height={600}
+          style={{ objectFit: 'cover', borderRadius: 8 }}
+        />
+      </div>
 
       {/* HOW IT WORKS */}
       <section id="como-funciona" style={{ background: '#111', padding: '80px 48px' }}>
@@ -257,12 +260,12 @@ export default function HomePage() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--rust)' }} />
-          <span style={{ fontSize: 13, color: '#666' }}>datafood © 2026</span>
+          <span style={{ fontSize: 13, color: '#666' }}>DataFood © 2026</span>
         </div>
         <div style={{ display: 'flex', gap: 24 }}>
-          <a href="#" style={{ fontSize: 12, color: '#999', textDecoration: 'none' }}>privacidade · LGPD</a>
-          <a href="#" style={{ fontSize: 12, color: '#999', textDecoration: 'none' }}>termos</a>
-          <a href="#" style={{ fontSize: 12, color: '#999', textDecoration: 'none' }}>contato</a>
+          <a href="#" style={{ fontSize: 12, color: '#999', textDecoration: 'none' }}>Privacidade · LGPD</a>
+          <a href="#" style={{ fontSize: 12, color: '#999', textDecoration: 'none' }}>Termos</a>
+          <a href="#" style={{ fontSize: 12, color: '#999', textDecoration: 'none' }}>Contato</a>
         </div>
       </footer>
     </div>
