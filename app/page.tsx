@@ -5,6 +5,63 @@ import { useState } from 'react'
 import Image from 'next/image'
 import heroImage from "../public/imgs/tst.svg"
 
+// Subcomponente isolado para gerenciar o hover de cada card individualmente
+function PlanCard({ plan }: { plan: any }) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <div 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        background: plan.bg, 
+        borderRadius: 8, 
+        padding: '36px 28px',
+        display: 'flex', 
+        flexDirection: 'column',
+        // Efeito de Hover no Card
+        transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
+        boxShadow: isHovered ? '0 12px 30px rgba(0, 0, 0, 0.15)' : 'none',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease'
+      }}
+    >
+      <p style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
+        {plan.tier}
+      </p>
+      <div style={{ marginBottom: 8 }}>
+        <span style={{ fontFamily: 'var(--font-serif)', fontSize: 40, color: '#fff', fontWeight: 400 }}>
+          {plan.price}
+        </span>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginLeft: 4 }}>{plan.period}</span>
+      </div>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 28 }}>
+        {plan.desc}
+      </p>
+      <ul style={{ listStyle: 'none', marginBottom: 32, flex: 1 }}>
+        {plan.features.map((f: string, j: number) => (
+          <li key={j} style={{
+            fontSize: 13, color: 'rgba(255,255,255,0.85)', marginBottom: 10,
+            display: 'flex', alignItems: 'center', gap: 8
+          }}>
+            <span style={{ fontSize: 10 }}>✓</span> {f}
+          </li>
+        ))}
+      </ul>
+      <button style={{
+        background: 'rgba(0,0,0,0.25)', border: 'none', color: '#fff',
+        padding: '12px', borderRadius: 4, fontSize: 13, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        transition: 'background 0.2s'
+      }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.4)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.25)')}
+      >
+        começar agora →
+      </button>
+    </div>
+  )
+}
+
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -44,8 +101,8 @@ export default function HomePage() {
       </nav>
 
       {/* HERO */}
-      <div className="container mx-auto flex justify-between items-end p-12" style={{maxWidth: 1200 }}>
-        <section className='p-4' style={{maxWidth: 700 }}>
+      <div className="container mx-auto flex justify-between items-end p-12" style={{ maxWidth: 1200 }}>
+        <section className='p-4' style={{ maxWidth: 700 }}>
           <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#999', marginBottom: 24, fontWeight: 400 }}>
             DATAFOOD · GASTRONOMIC INTELLIGENCE
           </p>
@@ -73,8 +130,6 @@ export default function HomePage() {
         <Image
           src={heroImage}
           alt="heroImage"
-          // width={800}
-          // height={600}
           style={{ objectFit: 'cover', borderRadius: 8 }}
         />
       </div>
@@ -201,44 +256,7 @@ export default function HomePage() {
                 bg: '#8B3E20'
               }
             ].map((plan, i) => (
-              <div key={i} style={{
-                background: plan.bg, borderRadius: 8, padding: '36px 28px',
-                display: 'flex', flexDirection: 'column'
-              }}>
-                <p style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
-                  {plan.tier}
-                </p>
-                <div style={{ marginBottom: 8 }}>
-                  <span style={{ fontFamily: 'var(--font-serif)', fontSize: 40, color: '#fff', fontWeight: 400 }}>
-                    {plan.price}
-                  </span>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginLeft: 4 }}>{plan.period}</span>
-                </div>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 28 }}>
-                  {plan.desc}
-                </p>
-                <ul style={{ listStyle: 'none', marginBottom: 32, flex: 1 }}>
-                  {plan.features.map((f, j) => (
-                    <li key={j} style={{
-                      fontSize: 13, color: 'rgba(255,255,255,0.85)', marginBottom: 10,
-                      display: 'flex', alignItems: 'center', gap: 8
-                    }}>
-                      <span style={{ fontSize: 10 }}>✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <button style={{
-                  background: 'rgba(0,0,0,0.25)', border: 'none', color: '#fff',
-                  padding: '12px', borderRadius: 4, fontSize: 13, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  transition: 'background 0.2s'
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.4)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.25)')}
-                >
-                  começar agora →
-                </button>
-              </div>
+              <PlanCard key={i} plan={plan} />
             ))}
           </div>
         </div>

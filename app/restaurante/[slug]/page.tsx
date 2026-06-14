@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { getRestaurant, type Restaurant } from '../../data/restaurants'
+import { getRestaurant } from '../../data/restaurants'
+import { useFavorites } from '../../context/FavoritesContext'
 
 function IllustrationBowl() {
   return (
@@ -107,11 +109,190 @@ const SMALL_ILLUS = {
   plate: SmallIllustrationPlate,
 }
 
-export default function RestaurantePage({ params }: { params: { slug: string } }) {
-  const restaurant = getRestaurant(params.slug)
+function ActionButtons({ restaurant }: { restaurant: any }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const { toggleFavorite, isFavorite } = useFavorites()
+  
+  const isSaved = isFavorite(restaurant.slug || restaurant.id)
+  
+  const [isReserveHovered, setIsReserveHovered] = useState(false)
+  const [isSaveHovered, setIsSaveHovered] = useState(false)
+
+  const handleSaveClick = () => {
+    toggleFavorite({
+      id: restaurant.slug || restaurant.id,
+      name: restaurant.name,
+      bairro: restaurant.neighborhood || 'Bairro',
+      vibe: restaurant.tags?.[1] || 'Casual',
+      desc: restaurant.longDescription?.[0] || '',
+    })
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', gap: 12 }}>
+        <button 
+          onClick={() => setIsOpen(true)}
+          onMouseEnter={() => setIsReserveHovered(true)}
+          onMouseLeave={() => setIsReserveHovered(false)}
+          style={{
+            background: isReserveHovered ? '#333' : '#111', 
+            color: '#fff', 
+            border: 'none',
+            padding: '13px 24px', 
+            borderRadius: 4, 
+            fontSize: 14,
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8,
+            transition: 'background 0.2s ease'
+          }}
+        >
+          reservar mesa
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </button>
+
+        <button 
+          onClick={handleSaveClick}
+          onMouseEnter={() => setIsSaveHovered(true)}
+          onMouseLeave={() => setIsSaveHovered(false)}
+          style={{
+            background: isSaved ? (isSaveHovered ? '#ffe893' : '#fff3cd') : (isSaveHovered ? '#f5f5f5' : 'transparent'),
+            color: '#333',
+            border: isSaved ? '1px solid #ffeba0' : '1px solid #ddd',
+            padding: '13px 20px', 
+            borderRadius: 4, 
+            fontSize: 14,
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8,
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+          </svg>
+          {isSaved ? 'salvo' : 'salvar'}
+        </button>
+      </div>
+
+      {isOpen && (
+        <div 
+          onClick={() => setIsOpen(false)}
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(3px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 100
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff', padding: '32px', borderRadius: 8,
+              maxWidth: 420, width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+              textAlign: 'center', position: 'relative'
+            }}
+          >
+            <button 
+              onClick={() => setIsOpen(false)}
+              style={{
+                position: 'absolute', top: 16, right: 16, background: 'none',
+                border: 'none', fontSize: 18, cursor: 'pointer', color: '#888'
+              }}
+            >
+              ✕
+            </button>
+
+            <div style={{
+              width: 56, height: 56, background: '#f0faf5', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px', color: '#1a7a45'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 400, color: '#111', marginBottom: 12 }}>
+              Reserva Solicitada!
+            </h3>
+            <p style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 24 }}>
+              Sua mesa no <strong>{restaurant.name}</strong> foi reservada com sucesso para o próximo horário disponível.
+            </p>
+
+            <button 
+              onClick={() => setIsOpen(false)}
+              style={{
+                background: '#111', color: '#fff', border: 'none', width: '100%',
+                padding: '12px', borderRadius: 4, fontSize: 14, cursor: 'pointer',
+                fontWeight: 500
+              }}
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+function MenuCard({ item }: { item: any }) {
+  const [isHovered, setIsHovered] = useState(false)
+  // @ts-ignore
+  const SmallIllus = SMALL_ILLUS[item.illustration || 'bowl']
+
+  return (
+    <div 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ 
+        border: '1px solid #e8e4dc', 
+        borderRadius: 8, 
+        overflow: 'hidden', 
+        background: '#fff',
+        transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+        boxShadow: isHovered ? '0 8px 24px rgba(0,0,0,0.06)' : 'none',
+        transition: 'transform 0.25s ease, box-shadow 0.25s ease'
+      }}
+    >
+      <div style={{ background: '#111', height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {SmallIllus && <SmallIllus />}
+      </div>
+      <div style={{ padding: '16px 18px 18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <span style={{ fontSize: 15, color: '#111', fontWeight: 400 }}>{item.name}</span>
+          <span style={{ fontSize: 13, color: '#C0603A', fontWeight: 500, whiteSpace: 'nowrap', marginLeft: 8 }}>R$ {item.price}</span>
+        </div>
+        <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6, marginBottom: 14 }}>{item.description}</p>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {item.tags.map((tag: string, j: number) => (
+            <span key={j} style={{ fontSize: 11, color: '#888', border: '1px solid #e0dbd2', borderRadius: 12, padding: '3px 10px' }}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function RestaurantePage({ params }: { params: any }) {
+  const { slug } = params
+  
+  const restaurant = getRestaurant(slug)
   if (!restaurant) notFound()
 
-  const BigIllus = BIG_ILLUS[restaurant.illustration]
+  // Chamada do hook para capturar a lista global de itens salvos
+  const { favorites } = useFavorites()
+
+  // @ts-ignore
+  const BigIllus = BIG_ILLUS[restaurant.illustration || 'bowl']
 
   return (
     <div style={{ background: 'var(--cream)', minHeight: '100vh', fontFamily: 'var(--font-sans)' }}>
@@ -137,7 +318,37 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Link href="/chat" style={{ fontSize: 13, color: '#111', textDecoration: 'none', fontWeight: 500 }}>Descobrir</Link>
-          <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>Salvos</a>
+          
+          {/* BOTÃO SALVOS COM CONDICIONAL DE COR E BADGE */}
+          <Link 
+            href="/salvos" 
+            style={{ 
+              fontSize: 13, 
+              color: favorites.length > 0 ? '#c0603a' : '#888', 
+              fontWeight: favorites.length > 0 ? 600 : 400,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Salvos
+            {favorites.length > 0 && (
+              <span style={{
+                background: '#c0603a',
+                color: '#fff',
+                fontSize: 10,
+                padding: '2px 6px',
+                borderRadius: 10,
+                fontWeight: 'bold',
+                lineHeight: 1
+              }}>
+                {favorites.length}
+              </span>
+            )}
+          </Link>
+          
           <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>Histórico</a>
           <Link href="/login" style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
@@ -160,7 +371,7 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
         {/* Hero */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start', marginBottom: 56 }}>
           <div style={{ background: '#111', borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <BigIllus />
+            {BigIllus && <BigIllus />}
           </div>
 
           <div>
@@ -176,7 +387,7 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
 
             {/* Tags */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
-              {restaurant.tags.map((tag, i) => (
+              {restaurant.tags.map((tag: string, i: number) => (
                 <span key={i} style={{
                   display: 'inline-flex', alignItems: 'center', gap: 5,
                   border: `1px solid ${tag === 'aberto agora' ? '#a8d8bc' : '#ddd'}`,
@@ -199,29 +410,7 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
               ))}
             </div>
 
-            {/* CTAs */}
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button style={{
-                background: '#111', color: '#fff', border: 'none',
-                padding: '13px 24px', borderRadius: 4, fontSize: 14,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
-              }}>
-                reservar mesa
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 12H5M12 5l-7 7 7 7"/>
-                </svg>
-              </button>
-              <button style={{
-                background: 'transparent', color: '#333', border: '1px solid #ddd',
-                padding: '13px 20px', borderRadius: 4, fontSize: 14,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-                </svg>
-                salvar
-              </button>
-            </div>
+            <ActionButtons restaurant={{...restaurant, slug}} />
           </div>
         </div>
 
@@ -236,7 +425,7 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
 
           <div style={{ border: '1px solid #e8e4dc', borderRadius: 6, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', overflow: 'hidden' }}>
             {[
-              { label: 'ENDEREÇO',     value: restaurant.address,              note: null },
+              { label: 'ENDEREÇO',     value: restaurant.address,             note: null },
               { label: 'CAPACIDADE',   value: `${restaurant.capacity} lugares`, note: restaurant.capacityNote },
               { label: 'TICKET MÉDIO', value: restaurant.ticketAvg,             note: restaurant.ticketNote },
               { label: 'CONTATO',      value: restaurant.phone,                 note: restaurant.phoneNote },
@@ -260,30 +449,9 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-            {restaurant.menu.map((item, i) => {
-              const SmallIllus = SMALL_ILLUS[item.illustration]
-              return (
-                <div key={i} style={{ border: '1px solid #e8e4dc', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
-                  <div style={{ background: '#111', height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <SmallIllus />
-                  </div>
-                  <div style={{ padding: '16px 18px 18px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                      <span style={{ fontSize: 15, color: '#111', fontWeight: 400 }}>{item.name}</span>
-                      <span style={{ fontSize: 13, color: '#C0603A', fontWeight: 500, whiteSpace: 'nowrap', marginLeft: 8 }}>R$ {item.price}</span>
-                    </div>
-                    <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6, marginBottom: 14 }}>{item.description}</p>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {item.tags.map((tag, j) => (
-                        <span key={j} style={{ fontSize: 11, color: '#888', border: '1px solid #e0dbd2', borderRadius: 12, padding: '3px 10px' }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            {restaurant.menu.map((item: any, i: number) => (
+              <MenuCard key={i} item={item} />
+            ))}
           </div>
         </section>
 
@@ -298,12 +466,12 @@ export default function RestaurantePage({ params }: { params: { slug: string } }
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64 }}>
             <div>
-              {restaurant.longDescription.map((p, i) => (
+              {restaurant.longDescription.map((p: string, i: number) => (
                 <p key={i} style={{ fontSize: 14, color: '#555', lineHeight: 1.75, marginBottom: 20 }}>{p}</p>
               ))}
             </div>
             <div>
-              {restaurant.schedule.map((item, i) => (
+              {restaurant.schedule.map((item: any, i: number) => (
                 <div key={i} style={{
                   display: 'flex', justifyContent: 'space-between',
                   padding: '10px 0',

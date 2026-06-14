@@ -42,10 +42,10 @@ export default function CadastroPage() {
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
           <Image
-            src="/imgs/logo2noBg.png"
+            src="/imgs/icon.svg"
             alt="datafood"
-            width={75}
-            height={75}
+            width={35}
+            height={35}
             style={{ objectFit: 'contain' }}
           />
           <span style={{ fontSize: 26, fontWeight: 500, color: '#ffffff', letterSpacing: '0.02em' }}>
