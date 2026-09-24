@@ -1,492 +1,358 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { notFound } from 'next/navigation'
-import { getRestaurant } from '../../data/restaurants'
-import { useFavorites } from '../../context/FavoritesContext'
+import { useParams, useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { Cover } from '@/components/Illustration'
+import { FavoriteButton, OpenBadge } from '@/components/RestaurantCard'
+import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
+import { EmptyState, PageLoader, SectionTitle, Spinner, Stars, TextArea } from '@/components/ui'
+import { api, ApiError, errorMessage } from '@/lib/api'
+import {
+  DAYS,
+  formatAddress,
+  formatDate,
+  formatIntervals,
+  formatPhone,
+  formatPrice,
+  formatRating,
+  lowerNames,
+  priceDetail,
+  priceSymbol,
+  todayIndex,
+  whatsappLink,
+} from '@/lib/format'
+import type { Restaurant, Review } from '@/lib/types'
+import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
 
-function IllustrationBowl() {
-  return (
-    <svg viewBox="0 0 600 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <path d="M240 110 Q228 82 240 55" fill="none" stroke="#3a3a3a" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M300 100 Q288 68 300 38" fill="none" stroke="#3a3a3a" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M360 110 Q348 82 360 55" fill="none" stroke="#3a3a3a" strokeWidth="2.5" strokeLinecap="round"/>
-      <ellipse cx="300" cy="285" rx="130" ry="18" fill="#1a1a1a"/>
-      <ellipse cx="300" cy="240" rx="115" ry="32" fill="#C0603A"/>
-      <path d="M185 240 Q185 318 300 318 Q415 318 415 240" fill="#C0603A"/>
-      <ellipse cx="300" cy="240" rx="115" ry="32" fill="none" stroke="#d4704a" strokeWidth="1.5"/>
-    </svg>
-  )
-}
+const CHANNEL_LABELS: [keyof Restaurant, string][] = [
+  ['has_dine_in', 'salão'],
+  ['has_delivery', 'delivery'],
+  ['has_take_out', 'retirada'],
+  ['has_drive_thru', 'drive-thru'],
+  ['has_reservation', 'aceita reserva'],
+  ['accepts_vale_refeicao', 'vale-refeição'],
+  ['accepts_online_order', 'pedido online'],
+]
 
-function IllustrationGlass() {
-  return (
-    <svg viewBox="0 0 600 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="150" cy="140" r="7" fill="#8B7355" opacity="0.5"/>
-      <circle cx="440" cy="190" r="5.5" fill="#8B7355" opacity="0.4"/>
-      <circle cx="120" cy="230" r="4.5" fill="#8B7355" opacity="0.35"/>
-      <circle cx="460" cy="120" r="3.5" fill="#8B7355" opacity="0.35"/>
-      <circle cx="480" cy="250" r="3" fill="#8B7355" opacity="0.3"/>
-      <line x1="300" y1="285" x2="300" y2="320" stroke="#C0603A" strokeWidth="3"/>
-      <ellipse cx="300" cy="320" rx="52" ry="9" fill="#C0603A"/>
-      <path d="M248 140 Q240 230 272 285 L328 285 Q360 230 352 140 Z" fill="#C0603A"/>
-      <ellipse cx="300" cy="140" rx="52" ry="11" fill="#d4704a"/>
-      <path d="M253 168 Q249 220 260 272" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="5" strokeLinecap="round"/>
-    </svg>
-  )
-}
+function ReviewForm({ restaurantId, onCreated }: { restaurantId: number; onCreated: () => void }) {
+  const toast = useToast()
+  const [rating, setRating] = useState(0)
+  const [hover, setHover] = useState(0)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [sending, setSending] = useState(false)
 
-function IllustrationPlate() {
-  return (
-    <svg viewBox="0 0 600 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="300" cy="248" rx="152" ry="40" fill="#1e1e1e"/>
-      <ellipse cx="300" cy="240" rx="152" ry="40" fill="#2a2a2a"/>
-      <ellipse cx="300" cy="232" rx="152" ry="40" fill="none" stroke="#333" strokeWidth="1.5"/>
-      <ellipse cx="300" cy="228" rx="115" ry="30" fill="#C0603A"/>
-      <circle cx="288" cy="222" r="15" fill="#8B3E20"/>
-      <circle cx="314" cy="228" r="10" fill="#2d7a3a" opacity="0.9"/>
-      <circle cx="278" cy="232" r="7" fill="#d4704a"/>
-      <circle cx="308" cy="216" r="5" fill="#1a1a1a" opacity="0.5"/>
-    </svg>
-  )
-}
-
-function SmallIllustrationBowl() {
-  return (
-    <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <path d="M130 60 Q125 45 130 30" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M150 55 Q145 38 150 22" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M170 60 Q165 45 170 30" fill="none" stroke="#3a3a3a" strokeWidth="1.5" strokeLinecap="round"/>
-      <ellipse cx="150" cy="158" rx="68" ry="10" fill="#1a1a1a"/>
-      <ellipse cx="150" cy="130" rx="60" ry="18" fill="#C0603A"/>
-      <path d="M90 130 Q90 175 150 175 Q210 175 210 130" fill="#C0603A"/>
-      <ellipse cx="150" cy="130" rx="60" ry="18" fill="none" stroke="#d4704a" strokeWidth="1"/>
-    </svg>
-  )
-}
-
-function SmallIllustrationGlass() {
-  return (
-    <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="80" cy="80" r="4" fill="#8B7355" opacity="0.6"/>
-      <circle cx="220" cy="110" r="3" fill="#8B7355" opacity="0.5"/>
-      <circle cx="60" cy="130" r="2.5" fill="#8B7355" opacity="0.4"/>
-      <circle cx="235" cy="70" r="2" fill="#8B7355" opacity="0.4"/>
-      <line x1="150" y1="155" x2="150" y2="175" stroke="#C0603A" strokeWidth="2"/>
-      <ellipse cx="150" cy="175" rx="28" ry="5" fill="#C0603A"/>
-      <path d="M122 80 Q118 130 138 155 L162 155 Q182 130 178 80 Z" fill="#C0603A"/>
-      <ellipse cx="150" cy="80" rx="28" ry="6" fill="#d4704a"/>
-      <path d="M126 95 Q124 120 130 145" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function SmallIllustrationPlate() {
-  return (
-    <svg viewBox="0 0 300 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="150" cy="130" rx="80" ry="22" fill="#1e1e1e"/>
-      <ellipse cx="150" cy="126" rx="80" ry="22" fill="#2a2a2a"/>
-      <ellipse cx="150" cy="122" rx="80" ry="22" fill="none" stroke="#333" strokeWidth="1"/>
-      <ellipse cx="150" cy="120" rx="60" ry="16" fill="#C0603A"/>
-      <circle cx="145" cy="118" r="8" fill="#8B3E20"/>
-      <circle cx="158" cy="121" r="5" fill="#2d7a3a" opacity="0.9"/>
-      <circle cx="140" cy="124" r="3.5" fill="#d4704a"/>
-    </svg>
-  )
-}
-
-const BIG_ILLUS = {
-  bowl: IllustrationBowl,
-  glass: IllustrationGlass,
-  plate: IllustrationPlate,
-}
-
-const SMALL_ILLUS = {
-  bowl: SmallIllustrationBowl,
-  glass: SmallIllustrationGlass,
-  plate: SmallIllustrationPlate,
-}
-
-function ActionButtons({ restaurant }: { restaurant: any }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const { toggleFavorite, isFavorite } = useFavorites()
-  
-  const isSaved = isFavorite(restaurant.slug || restaurant.id)
-  
-  const [isReserveHovered, setIsReserveHovered] = useState(false)
-  const [isSaveHovered, setIsSaveHovered] = useState(false)
-
-  const handleSaveClick = () => {
-    toggleFavorite({
-      id: restaurant.slug || restaurant.id,
-      name: restaurant.name,
-      bairro: restaurant.neighborhood || 'Bairro',
-      vibe: restaurant.tags?.[1] || 'Casual',
-      desc: restaurant.longDescription?.[0] || '',
-    })
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!rating) {
+      toast.error('Escolha uma nota de 1 a 5.')
+      return
+    }
+    setSending(true)
+    try {
+      await api(`/api/restaurants/${restaurantId}/reviews/`, {
+        method: 'POST',
+        body: { rating, title: title.trim(), description: description.trim() },
+      })
+      toast.success('Avaliação publicada. Obrigado!')
+      setRating(0)
+      setTitle('')
+      setDescription('')
+      onCreated()
+    } catch (err) {
+      toast.error(errorMessage(err))
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
-    <>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <button 
-          onClick={() => setIsOpen(true)}
-          onMouseEnter={() => setIsReserveHovered(true)}
-          onMouseLeave={() => setIsReserveHovered(false)}
-          style={{
-            background: isReserveHovered ? '#333' : '#111', 
-            color: '#fff', 
-            border: 'none',
-            padding: '13px 24px', 
-            borderRadius: 4, 
-            fontSize: 14,
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 8,
-            transition: 'background 0.2s ease'
-          }}
-        >
-          reservar mesa
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-
-        <button 
-          onClick={handleSaveClick}
-          onMouseEnter={() => setIsSaveHovered(true)}
-          onMouseLeave={() => setIsSaveHovered(false)}
-          style={{
-            background: isSaved ? (isSaveHovered ? '#ffe893' : '#fff3cd') : (isSaveHovered ? '#f5f5f5' : 'transparent'),
-            color: '#333',
-            border: isSaved ? '1px solid #ffeba0' : '1px solid #ddd',
-            padding: '13px 20px', 
-            borderRadius: 4, 
-            fontSize: 14,
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 8,
-            transition: 'all 0.2s ease'
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-          </svg>
-          {isSaved ? 'salvo' : 'salvar'}
-        </button>
-      </div>
-
-      {isOpen && (
-        <div 
-          onClick={() => setIsOpen(false)}
-          style={{
-            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            background: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(3px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 100
-          }}
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#fff', padding: '32px', borderRadius: 8,
-              maxWidth: 420, width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-              textAlign: 'center', position: 'relative'
-            }}
-          >
-            <button 
-              onClick={() => setIsOpen(false)}
-              style={{
-                position: 'absolute', top: 16, right: 16, background: 'none',
-                border: 'none', fontSize: 18, cursor: 'pointer', color: '#888'
-              }}
+    <form onSubmit={submit} className="card flex flex-col gap-4 p-5">
+      <div>
+        <span className="label">sua nota</span>
+        <div className="flex gap-1" role="radiogroup" aria-label="nota" onMouseLeave={() => setHover(0)}>
+          {[1, 2, 3, 4, 5].map(n => (
+            <button
+              key={n}
+              type="button"
+              role="radio"
+              aria-checked={rating === n}
+              aria-label={`${n} estrela${n > 1 ? 's' : ''}`}
+              onMouseEnter={() => setHover(n)}
+              onClick={() => setRating(n)}
+              className="p-0.5"
             >
-              ✕
-            </button>
-
-            <div style={{
-              width: 56, height: 56, background: '#f0faf5', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 20px', color: '#1a7a45'
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill={n <= (hover || rating) ? '#C0603A' : 'none'} stroke="#C0603A" strokeWidth="1.5" aria-hidden>
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-            </div>
-
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 400, color: '#111', marginBottom: 12 }}>
-              Reserva Solicitada!
-            </h3>
-            <p style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 24 }}>
-              Sua mesa no <strong>{restaurant.name}</strong> foi reservada com sucesso para o próximo horário disponível.
-            </p>
-
-            <button 
-              onClick={() => setIsOpen(false)}
-              style={{
-                background: '#111', color: '#fff', border: 'none', width: '100%',
-                padding: '12px', borderRadius: 4, fontSize: 14, cursor: 'pointer',
-                fontWeight: 500
-              }}
-            >
-              Entendido
             </button>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-function MenuCard({ item }: { item: any }) {
-  const [isHovered, setIsHovered] = useState(false)
-  // @ts-ignore
-  const SmallIllus = SMALL_ILLUS[item.illustration || 'bowl']
-
-  return (
-    <div 
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{ 
-        border: '1px solid #e8e4dc', 
-        borderRadius: 8, 
-        overflow: 'hidden', 
-        background: '#fff',
-        transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
-        boxShadow: isHovered ? '0 8px 24px rgba(0,0,0,0.06)' : 'none',
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease'
-      }}
-    >
-      <div style={{ background: '#111', height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {SmallIllus && <SmallIllus />}
-      </div>
-      <div style={{ padding: '16px 18px 18px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 15, color: '#111', fontWeight: 400 }}>{item.name}</span>
-          <span style={{ fontSize: 13, color: '#C0603A', fontWeight: 500, whiteSpace: 'nowrap', marginLeft: 8 }}>R$ {item.price}</span>
-        </div>
-        <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6, marginBottom: 14 }}>{item.description}</p>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {item.tags.map((tag: string, j: number) => (
-            <span key={j} style={{ fontSize: 11, color: '#888', border: '1px solid #e0dbd2', borderRadius: 12, padding: '3px 10px' }}>
-              {tag}
-            </span>
           ))}
         </div>
       </div>
-    </div>
+      <input className="input" placeholder="título (opcional)" maxLength={150} value={title} onChange={e => setTitle(e.target.value)} aria-label="título" />
+      <TextArea label="comentário (opcional)" value={description} onChange={e => setDescription(e.target.value)} placeholder="como foi a experiência?" />
+      <button type="submit" disabled={sending} className="btn-primary self-start">
+        {sending ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'publicar avaliação'}
+      </button>
+    </form>
   )
 }
 
-export default function RestaurantePage({ params }: { params: any }) {
-  const { slug } = params
-  
-  const restaurant = getRestaurant(slug)
-  if (!restaurant) notFound()
+export default function RestaurantePage() {
+  const { slug } = useParams<{ slug: string }>()
+  const router = useRouter()
+  const { user } = useAuth()
+  const toast = useToast()
+  // resultado chaveado pelo slug + contador de recarga (após avaliar/excluir)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [state, setState] = useState<{ slug: string; data?: Restaurant; error?: 'not-found' | 'error' } | null>(null)
+  const load = useCallback(() => setReloadKey(k => k + 1), [])
 
-  // Chamada do hook para capturar a lista global de itens salvos
-  const { favorites } = useFavorites()
+  useEffect(() => {
+    api<Restaurant>(`/api/restaurants/by-slug/${encodeURIComponent(slug)}/`)
+      .then(data => {
+        setState({ slug, data })
+        document.title = `${data.name} · datafood`
+      })
+      .catch(err => setState({ slug, error: err instanceof ApiError && err.status === 404 ? 'not-found' : 'error' }))
+  }, [slug, reloadKey])
 
-  // @ts-ignore
-  const BigIllus = BIG_ILLUS[restaurant.illustration || 'bowl']
+  const current = state?.slug === slug ? state : null
+  const restaurant = current?.data ?? null
+  const error = current?.error ?? null
 
-  return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh', fontFamily: 'var(--font-sans)' }}>
+  const deleteReview = async (review: Review) => {
+    if (!restaurant || !confirm('Excluir sua avaliação?')) return
+    try {
+      await api(`/api/restaurants/${restaurant.id}/reviews/${review.id}/`, { method: 'DELETE' })
+      toast.success('Avaliação excluída.')
+      load()
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
 
-      {/* NAV */}
-      <nav style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '18px 48px', background: 'var(--cream)',
-        borderBottom: '1px solid #e8e4dc', position: 'sticky', top: 0, zIndex: 50
-      }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <Image
-            src="/imgs/icon.svg"
-            alt="datafood"
-            width={35}
-            height={35}
-            style={{ objectFit: 'contain' }}
-          />
-          <span style={{ fontSize: 14, fontWeight: 500, color: '#c0603a', letterSpacing: '0.02em' }}>
-            DATAFOOD
-          </span>
-        </Link>
+  const body = () => {
+    if (error === 'not-found') {
+      return (
+        <EmptyState
+          title="restaurante não encontrado"
+          text="ele pode ter saído do ar ou o link está incorreto."
+          action={
+            <Link href="/explorar" className="btn-primary">
+              explorar restaurantes
+            </Link>
+          }
+        />
+      )
+    }
+    if (error) {
+      return <EmptyState title="não foi possível carregar" text="tente novamente em instantes." action={<button onClick={load} className="btn-primary">tentar de novo</button>} />
+    }
+    if (!restaurant) return <PageLoader />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <Link href="/chat" style={{ fontSize: 13, color: '#111', textDecoration: 'none', fontWeight: 500 }}>Descobrir</Link>
-          
-          {/* BOTÃO SALVOS COM CONDICIONAL DE COR E BADGE */}
-          <Link 
-            href="/salvos" 
-            style={{ 
-              fontSize: 13, 
-              color: favorites.length > 0 ? '#c0603a' : '#888', 
-              fontWeight: favorites.length > 0 ? 600 : 400,
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              transition: 'all 0.2s ease'
-            }}
-          >
-            Salvos
-            {favorites.length > 0 && (
-              <span style={{
-                background: '#c0603a',
-                color: '#fff',
-                fontSize: 10,
-                padding: '2px 6px',
-                borderRadius: 10,
-                fontWeight: 'bold',
-                lineHeight: 1
-              }}>
-                {favorites.length}
-              </span>
-            )}
-          </Link>
-          
-          <a href="#" style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>Histórico</a>
-          <Link href="/login" style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.5">
-              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-            </svg>
-          </Link>
-        </div>
-      </nav>
+    const r = restaurant
+    const today = todayIndex()
+    const address = formatAddress(r.address)
+    const whats = r.phone ? whatsappLink(r.phone) : null
+    const rating = Number(r.average_rating)
+    const isOwner = !!user && (user.id === r.owner || user.role === 'admin')
+    const alreadyReviewed = !!user && r.reviews.some(rv => rv.author === user.id)
+    const channels = CHANNEL_LABELS.filter(([k]) => r[k]).map(([, label]) => label)
+    const tags = [r.address?.neighborhood, lowerNames(r.cuisines), priceSymbol(r.price_ranges), lowerNames(r.ambients)].filter(Boolean) as string[]
+    const mapsUrl = r.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address!.replace('\n', ', '))}` : null
 
-      <div style={{ maxWidth: 840, margin: '0 auto', padding: '36px 48px 80px' }}>
-
-        {/* Back link */}
-        <Link href="/chat" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 28 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
+    return (
+      <>
+        <button onClick={() => router.back()} className="mb-7 inline-flex items-center gap-1.5 text-[13px] text-[#888] hover:text-ink">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+            <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
-          Voltar para resultados
-        </Link>
+          voltar
+        </button>
 
-        {/* Hero */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start', marginBottom: 56 }}>
-          <div style={{ background: '#111', borderRadius: 8, overflow: 'hidden', aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {BigIllus && <BigIllus />}
-          </div>
-
+        <div className="mb-14 grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-12">
+          <Cover src={r.cover_image} seed={r.id} alt={r.name} className="aspect-[4/3] rounded-lg" />
           <div>
-            <p style={{ fontSize: 11, letterSpacing: '0.1em', color: '#aaa', marginBottom: 12 }}>
-              RECOMENDADO POR DATAFOOD · {restaurant.match}% MATCH
-            </p>
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 400, color: '#111', lineHeight: 1.05, marginBottom: 16 }}>
-              {restaurant.name}
-            </h1>
-            <p style={{ fontSize: 15, color: '#555', lineHeight: 1.7, marginBottom: 24, maxWidth: 340 }}>
-              {restaurant.longDescription[0]}
-            </p>
-
-            {/* Tags */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
-              {restaurant.tags.map((tag: string, i: number) => (
-                <span key={i} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 5,
-                  border: `1px solid ${tag === 'aberto agora' ? '#a8d8bc' : '#ddd'}`,
-                  borderRadius: 24, padding: '6px 14px', fontSize: 12,
-                  background: tag === 'aberto agora' ? '#f0faf5' : 'transparent',
-                  color: tag === 'aberto agora' ? '#1a7a45' : '#444',
-                }}>
-                  {tag === 'aberto agora' && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-                    </svg>
-                  )}
-                  {tag === restaurant.neighborhood && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-                    </svg>
-                  )}
-                  {tag}
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <OpenBadge open={r.is_open_now} />
+              {rating > 0 && (
+                <span className="flex items-center gap-1.5 text-xs text-[#777]">
+                  <Stars value={rating} size={12} /> {formatRating(rating)} · {r.total_reviews} {r.total_reviews === 1 ? 'avaliação' : 'avaliações'}
+                </span>
+              )}
+            </div>
+            <h1 className="mb-4 font-serif text-[clamp(38px,5vw,52px)] lowercase leading-[1.05]">{r.name}</h1>
+            <p className="mb-6 max-w-md text-[15px] leading-relaxed text-[#555]">{r.description}</p>
+            <div className="mb-6 flex flex-wrap gap-2">
+              {tags.map(t => (
+                <span key={t} className="chip lowercase">
+                  {t}
                 </span>
               ))}
             </div>
-
-            <ActionButtons restaurant={{...restaurant, slug}} />
+            <div className="flex flex-wrap gap-3">
+              {whats ? (
+                <a href={whats} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                  {r.has_reservation ? 'reservar pelo whatsapp' : 'falar com o restaurante'}
+                </a>
+              ) : r.phone ? (
+                <a href={`tel:${r.phone}`} className="btn-primary">
+                  ligar
+                </a>
+              ) : null}
+              <FavoriteButton restaurantId={r.id} variant="full" />
+              {isOwner && (
+                <Link href={`/painel?r=${r.id}`} className="btn-ghost">
+                  editar no painel
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
-        <div style={{ height: 1, background: '#e8e4dc', marginBottom: 48 }} />
+        <hr className="mb-12 border-line" />
 
-        {/* Fatos */}
-        <section style={{ marginBottom: 56 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 400, color: '#111' }}>fatos</h2>
-            <span style={{ fontSize: 11, letterSpacing: '0.1em', color: '#bbb' }}>01 / informações</span>
-          </div>
-
-          <div style={{ border: '1px solid #e8e4dc', borderRadius: 6, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', overflow: 'hidden' }}>
+        <section className="mb-14">
+          <SectionTitle title="fatos" eyebrow="01 / informações" />
+          <div className="grid grid-cols-1 overflow-hidden rounded-md border border-line sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: 'ENDEREÇO',     value: restaurant.address,             note: null },
-              { label: 'CAPACIDADE',   value: `${restaurant.capacity} lugares`, note: restaurant.capacityNote },
-              { label: 'TICKET MÉDIO', value: restaurant.ticketAvg,             note: restaurant.ticketNote },
-              { label: 'CONTATO',      value: restaurant.phone,                 note: restaurant.phoneNote },
+              {
+                label: 'ENDEREÇO',
+                value: address ?? 'não informado',
+                note: mapsUrl ? (
+                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                    abrir no mapa
+                  </a>
+                ) : null,
+              },
+              { label: 'FAIXA DE PREÇO', value: priceSymbol(r.price_ranges) ?? '—', note: priceDetail(r.price_ranges) },
+              { label: 'CONTATO', value: r.phone ? formatPhone(r.phone) : '—', note: r.website ? <a href={r.website} target="_blank" rel="noopener noreferrer" className="underline">site</a> : r.email || null },
+              { label: 'ATENDIMENTO', value: channels.length ? channels.join(' · ') : '—', note: null },
             ].map((item, i) => (
-              <div key={i} style={{ padding: '20px 20px 24px', borderRight: i < 3 ? '1px solid #e8e4dc' : 'none' }}>
-                <p style={{ fontSize: 10, letterSpacing: '0.1em', color: '#bbb', marginBottom: 12 }}>{item.label}</p>
-                <p style={{ fontSize: 15, color: '#111', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{item.value}</p>
-                {item.note && <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{item.note}</p>}
+              <div key={item.label} className={`border-line px-5 pb-6 pt-5 ${i > 0 ? 'border-t sm:border-t-0' : ''} ${i % 2 === 1 ? 'sm:border-l' : ''} ${i >= 2 ? 'sm:border-t lg:border-t-0' : ''} ${i > 0 ? 'lg:border-l' : ''}`}>
+                <p className="mb-3 text-[10px] tracking-[0.1em] text-[#bbb]">{item.label}</p>
+                <p className="whitespace-pre-line text-[15px] leading-normal">{item.value}</p>
+                {item.note && <p className="mt-1 text-xs text-[#999]">{item.note}</p>}
               </div>
             ))}
           </div>
         </section>
 
-        <div style={{ height: 1, background: '#e8e4dc', marginBottom: 48 }} />
-
-        {/* Menu */}
-        <section style={{ marginBottom: 56 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 400, color: '#111' }}>destaques do cardápio</h2>
-            <span style={{ fontSize: 11, letterSpacing: '0.1em', color: '#bbb' }}>02 / três pratos</span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-            {restaurant.menu.map((item: any, i: number) => (
-              <MenuCard key={i} item={item} />
-            ))}
-          </div>
-        </section>
-
-        <div style={{ height: 1, background: '#e8e4dc', marginBottom: 48 }} />
-
-        {/* Sobre & Horários */}
-        <section>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 28 }}>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 400, color: '#111' }}>sobre & horários</h2>
-            <span style={{ fontSize: 11, letterSpacing: '0.1em', color: '#bbb' }}>03 / contexto</span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64 }}>
-            <div>
-              {restaurant.longDescription.map((p: string, i: number) => (
-                <p key={i} style={{ fontSize: 14, color: '#555', lineHeight: 1.75, marginBottom: 20 }}>{p}</p>
-              ))}
-            </div>
-            <div>
-              {restaurant.schedule.map((item: any, i: number) => (
-                <div key={i} style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  padding: '10px 0',
-                  borderBottom: i < restaurant.schedule.length - 1 ? '1px solid #f0ece4' : 'none',
-                  fontWeight: item.highlight ? 500 : 400,
-                  color: item.highlight ? '#111' : item.hours === 'fechado' ? '#ccc' : '#555',
-                }}>
-                  <span style={{ fontSize: 13 }}>{item.day}</span>
-                  <span style={{ fontSize: 13 }}>{item.hours}</span>
+        {r.items.length > 0 && (
+          <section className="mb-14">
+            <SectionTitle title="destaques do cardápio" eyebrow={`02 / ${r.items.length} pratos`} />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {r.items.map((item, i) => (
+                <div key={item.id} className="card overflow-hidden transition hover:-translate-y-1 hover:shadow-md">
+                  <Cover seed={r.id + i + 1} alt="" className="h-36" />
+                  <div className="px-4 pb-5 pt-4">
+                    <div className="mb-2 flex items-baseline justify-between gap-2">
+                      <span className="text-[15px]">{item.name}</span>
+                      {formatPrice(item.price) && <span className="whitespace-nowrap text-[13px] font-medium text-rust">{formatPrice(item.price)}</span>}
+                    </div>
+                    <p className="text-[13px] leading-relaxed text-[#666]">{item.description}</p>
+                  </div>
                 </div>
               ))}
             </div>
+            {r.menu_url && (
+              <a href={r.menu_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm text-rust underline">
+                ver cardápio completo
+              </a>
+            )}
+          </section>
+        )}
+
+        {r.images.length > 0 && (
+          <section className="mb-14">
+            <SectionTitle title="fotos" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {r.images.map(img => (
+                <a key={img.id} href={img.url} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-md bg-ink">
+                  <img src={img.url} alt={`foto de ${r.name}`} loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mb-14">
+          <SectionTitle title="horários" eyebrow="03 / funcionamento" />
+          {r.business_hours.length === 0 ? (
+            <p className="text-sm text-[#999]">horários não informados.</p>
+          ) : (
+            <div className="max-w-md">
+              {DAYS.map((day, i) => {
+                const hour = r.business_hours.find(h => h.day_week === i)
+                const text = formatIntervals(hour)
+                const isToday = i === today
+                return (
+                  <div key={day} className={`flex justify-between border-b border-[#f0ece4] py-2.5 text-[13px] ${isToday ? 'font-medium text-ink' : text === 'fechado' ? 'text-[#ccc]' : 'text-[#555]'}`}>
+                    <span>
+                      {day}
+                      {isToday && ' · hoje'}
+                    </span>
+                    <span>{text}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        <section>
+          <SectionTitle title="avaliações" eyebrow={`04 / ${r.total_reviews}`} />
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
+            <div className="flex flex-col gap-4">
+              {r.reviews.length === 0 && <p className="text-sm text-[#999]">ainda sem avaliações. seja o primeiro!</p>}
+              {r.reviews.map(rv => (
+                <article key={rv.id} className="card p-5">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <Stars value={rv.rating} />
+                    <span className="text-[11px] text-[#aaa]">
+                      {rv.author_name} · {formatDate(rv.created_at)}
+                    </span>
+                  </div>
+                  {rv.title && <h3 className="mb-1 text-[15px] font-medium">{rv.title}</h3>}
+                  {rv.description && <p className="text-sm leading-relaxed text-[#555]">{rv.description}</p>}
+                  {user && rv.author === user.id && (
+                    <button onClick={() => deleteReview(rv)} className="mt-3 text-xs text-[#aaa] hover:text-[#e53e3e]">
+                      excluir minha avaliação
+                    </button>
+                  )}
+                </article>
+              ))}
+            </div>
+            <div>
+              {!user ? (
+                <div className="card p-5 text-sm text-[#666]">
+                  <Link href={`/login?next=/restaurante/${r.slug}`} className="text-rust underline">
+                    entre
+                  </Link>{' '}
+                  para avaliar este restaurante.
+                </div>
+              ) : isOwner ? (
+                <p className="text-sm text-[#999]">donos não avaliam o próprio restaurante.</p>
+              ) : alreadyReviewed ? (
+                <p className="text-sm text-[#999]">você já avaliou este restaurante.</p>
+              ) : (
+                <ReviewForm restaurantId={r.id} onCreated={load} />
+              )}
+            </div>
           </div>
         </section>
-      </div>
+      </>
+    )
+  }
+
+  return (
+    <div className="min-h-screen">
+      <SiteHeader />
+      <main className="mx-auto max-w-5xl px-4 pb-20 pt-8 sm:px-8">{body()}</main>
+      <SiteFooter />
     </div>
   )
 }
