@@ -97,7 +97,7 @@ function CadastroForm() {
       role="radio"
       aria-checked={accountType === value}
       onClick={() => setAccountType(value)}
-      className={`rounded border px-4 py-3 text-left transition ${accountType === value ? 'border-ink bg-white' : 'border-[#ddd] hover:border-[#bbb]'}`}
+      className={`rounded-sm border px-4 py-3 text-left transition ${accountType === value ? 'border-ink bg-white' : 'border-[#ddd] hover:border-[#bbb]'}`}
     >
       <span className="block text-sm text-ink">{label}</span>
       <span className="block text-[11px] text-[#999]">{hint}</span>

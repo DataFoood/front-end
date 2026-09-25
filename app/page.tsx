@@ -106,7 +106,7 @@ export default function HomePage() {
             <p className="mb-8 text-lg leading-relaxed text-[#ccc]">
               cadastre seu restaurante, mantenha cardápio e horários em dia e acompanhe quantas pessoas visitam e salvam sua página. tudo agregado e anônimo — nada pessoal.
             </p>
-            <Link href={user ? '/painel' : '/cadastro?tipo=restaurante'} className="inline-flex items-center gap-2 rounded border border-[#444] px-6 py-3 text-sm text-white hover:border-[#777]">
+            <Link href={user ? '/painel' : '/cadastro?tipo=restaurante'} className="inline-flex items-center gap-2 rounded-sm border border-[#444] px-6 py-3 text-sm text-white hover:border-[#777]">
               {user ? 'abrir meu painel →' : 'cadastrar meu restaurante →'}
             </Link>
           </div>
@@ -142,7 +142,7 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/cadastro?tipo=restaurante" className="rounded bg-black/25 py-3 text-center text-[13px] text-white hover:bg-black/40">
+                <Link href="/cadastro?tipo=restaurante" className="rounded-sm bg-black/25 py-3 text-center text-[13px] text-white hover:bg-black/40">
                   começar agora →
                 </Link>
               </div>

@@ -43,7 +43,7 @@ export function FavoriteButton({ restaurantId, variant = 'icon' }: { restaurantI
       onClick={onClick}
       aria-pressed={saved}
       aria-label={saved ? 'remover dos salvos' : 'salvar restaurante'}
-      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-sm transition hover:scale-105 ${saved ? 'text-rust' : 'text-[#555]'}`}
+      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-xs transition hover:scale-105 ${saved ? 'text-rust' : 'text-[#555]'}`}
     >
       {icon}
     </button>

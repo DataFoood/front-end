@@ -81,7 +81,7 @@ function AssistantBubble({ content, query }: { content: AssistantContent; query:
     return (
       <div className="flex animate-fade-in items-start gap-3">
         {dot}
-        <div className="rounded-2xl rounded-tl-sm border border-line bg-white px-4 py-3 text-sm leading-relaxed text-[#555]">
+        <div className="rounded-2xl rounded-tl-xs border border-line bg-white px-4 py-3 text-sm leading-relaxed text-[#555]">
           {content.message}
           {content.unavailable && (
             <>
@@ -228,7 +228,7 @@ function ChatApp({ user }: { user: User }) {
       >
         <div className="flex items-center justify-between px-4 pb-3 pt-5">
           <Logo size={30} />
-          <button onClick={() => setSidebarOpen(false)} className="rounded p-1.5 text-[#aaa] hover:bg-cream hover:text-ink" aria-label="fechar painel">
+          <button onClick={() => setSidebarOpen(false)} className="rounded-sm p-1.5 text-[#aaa] hover:bg-cream hover:text-ink" aria-label="fechar painel">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M9 3v18" />
@@ -245,7 +245,7 @@ function ChatApp({ user }: { user: User }) {
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
-            <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="procurar conversas" aria-label="procurar conversas" className="w-full bg-transparent text-[13px] outline-none" />
+            <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="procurar conversas" aria-label="procurar conversas" className="w-full bg-transparent text-[13px] outline-hidden" />
           </div>
           <p className="mb-2 px-2 text-[10px] tracking-[0.1em] text-[#bbb]">RECENTES</p>
         </div>
@@ -266,7 +266,7 @@ function ChatApp({ user }: { user: User }) {
               <button
                 onClick={() => deleteChat(chat.id)}
                 aria-label={`excluir conversa ${chat.title}`}
-                className="mr-1.5 rounded p-1 text-[#bbb] opacity-100 hover:text-[#e53e3e] lg:opacity-0 lg:group-hover:opacity-100"
+                className="mr-1.5 rounded-sm p-1 text-[#bbb] opacity-100 hover:text-[#e53e3e] lg:opacity-0 lg:group-hover:opacity-100"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                   <polyline points="3 6 5 6 21 6" />
@@ -278,12 +278,12 @@ function ChatApp({ user }: { user: User }) {
         </div>
 
         <nav className="border-t border-line px-3 py-3 text-[13px]" aria-label="atalhos">
-          <Link href="/explorar" className="block rounded px-2 py-1.5 text-[#555] hover:bg-cream">explorar restaurantes</Link>
-          <Link href="/salvos" className="flex items-center justify-between rounded px-2 py-1.5 text-[#555] hover:bg-cream">
+          <Link href="/explorar" className="block rounded-sm px-2 py-1.5 text-[#555] hover:bg-cream">explorar restaurantes</Link>
+          <Link href="/salvos" className="flex items-center justify-between rounded-sm px-2 py-1.5 text-[#555] hover:bg-cream">
             salvos {savedCount > 0 && <span className="rounded-full bg-rust px-1.5 text-[10px] font-bold text-white">{savedCount}</span>}
           </Link>
           {user.role !== 'customer' && (
-            <Link href="/painel" className="block rounded px-2 py-1.5 text-[#555] hover:bg-cream">meu restaurante</Link>
+            <Link href="/painel" className="block rounded-sm px-2 py-1.5 text-[#555] hover:bg-cream">meu restaurante</Link>
           )}
         </nav>
 
@@ -343,7 +343,7 @@ function ChatApp({ user }: { user: User }) {
               {active.messages.map((msg, i) =>
                 msg.role === 'user' ? (
                   <div key={i} className="flex items-end justify-end gap-2.5">
-                    <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-ink px-4 py-3 text-sm leading-relaxed text-white">{msg.text}</div>
+                    <div className="max-w-[80%] rounded-2xl rounded-br-xs bg-ink px-4 py-3 text-sm leading-relaxed text-white">{msg.text}</div>
                     <Avatar name={user.name} url={user.avatar_url} size={28} />
                   </div>
                 ) : (
@@ -355,7 +355,7 @@ function ChatApp({ user }: { user: User }) {
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink">
                     <div className="h-2 w-2 rounded-full bg-rust" />
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-line bg-white px-4 py-3.5" aria-label="buscando">
+                  <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-xs border border-line bg-white px-4 py-3.5" aria-label="buscando">
                     {[0, 1, 2].map(j => (
                       <span key={j} className="typing-dot h-1.5 w-1.5 rounded-full bg-[#bbb]" />
                     ))}
@@ -376,7 +376,7 @@ function ChatApp({ user }: { user: User }) {
               maxLength={500}
               placeholder="descreva o momento…"
               aria-label="descreva o momento"
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-hidden"
             />
             <button
               type="submit"
