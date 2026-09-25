@@ -1,152 +1,117 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import type { User } from '../data/users'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { api, SESSION_EXPIRED_EVENT, tokenStore } from '@/lib/api'
+import type { AuthResponse, User } from '@/lib/types'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
-type AuthResult = { ok: boolean; message: string }
-
-type RegisterPayload = {
+export interface RegisterPayload {
   name: string
   email: string
-  cpf: string
+  cpf: string | null
   phone: string
   password: string
   confirm_password: string
+  account_type: 'customer' | 'owner'
+  allow_info: boolean
 }
 
 interface AuthContextValue {
   user: User | null
+  /** true até a sessão salva ser validada no primeiro carregamento */
   loading: boolean
-  login: (email: string, password: string) => Promise<AuthResult>
-  register: (payload: RegisterPayload) => Promise<AuthResult>
-  logout: () => void
+  login: (email: string, password: string) => Promise<User>
+  register: (payload: RegisterPayload) => Promise<User>
+  logout: () => Promise<void>
+  refreshUser: () => Promise<void>
+  setUser: (user: User) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-// Extrai a melhor mensagem de erro possível de uma resposta de erro do DRF
-function extractErrorMessage(data: any, fallback: string): string {
-  if (!data) return fallback
-  if (data.detail) return data.detail
-  if (data.message) return data.message
-  if (data.non_field_errors?.[0]) return data.non_field_errors[0]
-  const firstFieldError = Object.values(data).flat().find((v): v is string => typeof v === 'string')
-  return firstFieldError || fallback
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // restaura a sessão: se há tokens salvos, valida buscando /me (o refresh é automático)
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem('datafood_user')
-      if (stored) setUser(JSON.parse(stored))
-    } catch {}
-    setLoading(false)
+    let cancelled = false
+    const restore = async () => {
+      if (tokenStore.get()) {
+        try {
+          const me = await api<User>('/api/users/me/')
+          if (!cancelled) setUser(me)
+        } catch {
+          tokenStore.clear()
+        }
+      }
+      if (!cancelled) setLoading(false)
+    }
+    restore()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  const login = async (email: string, password: string): Promise<AuthResult> => {
-    try {
-      const response = await fetch(`${API_URL}/api/users/login/`, {
+  useEffect(() => {
+    const onExpired = () => setUser(null)
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired)
+  }, [])
+
+  const startSession = useCallback((data: AuthResponse) => {
+    tokenStore.set({ access: data.access, refresh: data.refresh })
+    setUser(data.user)
+    return data.user
+  }, [])
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const data = await api<AuthResponse>('/api/users/login/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: { email, password },
+        auth: false,
       })
+      return startSession(data)
+    },
+    [startSession],
+  )
 
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After')
-        return {
-          ok: false,
-          message: retryAfter
-            ? `Muitas tentativas. Tente novamente em ${retryAfter}s.`
-            : 'Muitas tentativas de login. Aguarde um instante e tente novamente.',
-        }
-      }
-
-      const data = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        return { ok: false, message: extractErrorMessage(data, 'E-mail ou senha incorretos. Tente novamente.') }
-      }
-
-      // Ajuste as chaves abaixo caso o payload real do backend use outros nomes
-      const accessToken: string | undefined = data.access || data.token
-      const refreshToken: string | undefined = data.refresh
-      const found: User | undefined = data.user
-
-      if (!accessToken || !found) {
-        return { ok: false, message: 'Resposta inesperada do servidor.' }
-      }
-
-      sessionStorage.setItem('datafood_token', accessToken)
-      if (refreshToken) sessionStorage.setItem('datafood_refresh', refreshToken)
-      sessionStorage.setItem('datafood_user', JSON.stringify(found))
-      setUser(found)
-
-      return { ok: true, message: `Olá ${found.name.split(' ')[0]}, Bem vindo(a) de volta!` }
-    } catch {
-      return { ok: false, message: 'Não foi possível conectar ao servidor. Tente novamente.' }
-    }
-  }
-
-  const register = async (payload: RegisterPayload): Promise<AuthResult> => {
-    try {
-      const response = await fetch(`${API_URL}/api/users/register/`, {
+  const register = useCallback(
+    async (payload: RegisterPayload) => {
+      const data = await api<AuthResponse>('/api/users/register/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload,
+        auth: false,
       })
+      return startSession(data)
+    },
+    [startSession],
+  )
 
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After')
-        return {
-          ok: false,
-          message: retryAfter
-            ? `Muitas tentativas. Tente novamente em ${retryAfter}s.`
-            : 'Muitas tentativas de cadastro. Aguarde um instante e tente novamente.',
-        }
-      }
-
-      const data = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        return { ok: false, message: extractErrorMessage(data, 'Não foi possível criar a conta. Verifique os dados e tente novamente.') }
-      }
-
-      // Se o backend já autenticar no próprio registro (retorna token + user), loga direto.
-      // Caso contrário, troque a tela de cadastro para redirecionar ao /login em vez de logar.
-      const accessToken: string | undefined = data.access || data.token
-      const refreshToken: string | undefined = data.refresh
-      const found: User | undefined = data.user
-
-      if (accessToken && found) {
-        sessionStorage.setItem('datafood_token', accessToken)
-        if (refreshToken) sessionStorage.setItem('datafood_refresh', refreshToken)
-        sessionStorage.setItem('datafood_user', JSON.stringify(found))
-        setUser(found)
-      }
-
-      return { ok: true, message: 'Conta criada com sucesso!' }
-    } catch {
-      return { ok: false, message: 'Não foi possível conectar ao servidor. Tente novamente.' }
-    }
-  }
-
-  const logout = () => {
-    sessionStorage.removeItem('datafood_token')
-    sessionStorage.removeItem('datafood_refresh')
-    sessionStorage.removeItem('datafood_user')
+  const logout = useCallback(async () => {
+    const refresh = tokenStore.get()?.refresh
+    tokenStore.clear()
     setUser(null)
-  }
+    if (refresh) {
+      // invalida o refresh no back; falha aqui não impede o logout local
+      await api('/api/users/logout/', { method: 'POST', body: { refresh }, auth: false }).catch(() => undefined)
+    }
+  }, [])
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>
+  const refreshUser = useCallback(async () => {
+    setUser(await api<User>('/api/users/me/'))
+  }, [])
+
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout, refreshUser, setUser }),
+    [user, loading, login, register, logout, refreshUser],
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
   const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
+  if (!ctx) throw new Error('useAuth precisa estar dentro de <AuthProvider>')
   return ctx
 }

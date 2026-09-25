@@ -8,40 +8,58 @@
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans: 'Noto Sans JP', system-ui, sans-serif;
   --cream: #F5F0E8;
-  --cream-dark: #EDE8DE;
   --rust: #C0603A;
-  --dark-bg: #0D0D0D;
-  --dark-panel: #141414;
 }
 
-* { box-sizing: border-box; padding: 0; margin: 0; }
-
-html, body {
-  height: 100%;
-  font-family: var(--font-sans);
+html {
   scroll-behavior: smooth;
 }
 
-::-webkit-scrollbar { width: 4px; }
+body {
+  @apply bg-cream font-sans text-ink antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 3px; }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+@layer components {
+  .label {
+    @apply mb-2 block text-[10px] uppercase tracking-[0.12em] text-[#999];
+  }
+  .input {
+    @apply w-full rounded border border-[#ddd] bg-white px-4 py-3 text-sm text-[#333] outline-none transition-colors placeholder:text-[#bbb] focus:border-[#999] disabled:bg-cream-dark;
+  }
+  .input-error {
+    @apply border-[#e53e3e] focus:border-[#e53e3e];
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded px-5 py-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply btn bg-ink text-white hover:bg-[#333];
+  }
+  .btn-accent {
+    @apply btn bg-rust text-white hover:bg-rust-dark;
+  }
+  .btn-ghost {
+    @apply btn border border-[#ddd] bg-white text-[#333] hover:border-[#bbb] hover:bg-[#fafafa];
+  }
+  .btn-danger {
+    @apply btn border border-[#e53e3e] bg-white text-[#c53030] hover:bg-[#fff5f5];
+  }
+  .card {
+    @apply rounded-lg border border-line bg-white;
+  }
+  .eyebrow {
+    @apply text-[11px] uppercase tracking-[0.12em] text-[#999];
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-[#ddd] px-3 py-1 text-xs text-[#444];
+  }
 }
 
-.animate-fade-in  { animation: fadeIn  0.5s ease forwards; }
-.animate-slide-in { animation: slideIn 0.4s ease forwards; }
-
-.typing-dot { animation: pulse-dot 1.2s ease infinite; }
+.typing-dot { animation: pulseDot 1.2s ease infinite; }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
