@@ -58,7 +58,7 @@ export function Field({ label, error, hint, right, id, className = '', ...props 
   const fieldId = id ?? `f-${props.name ?? label}`
   return (
     <div className={className}>
-      <label htmlFor={fieldId} className={`label ${error ? '!text-[#e53e3e]' : ''}`}>
+      <label htmlFor={fieldId} className={`label ${error ? 'text-[#e53e3e]!' : ''}`}>
         {label}
       </label>
       <div className="relative">
@@ -89,7 +89,7 @@ export function TextArea({ label, error, id, className = '', ...props }: TextAre
   const fieldId = id ?? `t-${props.name ?? label}`
   return (
     <div className={className}>
-      <label htmlFor={fieldId} className={`label ${error ? '!text-[#e53e3e]' : ''}`}>
+      <label htmlFor={fieldId} className={`label ${error ? 'text-[#e53e3e]!' : ''}`}>
         {label}
       </label>
       <textarea id={fieldId} aria-invalid={!!error} className={`input min-h-[110px] resize-y ${error ? 'input-error' : ''}`} {...props} />
@@ -128,7 +128,7 @@ export function Toggle({ checked, onChange, label, disabled }: { checked: boolea
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${checked ? 'bg-rust' : 'bg-[#ccc]'}`}
     >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${checked ? 'left-[22px]' : 'left-0.5'}`} />
+      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all ${checked ? 'left-[22px]' : 'left-0.5'}`} />
     </button>
   )
 }

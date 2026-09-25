@@ -1,18 +1,19 @@
 # Build de produção (Next standalone). A URL da API é embutida no build:
 #   docker build --build-arg NEXT_PUBLIC_API_URL=https://api.seudominio.com.br -t datafood-front .
-FROM node:22-alpine AS deps
+FROM oven/bun:1-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 FROM node:22-alpine AS build
 WORKDIR /app
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_TELEMETRY_DISABLED=1
+COPY --from=oven/bun:1-alpine /usr/local/bin/bun /usr/local/bin/bun
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN bun run build
 
 FROM node:22-alpine AS run
 WORKDIR /app
