@@ -246,6 +246,7 @@ export function AddressEditor({ restaurant, onChange }: { restaurant: Restaurant
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
+    // o painel remonta este editor por restaurante (key), então roda uma vez por restaurante
     api<Address[]>('/api/addresses/')
       .then(list => {
         const mine = list.filter(a => a.entity_type === 'restaurant' && a.object_id === restaurant.id)
@@ -253,8 +254,9 @@ export function AddressEditor({ restaurant, onChange }: { restaurant: Restaurant
         setAddress(current)
         if (current) setForm(Object.fromEntries(Object.keys(EMPTY_ADDRESS).map(k => [k, (current as unknown as Record<string, string>)[k] ?? ''])) as typeof EMPTY_ADDRESS)
       })
+      .catch(err => toast.error(errorMessage(err, 'Não foi possível carregar o endereço.')))
       .finally(() => setLoading(false))
-  }, [restaurant.id])
+  }, [restaurant.id, toast])
 
   // CEP -> endereço (ViaCEP, público)
   const lookupCep = async (cep: string) => {

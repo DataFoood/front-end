@@ -158,7 +158,9 @@ export default function RestaurantePage() {
     const address = formatAddress(r.address)
     const whats = r.phone ? whatsappLink(r.phone) : null
     const rating = Number(r.average_rating)
-    const isOwner = !!user && (user.id === r.owner || user.role === 'admin')
+    // editar: dono ou admin; avaliar: o back só barra o dono (admin pode avaliar)
+    const canManage = !!user && (user.id === r.owner || user.role === 'admin')
+    const isOwner = !!user && user.id === r.owner
     const alreadyReviewed = !!user && r.reviews.some(rv => rv.author === user.id)
     const channels = CHANNEL_LABELS.filter(([k]) => r[k]).map(([, label]) => label)
     const tags = [r.address?.neighborhood, lowerNames(r.cuisines), priceSymbol(r.price_ranges), lowerNames(r.ambients)].filter(Boolean) as string[]
@@ -204,7 +206,7 @@ export default function RestaurantePage() {
                 </a>
               ) : null}
               <FavoriteButton restaurantId={r.id} variant="full" />
-              {isOwner && (
+              {canManage && (
                 <Link href={`/painel?r=${r.id}`} className="btn-ghost">
                   editar no painel
                 </Link>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useState, type FormEvent } from 'react'
+import { Suspense, useEffect, useState, type FormEvent } from 'react'
 import { AuthShell } from '@/components/AuthShell'
 import { Checkbox, Field, Spinner } from '@/components/ui'
 import { ApiError, errorMessage } from '@/lib/api'
@@ -43,7 +43,7 @@ const API_FIELD: Record<string, keyof typeof EMPTY> = {
 function CadastroForm() {
   const router = useRouter()
   const params = useSearchParams()
-  const { register } = useAuth()
+  const { register, user, loading: authLoading } = useAuth()
   const toast = useToast()
 
   const [accountType, setAccountType] = useState<AccountType>(() => (params.get('tipo') === 'restaurante' ? 'owner' : 'customer'))
@@ -52,6 +52,11 @@ function CadastroForm() {
   const [allowInfo, setAllowInfo] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // já logado: não faz sentido ver o cadastro (mesmo comportamento do login)
+  useEffect(() => {
+    if (!authLoading && user && !submitting) router.replace(homeFor(user))
+  }, [authLoading, user, submitting, router])
 
   const update = (k: keyof typeof EMPTY, v: string) => {
     setForm(f => ({ ...f, [k]: v }))

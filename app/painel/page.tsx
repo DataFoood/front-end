@@ -34,7 +34,9 @@ function Panel() {
   // restaurante chaveado pelo id selecionado + contador de recarga
   const [loaded, setLoaded] = useState<{ id: number; data: Restaurant } | null>(null)
   const [restaurantKey, setRestaurantKey] = useState(0)
-  const [error, setError] = useState<string | null>(null)
+  const [mineError, setMineError] = useState<string | null>(null)
+  // erro chaveado pelo restaurante: trocar de restaurante limpa sozinho
+  const [loadError, setLoadError] = useState<{ id: number; message: string } | null>(null)
 
   const selectedId = Number(params.get('r')) || null
   const tab = (params.get('aba') as TabId) || 'visao'
@@ -52,8 +54,11 @@ function Panel() {
 
   useEffect(() => {
     api<RestaurantCard[]>('/api/restaurants/mine/')
-      .then(setMine)
-      .catch(err => setError(errorMessage(err)))
+      .then(list => {
+        setMine(list)
+        setMineError(null)
+      })
+      .catch(err => setMineError(errorMessage(err)))
   }, [mineKey])
   const loadMine = useCallback(() => setMineKey(k => k + 1), [])
 
@@ -66,9 +71,13 @@ function Panel() {
 
   useEffect(() => {
     if (!selectedId) return
+    let cancelled = false
     api<Restaurant>(`/api/restaurants/${selectedId}/`)
-      .then(data => setLoaded({ id: selectedId, data }))
-      .catch(err => setError(errorMessage(err)))
+      .then(data => !cancelled && setLoaded({ id: selectedId, data }))
+      .catch(err => !cancelled && setLoadError({ id: selectedId, message: errorMessage(err) }))
+    return () => {
+      cancelled = true
+    }
   }, [selectedId, restaurantKey])
   const loadRestaurant = useCallback(() => setRestaurantKey(k => k + 1), [])
   const restaurant = loaded && loaded.id === selectedId ? loaded.data : null
@@ -79,6 +88,7 @@ function Panel() {
     loadMine()
   }
 
+  const error = mineError ?? (loadError && loadError.id === selectedId && !restaurant ? loadError.message : null)
   if (error) return <p className="p-8 text-sm text-[#c53030]">{error}</p>
   if (!mine) return <PageLoader />
 
@@ -130,7 +140,7 @@ function Panel() {
         ) : !restaurant ? (
           <PageLoader />
         ) : (
-          <>
+          <div key={restaurant.id}>
             <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
               <h1 className="font-serif text-3xl lowercase sm:text-4xl">{restaurant.name}</h1>
               <Link href={`/restaurante/${restaurant.slug}`} className="text-xs text-rust underline">
@@ -156,7 +166,7 @@ function Panel() {
             {tab === 'horarios' && <HoursEditor restaurant={restaurant} onChange={loadRestaurant} />}
             {tab === 'endereco' && <AddressEditor restaurant={restaurant} onChange={reloadAll} />}
             {tab === 'fotos' && <PhotosEditor restaurant={restaurant} onChange={loadRestaurant} />}
-          </>
+          </div>
         )}
       </section>
     </div>
