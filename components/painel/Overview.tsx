@@ -10,9 +10,9 @@ import type { Restaurant, RestaurantStats } from '@/lib/types'
 function Tile({ label, value, note }: { label: string; value: string | number; note?: string }) {
   return (
     <div className="card px-5 py-5">
-      <p className="mb-3 text-[10px] tracking-[0.1em] text-[#999]">{label}</p>
+      <p className="mb-3 text-[10px] tracking-[0.1em] text-ink-300">{label}</p>
       <p className="font-serif text-[32px] leading-none tracking-tight">{value}</p>
-      {note && <p className="mt-2 text-[11px] text-[#777]">{note}</p>}
+      {note && <p className="mt-2 text-[11px] text-muted">{note}</p>}
     </div>
   )
 }
@@ -28,7 +28,7 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
     return (
       <div className="card flex flex-col p-5 sm:p-6">
         <p className="mb-1 text-sm">novos favoritos por dia</p>
-        <p className="my-auto py-12 text-center text-[13px] text-[#999]">nenhum favorito nos últimos {windowDays} dias.</p>
+        <p className="my-auto py-12 text-center text-[13px] text-ink-300">nenhum favorito nos últimos {windowDays} dias.</p>
       </div>
     )
   }
@@ -37,15 +37,15 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
     <div className="card p-5 sm:p-6">
       <div className="mb-1 flex items-baseline justify-between gap-4">
         <p className="text-sm">novos favoritos por dia</p>
-        <p className="text-[11px] text-[#777]" aria-live="polite">
+        <p className="text-[11px] text-muted" aria-live="polite">
           {active ? `${formatDate(active.date)} · ${active.favorites} favorito${active.favorites === 1 ? '' : 's'}` : `últimos ${windowDays} dias`}
         </p>
       </div>
-      <p className="mb-5 text-[11px] text-[#999]">quantas pessoas salvaram o restaurante em cada dia</p>
+      <p className="mb-5 text-[11px] text-ink-300">quantas pessoas salvaram o restaurante em cada dia</p>
       <div className="relative">
         {/* grid recessiva: só a linha do máximo */}
-        <div className="absolute inset-x-0 top-0 border-t border-dashed border-[#eee]" aria-hidden />
-        <span className="absolute -top-2 right-0 bg-white pl-1 text-[10px] text-[#999]" aria-hidden>
+        <div className="absolute inset-x-0 top-0 border-t border-dashed border-ink-50" aria-hidden />
+        <span className="absolute -top-2 right-0 bg-white pl-1 text-[10px] text-ink-300" aria-hidden>
           {max}
         </span>
         <div className="flex h-36 items-end gap-[2px]" role="img" aria-label={`favoritos por dia nos últimos ${windowDays} dias, máximo de ${max}`}>
@@ -57,14 +57,14 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
               onMouseLeave={() => setHover(null)}
             >
               <div
-                className={`w-full rounded-t-[4px] transition-opacity ${hover !== null && hover !== i ? 'opacity-40' : ''}`}
-                style={{ height: s.favorites ? `${(s.favorites / max) * 100}%` : 2, background: s.favorites ? '#C0603A' : '#eee' }}
+                className={`w-full rounded-t-[4px] transition-opacity ${s.favorites ? 'bg-rust' : 'bg-ink-50'} ${hover !== null && hover !== i ? 'opacity-40' : ''}`}
+                style={{ height: s.favorites ? `${(s.favorites / max) * 100}%` : 2 }}
               />
             </div>
           ))}
         </div>
       </div>
-      <div className="mt-2 flex justify-between text-[10px] text-[#999]">
+      <div className="mt-2 flex justify-between text-[10px] text-ink-300">
         <span>{formatDate(series[0].date)}</span>
         <span>hoje</span>
       </div>
@@ -89,15 +89,15 @@ function RatingBars({ distribution, total }: { distribution: RestaurantStats['ra
   return (
     <div className="card p-5 sm:p-6">
       <p className="mb-1 text-sm">distribuição das notas</p>
-      <p className="mb-5 text-[11px] text-[#999]">{total} avaliações no total</p>
+      <p className="mb-5 text-[11px] text-ink-300">{total} avaliações no total</p>
       <div className="flex flex-col gap-3">
         {(['5', '4', '3', '2', '1'] as const).map(star => (
           <div key={star} className="flex items-center gap-3">
-            <span className="w-6 text-xs text-[#555]">{star}★</span>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#f0ece4]">
+            <span className="w-6 text-xs text-ink-600">{star}★</span>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-line-soft">
               <div className="h-full rounded-full bg-rust" style={{ width: `${(distribution[star] / max) * 100}%` }} />
             </div>
-            <span className="w-6 text-right text-xs text-[#555]">{distribution[star]}</span>
+            <span className="w-6 text-right text-xs text-ink-600">{distribution[star]}</span>
           </div>
         ))}
       </div>
@@ -119,7 +119,7 @@ export function Overview({ restaurant }: { restaurant: Restaurant }) {
   const stats = current?.stats
   const error = current?.error
 
-  if (error) return <p className="text-sm text-[#c53030]">{error}</p>
+  if (error) return <p className="text-sm text-danger">{error}</p>
   if (!stats) return <Spinner />
 
   const missing = [
@@ -134,7 +134,7 @@ export function Overview({ restaurant }: { restaurant: Restaurant }) {
   return (
     <div className="flex flex-col gap-5">
       {missing.length > 0 && (
-        <div className="rounded-md border-l-[3px] border-rust bg-white px-5 py-4 text-[13px] leading-relaxed text-[#555]">
+        <div className="rounded-md border-l-[3px] border-rust bg-white px-5 py-4 text-[13px] leading-relaxed text-ink-600">
           complete o cadastro para aparecer melhor na busca inteligente: falta <strong>{missing.join(', ')}</strong>.
         </div>
       )}
@@ -156,19 +156,19 @@ export function Overview({ restaurant }: { restaurant: Restaurant }) {
           </Link>
         </div>
         {stats.recent_reviews.length === 0 ? (
-          <p className="text-[13px] text-[#999]">nenhuma avaliação ainda.</p>
+          <p className="text-[13px] text-ink-300">nenhuma avaliação ainda.</p>
         ) : (
-          <ul className="divide-y divide-[#f0ece4]">
+          <ul className="divide-y divide-line-soft">
             {stats.recent_reviews.map(r => (
               <li key={r.id} className="py-3">
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <Stars value={r.rating} size={12} />
-                  <span className="text-[11px] text-[#999]">
+                  <span className="text-[11px] text-ink-300">
                     {r.author_name} · {formatDate(r.created_at)}
                   </span>
                 </div>
                 {r.title && <p className="text-[13px] font-medium">{r.title}</p>}
-                {r.description && <p className="text-[13px] text-[#555]">{r.description}</p>}
+                {r.description && <p className="text-[13px] text-ink-600">{r.description}</p>}
               </li>
             ))}
           </ul>

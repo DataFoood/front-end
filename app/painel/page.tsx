@@ -89,7 +89,7 @@ function Panel() {
   }
 
   const error = mineError ?? (loadError && loadError.id === selectedId && !restaurant ? loadError.message : null)
-  if (error) return <p className="p-8 text-sm text-[#c53030]">{error}</p>
+  if (error) return <p className="p-8 text-sm text-danger">{error}</p>
   if (!mine) return <PageLoader />
 
   return (
@@ -102,7 +102,7 @@ function Panel() {
               <button
                 key={m.id}
                 onClick={() => go({ r: m.id, aba: tab === 'novo' ? 'visao' : tab })}
-                className={`truncate rounded-md px-3 py-2 text-left text-[13px] ${m.id === selectedId && tab !== 'novo' ? 'bg-ink text-white' : 'text-[#444] hover:bg-white'}`}
+                className={`truncate rounded-md px-3 py-2 text-left text-[13px] ${m.id === selectedId && tab !== 'novo' ? 'bg-ink text-white' : 'text-ink-700 hover:bg-white'}`}
               >
                 {m.name}
               </button>
@@ -119,7 +119,7 @@ function Panel() {
                 key={t.id}
                 onClick={() => go({ aba: t.id })}
                 aria-current={tab === t.id ? 'page' : undefined}
-                className={`whitespace-nowrap border-b-2 px-3 py-2 text-left text-[13px] lg:border-b-0 lg:border-l-2 ${tab === t.id ? 'border-rust text-ink' : 'border-transparent text-[#888] hover:text-ink'}`}
+                className={`whitespace-nowrap border-b-2 px-3 py-2 text-left text-[13px] lg:border-b-0 lg:border-l-2 ${tab === t.id ? 'border-rust text-ink' : 'border-transparent text-ink-350 hover:text-ink'}`}
               >
                 {t.label}
               </button>

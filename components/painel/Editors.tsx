@@ -34,7 +34,7 @@ function ItemForm({ initial, onSubmit, onCancel }: { initial?: MenuItem; onSubmi
       <TextArea label="descrição" name="item-desc" value={description} onChange={e => setDescription(e.target.value)} className="[&_textarea]:min-h-[70px]" />
       <div className="flex gap-2">
         <button type="submit" disabled={saving || !name.trim()} className="btn-primary py-2">
-          {saving ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : initial ? 'salvar' : 'adicionar prato'}
+          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : initial ? 'salvar' : 'adicionar prato'}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} className="btn-ghost py-2">
@@ -76,7 +76,7 @@ export function MenuEditor({ restaurant, onChange }: { restaurant: Restaurant; o
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-[13px] text-[#777]">
+      <p className="text-[13px] text-muted">
         até {MAX_ITEMS} pratos em destaque. eles aparecem na sua página e ajudam a busca (&quot;onde comer feijoada?&quot;).
       </p>
       <div className="flex flex-col gap-3">
@@ -90,13 +90,13 @@ export function MenuEditor({ restaurant, onChange }: { restaurant: Restaurant; o
                   <p className="text-[15px]">
                     {item.name} {formatPrice(item.price) && <span className="ml-2 text-[13px] text-rust">{formatPrice(item.price)}</span>}
                   </p>
-                  {item.description && <p className="mt-1 text-[13px] text-[#666]">{item.description}</p>}
+                  {item.description && <p className="mt-1 text-[13px] text-ink-500">{item.description}</p>}
                 </div>
                 <div className="flex shrink-0 gap-3 text-xs">
-                  <button onClick={() => setEditing(item.id)} className="text-[#777] hover:text-ink">
+                  <button onClick={() => setEditing(item.id)} className="text-muted hover:text-ink">
                     editar
                   </button>
-                  <button onClick={() => remove(item)} className="text-[#aaa] hover:text-[#c53030]">
+                  <button onClick={() => remove(item)} className="text-ink-250 hover:text-danger">
                     remover
                   </button>
                 </div>
@@ -110,7 +110,7 @@ export function MenuEditor({ restaurant, onChange }: { restaurant: Restaurant; o
           <ItemForm key={items.length} onSubmit={d => save(d)} />
         </div>
       ) : (
-        <p className="text-xs text-[#999]">limite de {MAX_ITEMS} pratos atingido.</p>
+        <p className="text-xs text-ink-300">limite de {MAX_ITEMS} pratos atingido.</p>
       )}
     </div>
   )
@@ -184,13 +184,13 @@ export function HoursEditor({ restaurant, onChange }: { restaurant: Restaurant; 
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="card divide-y divide-[#f0ece4]">
+      <div className="card divide-y divide-line-soft">
         {days.map((d, i) => (
           <div key={DAYS[i]} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
             <div className="flex w-32 items-center justify-between gap-3 sm:justify-start">
               <span className="text-[13px] font-medium">{DAYS[i]}</span>
             </div>
-            <label className="flex items-center gap-2 text-xs text-[#666]">
+            <label className="flex items-center gap-2 text-xs text-ink-500">
               <input
                 type="checkbox"
                 checked={!d.closed}
@@ -204,10 +204,10 @@ export function HoursEditor({ restaurant, onChange }: { restaurant: Restaurant; 
                 {d.intervals.map(([s, e], k) => (
                   <div key={k} className="flex items-center gap-1.5">
                     <input type="time" value={s} onChange={ev => update(i, x => ({ ...x, intervals: x.intervals.map((iv, j) => (j === k ? [ev.target.value, iv[1]] : iv)) }))} className="input w-auto px-2 py-1.5" aria-label={`${DAYS[i]} início`} />
-                    <span className="text-xs text-[#aaa]">–</span>
+                    <span className="text-xs text-ink-250">–</span>
                     <input type="time" value={e} onChange={ev => update(i, x => ({ ...x, intervals: x.intervals.map((iv, j) => (j === k ? [iv[0], ev.target.value] : iv)) }))} className="input w-auto px-2 py-1.5" aria-label={`${DAYS[i]} fim`} />
                     {d.intervals.length > 1 && (
-                      <button onClick={() => update(i, x => ({ ...x, intervals: x.intervals.filter((_, j) => j !== k) }))} className="px-1 text-[#bbb] hover:text-[#c53030]" aria-label="remover turno">
+                      <button onClick={() => update(i, x => ({ ...x, intervals: x.intervals.filter((_, j) => j !== k) }))} className="px-1 text-ink-200 hover:text-danger" aria-label="remover turno">
                         ×
                       </button>
                     )}
@@ -220,14 +220,14 @@ export function HoursEditor({ restaurant, onChange }: { restaurant: Restaurant; 
                 )}
               </div>
             )}
-            <button onClick={() => copyToAll(i)} className="text-[11px] text-[#aaa] hover:text-ink sm:ml-auto">
+            <button onClick={() => copyToAll(i)} className="text-[11px] text-ink-250 hover:text-ink sm:ml-auto">
               copiar p/ todos
             </button>
           </div>
         ))}
       </div>
       <button onClick={save} disabled={saving} className="btn-primary self-start">
-        {saving ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'salvar horários'}
+        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'salvar horários'}
       </button>
     </div>
   )
@@ -301,7 +301,7 @@ export function AddressEditor({ restaurant, onChange }: { restaurant: Restaurant
 
   return (
     <form onSubmit={submit} className="card flex flex-col gap-4 p-5 sm:p-6">
-      <p className="text-[13px] text-[#777]">o endereço do restaurante é público e aparece na sua página.</p>
+      <p className="text-[13px] text-muted">o endereço do restaurante é público e aparece na sua página.</p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-6">
         <Field className="sm:col-span-2" label="cep" name="zipcode" value={form.zipcode} onChange={set('zipcode')} onBlur={e => lookupCep(e.target.value)} error={errors.zipcode} required />
         <Field className="sm:col-span-4" label="rua" name="street" value={form.street} onChange={set('street')} error={errors.street} required />
@@ -312,7 +312,7 @@ export function AddressEditor({ restaurant, onChange }: { restaurant: Restaurant
         <Field className="sm:col-span-1" label="uf" name="state" value={form.state} onChange={set('state')} error={errors.state} maxLength={2} required />
       </div>
       <button type="submit" disabled={saving} className="btn-primary self-start">
-        {saving ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'salvar endereço'}
+        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'salvar endereço'}
       </button>
     </form>
   )
@@ -368,7 +368,7 @@ export function PhotosEditor({ restaurant, onChange }: { restaurant: Restaurant;
         </button>
       </form>
       {restaurant.images.length === 0 ? (
-        <p className="text-[13px] text-[#999]">nenhuma foto ainda. sem capa, sua página usa uma ilustração.</p>
+        <p className="text-[13px] text-ink-300">nenhuma foto ainda. sem capa, sua página usa uma ilustração.</p>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {restaurant.images.map(img => (
@@ -378,11 +378,11 @@ export function PhotosEditor({ restaurant, onChange }: { restaurant: Restaurant;
                 {restaurant.cover_image === img.url ? (
                   <span className="text-rust">capa atual</span>
                 ) : (
-                  <button onClick={() => setCover(img.url)} className="text-[#777] hover:text-ink">
+                  <button onClick={() => setCover(img.url)} className="text-muted hover:text-ink">
                     usar como capa
                   </button>
                 )}
-                <button onClick={() => remove(img.id)} className="text-[#aaa] hover:text-[#c53030]">
+                <button onClick={() => remove(img.id)} className="text-ink-250 hover:text-danger">
                   remover
                 </button>
               </div>

@@ -120,7 +120,7 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
       <div className="card flex flex-col gap-5 p-5 sm:p-6">
         <div>
           <h3 className="text-[15px] font-medium">categorias</h3>
-          <p className="text-[12px] text-[#999]">ajudam a busca a entender quando recomendar você.</p>
+          <p className="text-[12px] text-ink-300">ajudam a busca a entender quando recomendar você.</p>
         </div>
         {!taxonomies ? (
           <Spinner />
@@ -137,7 +137,7 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
                       type="button"
                       aria-pressed={on}
                       onClick={() => toggleTax(t.key, opt.id, t.single)}
-                      className={`rounded-full border px-3 py-1.5 text-xs transition ${on ? 'border-ink bg-ink text-white' : 'border-[#ddd] bg-white text-[#555] hover:border-[#999]'}`}
+                      className={`rounded-full border px-3 py-1.5 text-xs transition ${on ? 'border-ink bg-ink text-white' : 'border-ink-100 bg-white text-ink-600 hover:border-ink-300'}`}
                     >
                       {opt.name}
                     </button>
@@ -153,7 +153,7 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
         <h3 className="mb-4 text-[15px] font-medium">atendimento</h3>
         <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
           {SALES_CHANNELS.map(c => (
-            <div key={c} className="flex items-center justify-between gap-3 text-[13px] text-[#444]">
+            <div key={c} className="flex items-center justify-between gap-3 text-[13px] text-ink-700">
               {CHANNEL_LABELS[c]}
               <Toggle checked={form[c] as boolean} onChange={v => set(c, v)} label={CHANNEL_LABELS[c]} />
             </div>
@@ -163,9 +163,9 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <button type="submit" disabled={saving} className="btn-primary">
-          {saving ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'salvar informações'}
+          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'salvar informações'}
         </button>
-        <button type="button" onClick={remove} className="text-xs text-[#aaa] hover:text-[#c53030]">
+        <button type="button" onClick={remove} className="text-xs text-ink-250 hover:text-danger">
           remover restaurante
         </button>
       </div>
@@ -206,12 +206,12 @@ export function CreateRestaurant({ onCreated }: { onCreated: (id: number) => voi
   return (
     <form onSubmit={submit} className="card mx-auto flex max-w-xl flex-col gap-4 p-6 sm:p-8">
       <h2 className="font-serif text-3xl">cadastre seu restaurante</h2>
-      <p className="text-[13px] leading-relaxed text-[#777]">comece pelo básico — você completa cardápio, horários, endereço e fotos em seguida.</p>
+      <p className="text-[13px] leading-relaxed text-muted">comece pelo básico — você completa cardápio, horários, endereço e fotos em seguida.</p>
       <Field label="nome do restaurante" name="name" value={name} onChange={e => setName(e.target.value)} error={errors.name} />
       <TextArea label="descrição" name="description" value={description} onChange={e => setDescription(e.target.value)} error={errors.description} placeholder="clima, pratos, ocasiões ideais…" />
       <Field label="telefone / whatsapp" name="phone" value={phone} onChange={e => setPhone(maskPhone(e.target.value))} error={errors.phone} />
       <button type="submit" disabled={saving} className="btn-primary self-start">
-        {saving ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'cadastrar'}
+        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'cadastrar'}
       </button>
     </form>
   )

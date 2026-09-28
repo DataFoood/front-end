@@ -77,14 +77,14 @@ function LoginForm() {
           placeholder="••••••••"
           error={errors.password}
           right={
-            <button type="button" onClick={() => setShowPass(s => !s)} className="text-xs text-[#aaa] hover:text-ink">
+            <button type="button" onClick={() => setShowPass(s => !s)} className="text-xs text-ink-250 hover:text-ink">
               {showPass ? 'ocultar' : 'ver'}
             </button>
           }
         />
       </div>
       <button type="submit" disabled={submitting} className="btn-primary mt-2 w-full py-4 tracking-wide">
-        {submitting ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'ENTRAR'}
+        {submitting ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'ENTRAR'}
       </button>
     </form>
   )
@@ -112,13 +112,13 @@ export default function LoginPage() {
       <Suspense>
         <LoginForm />
       </Suspense>
-      <p className="mt-8 text-center text-sm text-[#888]">
+      <p className="mt-8 text-center text-sm text-ink-350">
         Ainda não tem conta?{' '}
         <Link href="/cadastro" className="text-ink underline">
           Criar conta
         </Link>
       </p>
-      <div className="mt-auto flex justify-between pt-12 text-xs text-[#bbb]">
+      <div className="mt-auto flex justify-between pt-12 text-xs text-ink-200">
         <Link href="/" className="hover:text-ink">
           ← Voltar para o início
         </Link>

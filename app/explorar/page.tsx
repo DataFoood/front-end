@@ -135,13 +135,13 @@ function Explorer() {
             ))}
           </select>
         </label>
-        <label className="col-span-2 flex items-end gap-2 pb-3 text-[13px] text-[#555] md:col-span-1">
+        <label className="col-span-2 flex items-end gap-2 pb-3 text-[13px] text-ink-600 md:col-span-1">
           <input type="checkbox" checked={filters.delivery === 'true'} onChange={e => setParam('delivery', e.target.checked ? 'true' : '')} className="h-4 w-4 accent-ink" />
           faz delivery
         </label>
       </div>
 
-      <div className="mb-4 flex items-center justify-between text-xs text-[#999]">
+      <div className="mb-4 flex items-center justify-between text-xs text-ink-300">
         <span>{loading && items.length === 0 ? 'carregando…' : `${count} restaurante${count === 1 ? '' : 's'}`}</span>
         {hasFilters && (
           <button onClick={() => router.replace(pathname, { scroll: false })} className="underline hover:text-ink">

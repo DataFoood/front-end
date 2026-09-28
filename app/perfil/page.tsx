@@ -57,7 +57,7 @@ function ProfileForm({ user }: { user: User }) {
     <form onSubmit={submit} className="card flex flex-col gap-5 p-6">
       <div className="flex items-center gap-4">
         <Avatar name={form.name} url={form.avatar_url} size={56} />
-        <div className="text-xs text-[#999]">
+        <div className="text-xs text-ink-300">
           conta {user.role === 'owner' ? 'de restaurante' : user.role === 'admin' ? 'administradora' : 'pessoal'} · desde {formatDate(user.created_at)}
         </div>
       </div>
@@ -78,9 +78,9 @@ function ProfileForm({ user }: { user: User }) {
         </label>
         <Field label="foto (url)" name="avatar_url" type="url" value={form.avatar_url} onChange={set('avatar_url')} error={errors.avatar_url} placeholder="https://…" />
       </div>
-      {user.cpf && <p className="text-xs text-[#999]">CPF cadastrado: ***.***.{user.cpf.slice(6, 9)}-{user.cpf.slice(9)} (não editável)</p>}
+      {user.cpf && <p className="text-xs text-ink-300">CPF cadastrado: ***.***.{user.cpf.slice(6, 9)}-{user.cpf.slice(9)} (não editável)</p>}
       <button type="submit" disabled={saving} className="btn-primary self-start">
-        {saving ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'salvar alterações'}
+        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'salvar alterações'}
       </button>
     </form>
   )
@@ -108,7 +108,7 @@ function AffinityRow({ affinity, path, onSaved }: { affinity: Affinity; path: st
 
   return (
     <div className="flex items-center gap-4 py-2">
-      <span className="w-44 shrink-0 truncate text-[13px] text-[#333]" title={affinity.name}>
+      <span className="w-44 shrink-0 truncate text-[13px] text-ink-800" title={affinity.name}>
         {affinity.name}
       </span>
       <input
@@ -122,7 +122,7 @@ function AffinityRow({ affinity, path, onSaved }: { affinity: Affinity; path: st
         aria-label={`afinidade com ${affinity.name}`}
         className="flex-1 accent-rust"
       />
-      <span className="w-16 text-right text-[11px] text-[#999]">
+      <span className="w-16 text-right text-[11px] text-ink-300">
         {value}%{affinity.is_manual && ' · manual'}
       </span>
     </div>
@@ -170,7 +170,7 @@ function PrivacyPanel({ user }: { user: User }) {
       <div className="card flex items-start justify-between gap-6 p-6">
         <div>
           <h3 className="mb-1.5 text-[15px] font-medium">personalizar recomendações</h3>
-          <p className="max-w-lg text-[13px] leading-relaxed text-[#777]">
+          <p className="max-w-lg text-[13px] leading-relaxed text-muted">
             com isso ligado, guardamos suas últimas buscas e os restaurantes que você visita para aprender seu gosto (LGPD, art. 7º, I). desligado, a busca funciona igual, mas nada novo é registrado sobre você.
           </p>
         </div>
@@ -179,11 +179,11 @@ function PrivacyPanel({ user }: { user: User }) {
 
       <div className="card p-6">
         <h3 className="mb-1.5 text-[15px] font-medium">suas afinidades</h3>
-        <p className="mb-4 text-[13px] text-[#777]">calculadas a partir do que você salva e visita. ajuste à vontade — ajustes manuais não são sobrescritos.</p>
+        <p className="mb-4 text-[13px] text-muted">calculadas a partir do que você salva e visita. ajuste à vontade — ajustes manuais não são sobrescritos.</p>
         {!prefs ? (
           <Spinner />
         ) : !hasPrefs ? (
-          <p className="text-[13px] text-[#aaa]">{user.allow_info ? 'ainda aprendendo seu gosto — salve e visite alguns lugares.' : 'ative a personalização para montarmos suas afinidades.'}</p>
+          <p className="text-[13px] text-ink-250">{user.allow_info ? 'ainda aprendendo seu gosto — salve e visite alguns lugares.' : 'ative a personalização para montarmos suas afinidades.'}</p>
         ) : (
           DIMENSIONS.map(d =>
             prefs[d.key].length ? (
@@ -208,13 +208,13 @@ function PrivacyPanel({ user }: { user: User }) {
         {!history ? (
           <Spinner />
         ) : history.length === 0 ? (
-          <p className="text-[13px] text-[#aaa]">{user.allow_info ? 'nenhuma busca registrada ainda.' : 'sem personalização, suas buscas não são guardadas.'}</p>
+          <p className="text-[13px] text-ink-250">{user.allow_info ? 'nenhuma busca registrada ainda.' : 'sem personalização, suas buscas não são guardadas.'}</p>
         ) : (
-          <ul className="divide-y divide-[#f0ece4]">
+          <ul className="divide-y divide-line-soft">
             {history.slice(0, 20).map(h => (
               <li key={h.id} className="flex justify-between gap-4 py-2 text-[13px]">
-                <span className="truncate text-[#333]">{h.query}</span>
-                <span className="shrink-0 text-[11px] text-[#aaa]">{formatDate(h.created_at)}</span>
+                <span className="truncate text-ink-800">{h.query}</span>
+                <span className="shrink-0 text-[11px] text-ink-250">{formatDate(h.created_at)}</span>
               </li>
             ))}
           </ul>
@@ -274,13 +274,13 @@ function SecurityPanel({ user }: { user: User }) {
           <Field label="confirmar nova senha" name="confirm_password" type="password" autoComplete="new-password" value={form.confirm_password} onChange={set('confirm_password')} error={errors.confirm_password} />
         </div>
         <button type="submit" disabled={saving || !form.current_password || !form.new_password} className="btn-primary self-start">
-          {saving ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'alterar senha'}
+          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'alterar senha'}
         </button>
       </form>
 
-      <div className="card border-[#f3c1c1] p-6">
-        <h3 className="mb-1.5 text-[15px] font-medium text-[#c53030]">encerrar conta</h3>
-        <p className="mb-4 text-[13px] leading-relaxed text-[#777]">seu acesso é bloqueado imediatamente. digite <strong>encerrar</strong> para confirmar.</p>
+      <div className="card border-danger-line p-6">
+        <h3 className="mb-1.5 text-[15px] font-medium text-danger">encerrar conta</h3>
+        <p className="mb-4 text-[13px] leading-relaxed text-muted">seu acesso é bloqueado imediatamente. digite <strong>encerrar</strong> para confirmar.</p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <input value={confirmText} onChange={e => setConfirmText(e.target.value)} className="input sm:max-w-xs" aria-label="confirmação" placeholder="encerrar" />
           <button onClick={deleteAccount} disabled={confirmText.trim().toLowerCase() !== 'encerrar'} className="btn-danger">
@@ -305,7 +305,7 @@ function Profile() {
             role="tab"
             aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className={`-mb-px whitespace-nowrap border-b-2 px-4 py-3 text-[13px] ${tab === t.id ? 'border-rust text-ink' : 'border-transparent text-[#888] hover:text-ink'}`}
+            className={`-mb-px whitespace-nowrap border-b-2 px-4 py-3 text-[13px] ${tab === t.id ? 'border-rust text-ink' : 'border-transparent text-ink-350 hover:text-ink'}`}
           >
             {t.label}
           </button>

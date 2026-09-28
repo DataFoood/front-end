@@ -31,7 +31,7 @@ export function SiteHeader() {
 
   const linkClass = (href: string) =>
     `inline-flex items-center gap-1.5 text-[13px] transition-colors ${
-      pathname.startsWith(href) ? 'font-medium text-ink' : 'text-[#777] hover:text-ink'
+      pathname.startsWith(href) ? 'font-medium text-ink' : 'text-muted hover:text-ink'
     }`
 
   return (
@@ -48,17 +48,17 @@ export function SiteHeader() {
           ))}
           {user ? (
             <div className="flex items-center gap-3">
-              <Link href="/perfil" className="flex items-center gap-2 text-[13px] text-[#555] hover:text-ink" title="meu perfil">
+              <Link href="/perfil" className="flex items-center gap-2 text-[13px] text-ink-600 hover:text-ink" title="meu perfil">
                 <Avatar name={user.name} url={user.avatar_url} size={30} />
                 <span className="hidden lg:inline">{firstName(user.name).toLowerCase()}</span>
               </Link>
-              <button onClick={handleLogout} className="text-xs text-[#aaa] hover:text-[#e53e3e]">
+              <button onClick={handleLogout} className="text-xs text-ink-250 hover:text-error">
                 sair
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              <Link href="/login" className="text-[13px] text-[#555] hover:text-ink">
+              <Link href="/login" className="text-[13px] text-ink-600 hover:text-ink">
                 Entrar
               </Link>
               <Link href="/cadastro" className="rounded-full bg-rust px-5 py-2 text-[13px] text-white hover:bg-rust-dark">
@@ -93,7 +93,7 @@ export function SiteHeader() {
               <Link href="/perfil" className="flex items-center gap-3 border-b border-line py-3.5 text-sm">
                 <Avatar name={user.name} url={user.avatar_url} size={26} /> Meu perfil
               </Link>
-              <button onClick={handleLogout} className="py-3.5 text-sm text-[#c53030]">
+              <button onClick={handleLogout} className="py-3.5 text-sm text-danger">
                 Sair da conta
               </button>
             </>
@@ -115,11 +115,11 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-[#ddd] px-4 py-6 sm:px-8">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-xs text-[#999] sm:flex-row">
+    <footer className="border-t border-ink-100 px-4 py-6 sm:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-xs text-ink-300 sm:flex-row">
         <div className="flex items-center gap-2.5">
           <span className="h-2 w-2 rounded-full bg-rust" />
-          <span className="text-[13px] text-[#666]">DataFood © {new Date().getFullYear()}</span>
+          <span className="text-[13px] text-ink-500">DataFood © {new Date().getFullYear()}</span>
         </div>
         <div className="flex gap-6">
           <Link href="/privacidade" className="hover:text-ink">

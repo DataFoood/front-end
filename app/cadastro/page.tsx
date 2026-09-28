@@ -102,10 +102,10 @@ function CadastroForm() {
       role="radio"
       aria-checked={accountType === value}
       onClick={() => setAccountType(value)}
-      className={`rounded-sm border px-4 py-3 text-left transition ${accountType === value ? 'border-ink bg-white' : 'border-[#ddd] hover:border-[#bbb]'}`}
+      className={`rounded-sm border px-4 py-3 text-left transition ${accountType === value ? 'border-ink bg-white' : 'border-ink-100 hover:border-ink-200'}`}
     >
       <span className="block text-sm text-ink">{label}</span>
-      <span className="block text-[11px] text-[#999]">{hint}</span>
+      <span className="block text-[11px] text-ink-300">{hint}</span>
     </button>
   )
 
@@ -131,18 +131,18 @@ function CadastroForm() {
       <div className="flex flex-col gap-3">
         <Checkbox id="terms" checked={acceptedTerms} onChange={v => { setAcceptedTerms(v); setErrors(p => ({ ...p, terms: '' })) }}>
           li e aceito os{' '}
-          <Link href="/termos" target="_blank" className="text-[#333] underline">termos de uso</Link> e a{' '}
-          <Link href="/privacidade" target="_blank" className="text-[#333] underline">política de privacidade</Link>.
+          <Link href="/termos" target="_blank" className="text-ink-800 underline">termos de uso</Link> e a{' '}
+          <Link href="/privacidade" target="_blank" className="text-ink-800 underline">política de privacidade</Link>.
         </Checkbox>
-        {errors.terms && <p className="-mt-1 text-xs text-[#e53e3e]">{errors.terms}</p>}
+        {errors.terms && <p className="-mt-1 text-xs text-error">{errors.terms}</p>}
         {/* LGPD: consentimento separado, opcional e desmarcado por padrão */}
         <Checkbox id="consent" checked={allowInfo} onChange={setAllowInfo}>
-          <span className="text-[#333]">personalizar minhas recomendações (opcional).</span> autorizo guardar meu histórico de buscas e interações para melhorar as sugestões. dá para desligar a qualquer momento no perfil.
+          <span className="text-ink-800">personalizar minhas recomendações (opcional).</span> autorizo guardar meu histórico de buscas e interações para melhorar as sugestões. dá para desligar a qualquer momento no perfil.
         </Checkbox>
       </div>
 
       <button type="submit" disabled={submitting} className="btn-primary mt-1 w-full py-4">
-        {submitting ? <Spinner className="h-4 w-4 border-[#555] border-t-white" /> : 'criar conta'}
+        {submitting ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'criar conta'}
       </button>
     </form>
   )
@@ -171,7 +171,7 @@ export default function CadastroPage() {
       <Suspense>
         <CadastroForm />
       </Suspense>
-      <p className="mt-6 text-center text-sm text-[#888]">
+      <p className="mt-6 text-center text-sm text-ink-350">
         já tem conta?{' '}
         <Link href="/login" className="text-ink underline">
           entrar

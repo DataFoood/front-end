@@ -18,8 +18,8 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 const STYLES: Record<ToastKind, string> = {
-  success: 'bg-[#1a7a45]',
-  error: 'bg-[#c53030]',
+  success: 'bg-success',
+  error: 'bg-danger',
   info: 'bg-ink',
 }
 const ICONS: Record<ToastKind, string> = { success: '✓', error: '✕', info: '•' }

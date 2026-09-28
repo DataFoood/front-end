@@ -19,7 +19,7 @@ export function Spinner({ className = '' }: { className?: string }) {
     <span
       role="status"
       aria-label="carregando"
-      className={`inline-block h-5 w-5 animate-spin rounded-full border-2 border-[#ddd] border-t-rust ${className}`}
+      className={`inline-block h-5 w-5 animate-spin rounded-full border-2 border-ink-100 border-t-rust ${className}`}
     />
   )
 }
@@ -58,7 +58,7 @@ export function Field({ label, error, hint, right, id, className = '', ...props 
   const fieldId = id ?? `f-${props.name ?? label}`
   return (
     <div className={className}>
-      <label htmlFor={fieldId} className={`label ${error ? 'text-[#e53e3e]!' : ''}`}>
+      <label htmlFor={fieldId} className={`label ${error ? 'text-error!' : ''}`}>
         {label}
       </label>
       <div className="relative">
@@ -72,7 +72,7 @@ export function Field({ label, error, hint, right, id, className = '', ...props 
         {right && <div className="absolute right-3 top-1/2 -translate-y-1/2">{right}</div>}
       </div>
       {(error || hint) && (
-        <p id={`${fieldId}-msg`} className={`mt-1.5 text-xs ${error ? 'text-[#e53e3e]' : 'text-[#aaa]'}`}>
+        <p id={`${fieldId}-msg`} className={`mt-1.5 text-xs ${error ? 'text-error' : 'text-ink-250'}`}>
           {error || hint}
         </p>
       )}
@@ -89,11 +89,11 @@ export function TextArea({ label, error, id, className = '', ...props }: TextAre
   const fieldId = id ?? `t-${props.name ?? label}`
   return (
     <div className={className}>
-      <label htmlFor={fieldId} className={`label ${error ? 'text-[#e53e3e]!' : ''}`}>
+      <label htmlFor={fieldId} className={`label ${error ? 'text-error!' : ''}`}>
         {label}
       </label>
       <textarea id={fieldId} aria-invalid={!!error} className={`input min-h-[110px] resize-y ${error ? 'input-error' : ''}`} {...props} />
-      {error && <p className="mt-1.5 text-xs text-[#e53e3e]">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-error">{error}</p>}
     </div>
   )
 }
@@ -110,7 +110,7 @@ export function Checkbox({
   id: string
 }) {
   return (
-    <label htmlFor={id} className="flex cursor-pointer items-start gap-3 text-[13px] leading-relaxed text-[#666]">
+    <label htmlFor={id} className="flex cursor-pointer items-start gap-3 text-[13px] leading-relaxed text-ink-500">
       <input id={id} type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-ink" />
       <span>{children}</span>
     </label>
@@ -126,7 +126,7 @@ export function Toggle({ checked, onChange, label, disabled }: { checked: boolea
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${checked ? 'bg-rust' : 'bg-[#ccc]'}`}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50 ${checked ? 'bg-rust' : 'bg-ink-150'}`}
     >
       <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all ${checked ? 'left-[22px]' : 'left-0.5'}`} />
     </button>
@@ -138,7 +138,7 @@ export function Stars({ value, size = 14 }: { value: number; size?: number }) {
   return (
     <span className="inline-flex" aria-label={`${value} de 5 estrelas`}>
       {[1, 2, 3, 4, 5].map(n => (
-        <svg key={n} width={size} height={size} viewBox="0 0 24 24" fill={n <= rounded ? '#C0603A' : 'none'} stroke="#C0603A" strokeWidth="1.5" aria-hidden>
+        <svg key={n} width={size} height={size} viewBox="0 0 24 24" strokeWidth="1.5" className={`stroke-rust ${n <= rounded ? 'fill-rust' : 'fill-none'}`} aria-hidden>
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
       ))}
@@ -163,7 +163,7 @@ export function SectionTitle({ title, eyebrow, action }: { title: string; eyebro
   return (
     <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
       <h2 className="font-serif text-2xl sm:text-[28px]">{title}</h2>
-      {eyebrow && <span className="text-[11px] tracking-[0.1em] text-[#bbb]">{eyebrow}</span>}
+      {eyebrow && <span className="text-[11px] tracking-[0.1em] text-ink-200">{eyebrow}</span>}
       {action}
     </div>
   )

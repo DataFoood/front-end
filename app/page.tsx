@@ -19,7 +19,7 @@ const STEPS = [
 const PLANS = [
   { tier: 'ESSENCIAL', price: 'R$ 89', desc: 'para restaurantes começando a entender sua demanda local.', features: ['insights semanais do bairro', 'até 100 consultas / mês', 'dashboard básico'], bg: 'bg-rust' },
   { tier: 'INTELLIGENCE', price: 'R$ 249', desc: 'para quem quer ler o tecido de demanda em tempo real.', features: ['insights diários', 'consultas ilimitadas', 'alertas de tendências', 'API de demanda'], bg: 'bg-rust-dark' },
-  { tier: 'SIGNATURE', price: 'R$ 590', desc: 'para grupos e operações multi-unidade que decidem com dados.', features: ['tudo do intelligence', 'relatórios por unidade', 'consultor dedicado', 'modelos sob medida'], bg: 'bg-[#8B3E20]' },
+  { tier: 'SIGNATURE', price: 'R$ 590', desc: 'para grupos e operações multi-unidade que decidem com dados.', features: ['tudo do intelligence', 'relatórios por unidade', 'consultor dedicado', 'modelos sob medida'], bg: 'bg-rust-deep' },
 ]
 
 function Highlights() {
@@ -68,14 +68,14 @@ export default function HomePage() {
             <br />
             do <em className="text-rust">cardápio</em>.
           </h1>
-          <p className="mb-10 max-w-sm text-base leading-relaxed text-[#555]">
+          <p className="mb-10 max-w-sm text-base leading-relaxed text-ink-600">
             descreva o momento — uma terça tranquila, um aniversário, um almoço de negócios. datafood encontra o lugar certo.
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Link href={appHref} className="rounded-lg bg-rust px-7 py-3.5 text-[13px] text-white hover:bg-rust-dark">
               {user ? 'abrir a busca →' : 'começar grátis →'}
             </Link>
-            <Link href="/explorar" className="text-[13px] text-[#555] underline hover:text-ink">
+            <Link href="/explorar" className="text-[13px] text-ink-600 underline hover:text-ink">
               explorar restaurantes
             </Link>
           </div>
@@ -90,8 +90,8 @@ export default function HomePage() {
             <div key={s.num}>
               <p className="mb-4 text-[13px] font-medium text-rust">{s.num}</p>
               <h3 className="mb-3 font-serif text-xl text-white">{s.title}</h3>
-              <p className="text-sm leading-relaxed text-[#888]">{s.desc}</p>
-              <div className="mt-6 h-px w-8 bg-[#333]" />
+              <p className="text-sm leading-relaxed text-ink-350">{s.desc}</p>
+              <div className="mt-6 h-px w-8 bg-ink-800" />
             </div>
           ))}
         </div>
@@ -102,17 +102,17 @@ export default function HomePage() {
       <section id="restaurantes" className="bg-dark-panel px-4 py-20 sm:px-8">
         <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 md:grid-cols-2">
           <div>
-            <p className="mb-8 text-[11px] tracking-[0.12em] text-[#666]">PARA RESTAURANTES</p>
-            <p className="mb-8 text-lg leading-relaxed text-[#ccc]">
+            <p className="mb-8 text-[11px] tracking-[0.12em] text-ink-500">PARA RESTAURANTES</p>
+            <p className="mb-8 text-lg leading-relaxed text-ink-150">
               cadastre seu restaurante, mantenha cardápio e horários em dia e acompanhe quantas pessoas visitam e salvam sua página. tudo agregado e anônimo — nada pessoal.
             </p>
-            <Link href={user ? '/painel' : '/cadastro?tipo=restaurante'} className="inline-flex items-center gap-2 rounded-sm border border-[#444] px-6 py-3 text-sm text-white hover:border-[#777]">
+            <Link href={user ? '/painel' : '/cadastro?tipo=restaurante'} className="inline-flex items-center gap-2 rounded-sm border border-ink-700 px-6 py-3 text-sm text-white hover:border-muted">
               {user ? 'abrir meu painel →' : 'cadastrar meu restaurante →'}
             </Link>
           </div>
-          <div className="rounded-lg border border-[#2a2a2a] bg-dark-bg p-8">
-            <p className="mb-5 text-[10px] tracking-[0.14em] text-[#666]">NO SEU PAINEL</p>
-            <ul className="flex flex-col gap-4 text-[15px] text-[#ccc]">
+          <div className="rounded-lg border border-dark-line bg-dark-bg p-8">
+            <p className="mb-5 text-[10px] tracking-[0.14em] text-ink-500">NO SEU PAINEL</p>
+            <ul className="flex flex-col gap-4 text-[15px] text-ink-150">
               {['visualizações da sua página', 'novos favoritos por dia', 'distribuição das notas', 'avaliações recentes'].map(t => (
                 <li key={t} className="flex items-center gap-3">
                   <span className="h-1.5 w-1.5 rounded-full bg-rust" /> {t}
@@ -152,7 +152,7 @@ export default function HomePage() {
       </section>
 
       <section id="manifesto" className="px-4 pb-28 pt-8 sm:px-8">
-        <p className="mx-auto max-w-2xl text-center font-serif text-[clamp(22px,3vw,32px)] leading-relaxed text-[#333]">
+        <p className="mx-auto max-w-2xl text-center font-serif text-[clamp(22px,3vw,32px)] leading-relaxed text-ink-800">
           nosso objetivo é oferecer às pessoas uma forma simples de encontrar os lugares perfeitos para viver os momentos que desejam.
         </p>
       </section>

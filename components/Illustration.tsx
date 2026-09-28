@@ -1,6 +1,8 @@
 import type { ReactElement } from 'react'
 
 // Arte padrão quando o restaurante não tem foto de capa (mesmas ilustrações do protótipo).
+// Exceção documentada ao uso de tokens: é arte vetorial com paleta própria
+// (docs/estilizacao.md), não UI.
 
 const VARIANTS = ['bowl', 'glass', 'plate'] as const
 type Variant = (typeof VARIANTS)[number]

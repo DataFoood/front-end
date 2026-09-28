@@ -15,7 +15,43 @@
   --color-dark-bg: #0d0d0d;
   --color-dark-panel: #1a1a1a;
   --color-line: #e8e4dc;
+  --color-line-soft: #f0ece4;
+  --color-line-warm: #e0dbd2;
+  --color-line-warm-strong: #d4cfc7;
   --color-muted: #777777;
+  --color-rust-deep: #8b3e20;
+
+  /* escala neutra (texto secundário, bordas, placeholders). Maior = mais escuro. */
+  --color-ink-800: #333333;
+  --color-ink-700: #444444;
+  --color-ink-600: #555555;
+  --color-ink-500: #666666;
+  --color-ink-350: #888888;
+  --color-ink-300: #999999;
+  --color-ink-250: #aaaaaa;
+  --color-ink-200: #bbbbbb;
+  --color-ink-150: #cccccc;
+  --color-ink-100: #dddddd;
+  --color-ink-50: #eeeeee;
+  --color-surface-hover: #fafafa;
+
+  /* superfícies escuras (landing, login) */
+  --color-dark-line: #2a2a2a;
+  --color-dark-ring: #1e1e1e;
+  --color-dark-ring-soft: #181818;
+  --color-dark-text: #3a3a3a;
+
+  /* estados */
+  --color-error: #e53e3e;
+  --color-danger: #c53030;
+  --color-danger-bg: #fff5f5;
+  --color-danger-line: #f3c1c1;
+  --color-success: #1a7a45;
+  --color-success-bright: #38a169;
+  --color-success-bg: #f0faf5;
+  --color-success-line: #a8d8bc;
+  --color-saved-bg: #fff3cd;
+  --color-saved-line: #ffeba0;
 
   --animate-fade-in: fade-in 0.4s ease both;
   --animate-pulse-dot: pulse-dot 1.2s ease infinite;
@@ -55,37 +91,37 @@
 /* ─── Componentes (camada components: utilitários no className sobrescrevem) ── */
 @layer components {
   .label {
-    @apply mb-2 block text-[10px] tracking-[0.12em] text-[#999] uppercase;
+    @apply mb-2 block text-[10px] tracking-[0.12em] text-ink-300 uppercase;
   }
   .input {
-    @apply w-full rounded-sm border border-[#ddd] bg-white px-4 py-3 text-sm text-[#333] outline-hidden transition-colors placeholder:text-[#bbb] focus:border-[#999] disabled:bg-cream-dark;
+    @apply w-full rounded-sm border border-ink-100 bg-white px-4 py-3 text-sm text-ink-800 outline-hidden transition-colors placeholder:text-ink-200 focus:border-ink-300 disabled:bg-cream-dark;
   }
   .input-error {
-    @apply border-[#e53e3e] focus:border-[#e53e3e];
+    @apply border-error focus:border-error;
   }
   .btn, .btn-primary, .btn-accent, .btn-ghost, .btn-danger {
     @apply inline-flex items-center justify-center gap-2 rounded-sm px-5 py-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-primary {
-    @apply bg-ink text-white hover:bg-[#333];
+    @apply bg-ink text-white hover:bg-ink-800;
   }
   .btn-accent {
     @apply bg-rust text-white hover:bg-rust-dark;
   }
   .btn-ghost {
-    @apply border border-[#ddd] bg-white text-[#333] hover:border-[#bbb] hover:bg-[#fafafa];
+    @apply border border-ink-100 bg-white text-ink-800 hover:border-ink-200 hover:bg-surface-hover;
   }
   .btn-danger {
-    @apply border border-[#e53e3e] bg-white text-[#c53030] hover:bg-[#fff5f5];
+    @apply border border-error bg-white text-danger hover:bg-danger-bg;
   }
   .card {
     @apply rounded-lg border border-line bg-white;
   }
   .eyebrow {
-    @apply text-[11px] tracking-[0.12em] text-[#999] uppercase;
+    @apply text-[11px] tracking-[0.12em] text-ink-300 uppercase;
   }
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-[#ddd] px-3 py-1 text-xs text-[#444];
+    @apply inline-flex items-center gap-1.5 rounded-full border border-ink-100 px-3 py-1 text-xs text-ink-700;
   }
 }
 
