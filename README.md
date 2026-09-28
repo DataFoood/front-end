@@ -51,10 +51,15 @@ components/     UI compartilhada, cards, header, painel do dono
 lib/api.ts      cliente HTTP: Bearer, refresh automático c/ rotação, erros DRF
 lib/types.ts    tipos do contrato da API
 lib/format.ts   formatação (preço, horários, telefone, CPF…)
+docs/           padrões: estilização, estado global, integração, decisões
+final-tests/    navegação E2E (Playwright) + contador de renders
 ```
 
 Sessão: tokens em `localStorage`; um 401 dispara um único refresh
 (o back rotaciona o refresh token); falhou → sessão encerrada.
+
+Antes de mexer em estilo ou estado compartilhado, leia [`docs/`](docs/README.md).
+Para testar a navegação ponta a ponta: [`final-tests/README.md`](final-tests/README.md).
 
 ## Por que TypeScript 6 e ESLint 9?
 
@@ -75,4 +80,5 @@ origem do front em `CORS_ALLOWED_ORIGINS` na API.
 ## Design
 
 Paleta creme `#F5F0E8`, preto `#0D0D0D`, terracota `#C0603A`; Playfair Display +
-Noto Sans JP. Tokens no bloco `@theme` de `app/globals.css` (Tailwind 4 não usa mais `tailwind.config.js`).
+Noto Sans JP. Tokens no bloco `@theme` de `app/globals.css` (Tailwind 4 não usa mais `tailwind.config.js`);
+cor sempre por token, nunca `text-[#hex]` — ver [`docs/estilizacao.md`](docs/estilizacao.md).
