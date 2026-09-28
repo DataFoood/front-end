@@ -4,13 +4,13 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '@/app/context/AuthContext'
-import { useFavorites } from '@/app/context/FavoritesContext'
+import { useFavoritesCount } from '@/app/context/FavoritesContext'
 import { firstName } from '@/lib/format'
 import { Avatar, Logo } from './ui'
 
 export function SiteHeader() {
   const { user, logout } = useAuth()
-  const { count } = useFavorites()
+  const count = useFavoritesCount()
   const pathname = usePathname()
   const router = useRouter()
   // o menu mobile fica aberto só na rota em que foi aberto (fecha ao navegar)

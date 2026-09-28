@@ -8,10 +8,10 @@ import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { EmptyState, PageLoader } from '@/components/ui'
 import { api, errorMessage } from '@/lib/api'
 import type { Favorite } from '@/lib/types'
-import { useFavorites } from '../context/FavoritesContext'
+import { useFavoriteIds, useFavoritesCount } from '../context/FavoritesContext'
 
 function SavedList() {
-  const { ids } = useFavorites()
+  const ids = useFavoriteIds()
   const [favorites, setFavorites] = useState<Favorite[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -49,7 +49,7 @@ function SavedList() {
 }
 
 export default function SalvosPage() {
-  const { count } = useFavorites()
+  const count = useFavoritesCount()
   return (
     <div className="min-h-screen">
       <SiteHeader />

@@ -7,6 +7,7 @@ import { CardGrid, RestaurantCard } from '@/components/RestaurantCard'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { EmptyState, Spinner } from '@/components/ui'
 import { api, errorMessage } from '@/lib/api'
+import { useTaxonomies } from '@/lib/taxonomies'
 import type { Lookup, Paginated, RestaurantCard as Card, Taxonomies } from '@/lib/types'
 
 const PAGE_SIZE = 12
@@ -37,16 +38,35 @@ function Select({ label, value, options, onChange }: { label: string; value: str
   )
 }
 
+/** Busca por nome com estado próprio: digitar não re-renderiza a lista.
+ *  Chaveada pelo ?q= da URL — voltar/limpar filtros reinicia o campo. */
+function SearchBox({ initial, onSearch }: { initial: string; onSearch: (q: string) => void }) {
+  const [q, setQ] = useState(initial)
+  return (
+    <form
+      onSubmit={e => {
+        e.preventDefault()
+        onSearch(q.trim())
+      }}
+      className="mb-6 flex gap-2"
+    >
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="buscar por nome ou descrição" aria-label="buscar por nome" className="input" />
+      <button type="submit" className="btn-primary">
+        buscar
+      </button>
+    </form>
+  )
+}
+
 function Explorer() {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
 
-  const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(null)
+  const taxonomies = useTaxonomies()
   // página 1 chaveada pelos filtros: mudou filtro -> "carregando" é derivado, sem reset em effect
   const [result, setResult] = useState<{ key: string; items: Card[]; count: number; page: number; error?: string } | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [q, setQ] = useState(params.get('q') ?? '')
 
   const filters = {
     q: params.get('q') ?? '',
@@ -64,10 +84,6 @@ function Explorer() {
     else next.delete(key)
     router.replace(`${pathname}?${next.toString()}`, { scroll: false })
   }
-
-  useEffect(() => {
-    api<Taxonomies>('/api/restaurants/taxonomies/', { auth: false }).then(setTaxonomies).catch(() => undefined)
-  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -103,18 +119,7 @@ function Explorer() {
 
   return (
     <>
-      <form
-        onSubmit={e => {
-          e.preventDefault()
-          setParam('q', q.trim())
-        }}
-        className="mb-6 flex gap-2"
-      >
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder="buscar por nome ou descrição" aria-label="buscar por nome" className="input" />
-        <button type="submit" className="btn-primary">
-          buscar
-        </button>
-      </form>
+      <SearchBox key={filters.q} initial={filters.q} onSearch={v => setParam('q', v)} />
 
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-5">
         {FILTERS.map(f => (
@@ -139,13 +144,7 @@ function Explorer() {
       <div className="mb-4 flex items-center justify-between text-xs text-[#999]">
         <span>{loading && items.length === 0 ? 'carregando…' : `${count} restaurante${count === 1 ? '' : 's'}`}</span>
         {hasFilters && (
-          <button
-            onClick={() => {
-              setQ('')
-              router.replace(pathname, { scroll: false })
-            }}
-            className="underline hover:text-ink"
-          >
+          <button onClick={() => router.replace(pathname, { scroll: false })} className="underline hover:text-ink">
             limpar filtros
           </button>
         )}

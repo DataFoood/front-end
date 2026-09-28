@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { memo, useCallback, useEffect, useRef, useState, type FormEvent, type Ref } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
 import { RestaurantCard } from '@/components/RestaurantCard'
 import { Avatar, Logo } from '@/components/ui'
@@ -10,7 +10,7 @@ import { api, ApiError } from '@/lib/api'
 import { firstName } from '@/lib/format'
 import type { SearchResult, User } from '@/lib/types'
 import { useAuth } from '../context/AuthContext'
-import { useFavorites } from '../context/FavoritesContext'
+import { useFavoritesCount } from '../context/FavoritesContext'
 
 const RESULTS_SHOWN = 3
 const RESULTS_FETCHED = 6
@@ -69,7 +69,9 @@ function introFor(query: string, count: number) {
   return `${count === RESULTS_SHOWN ? 'três' : count} opções que combinam com "${query}", da mais alinhada para a menos.`
 }
 
-function AssistantBubble({ content, query }: { content: AssistantContent; query: string }) {
+// memo: o histórico inteiro fica montado; mensagens antigas não re-renderizam
+// quando chega uma nova ou quando o "buscando…" liga/desliga
+const AssistantBubble = memo(function AssistantBubble({ content, query }: { content: AssistantContent; query: string }) {
   const [expanded, setExpanded] = useState(false)
   const dot = (
     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink">
@@ -115,17 +117,54 @@ function AssistantBubble({ content, query }: { content: AssistantContent; query:
       </div>
     </div>
   )
+})
+
+/** Campo de busca com estado próprio: digitar não re-renderiza o histórico. */
+function Composer({ onSend, disabled, inputRef }: { onSend: (text: string) => void; disabled: boolean; inputRef: Ref<HTMLInputElement> }) {
+  const [input, setInput] = useState('')
+
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || disabled) return
+    onSend(input)
+    setInput('')
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="px-4 pb-5 pt-2 sm:px-8 sm:pb-7">
+      <div className="mx-auto flex max-w-4xl items-center gap-3 rounded-full border border-[#e0dbd2] bg-white py-2 pl-5 pr-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          maxLength={500}
+          placeholder="descreva o momento…"
+          aria-label="descreva o momento"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-hidden"
+        />
+        <button
+          type="submit"
+          disabled={!input.trim() || disabled}
+          aria-label="buscar"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink transition disabled:bg-[#ddd]"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" aria-hidden>
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
+        </button>
+      </div>
+    </form>
+  )
 }
 
 function ChatApp({ user }: { user: User }) {
   const router = useRouter()
   const { logout } = useAuth()
-  const { count: savedCount } = useFavorites()
+  const savedCount = useFavoritesCount()
 
   // ChatApp só renderiza no cliente (depois do RequireAuth), então dá pra ler o storage direto
   const [chats, setChats] = useState<Chat[]>(() => loadChats(user.id))
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState('')
   // desktop começa com a sidebar aberta
@@ -167,7 +206,6 @@ function ChatApp({ user }: { user: User }) {
   const send = async (raw: string) => {
     const query = raw.trim()
     if (!query || loading) return
-    setInput('')
 
     let chatId = activeId
     if (!chatId) {
@@ -206,11 +244,6 @@ function ChatApp({ user }: { user: User }) {
     } finally {
       setLoading(false)
     }
-  }
-
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    send(input)
   }
 
   const visibleChats = chats.filter(c => c.title.toLowerCase().includes(filter.toLowerCase()))
@@ -367,29 +400,7 @@ function ChatApp({ user }: { user: User }) {
           )}
         </div>
 
-        <form onSubmit={onSubmit} className="px-4 pb-5 pt-2 sm:px-8 sm:pb-7">
-          <div className="mx-auto flex max-w-4xl items-center gap-3 rounded-full border border-[#e0dbd2] bg-white py-2 pl-5 pr-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              maxLength={500}
-              placeholder="descreva o momento…"
-              aria-label="descreva o momento"
-              className="min-w-0 flex-1 bg-transparent text-sm outline-hidden"
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || loading}
-              aria-label="buscar"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink transition disabled:bg-[#ddd]"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" aria-hidden>
-                <path d="M12 19V5M5 12l7-7 7 7" />
-              </svg>
-            </button>
-          </div>
-        </form>
+        <Composer onSend={send} disabled={loading} inputRef={inputRef} />
       </main>
     </div>
   )

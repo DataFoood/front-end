@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useToast } from '@/app/context/ToastContext'
 import { Field, Spinner, TextArea, Toggle } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { maskPhone, onlyDigits } from '@/lib/format'
-import { SALES_CHANNELS, type Restaurant, type SalesChannel, type Taxonomies, type TaxonomyKey } from '@/lib/types'
+import { useTaxonomies } from '@/lib/taxonomies'
+import { SALES_CHANNELS, type Restaurant, type SalesChannel, type TaxonomyKey } from '@/lib/types'
 
 const TAXONOMY_LABELS: { key: TaxonomyKey; label: string; single?: boolean }[] = [
   { key: 'cuisines', label: 'cozinhas' },
@@ -25,19 +26,6 @@ const CHANNEL_LABELS: Record<SalesChannel, string> = {
   has_reservation: 'aceita reservas',
   accepts_vale_refeicao: 'aceita vale-refeição',
   accepts_online_order: 'pedido online',
-}
-
-let taxonomyCache: Taxonomies | null = null
-export function useTaxonomies() {
-  const [tax, setTax] = useState<Taxonomies | null>(taxonomyCache)
-  useEffect(() => {
-    if (taxonomyCache) return
-    api<Taxonomies>('/api/restaurants/taxonomies/', { auth: false }).then(t => {
-      taxonomyCache = t
-      setTax(t)
-    })
-  }, [])
-  return tax
 }
 
 function initialState(r: Restaurant) {

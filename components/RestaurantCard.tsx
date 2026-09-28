@@ -2,17 +2,18 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { memo } from 'react'
 import { useAuth } from '@/app/context/AuthContext'
-import { useFavorites } from '@/app/context/FavoritesContext'
+import { useFavoriteActions, useIsFavorite } from '@/app/context/FavoritesContext'
 import { cardSubtitle, formatRating } from '@/lib/format'
 import type { RestaurantCard as Card } from '@/lib/types'
 import { Cover } from './Illustration'
 
 export function FavoriteButton({ restaurantId, variant = 'icon' }: { restaurantId: number; variant?: 'icon' | 'full' }) {
   const { user } = useAuth()
-  const { isFavorite, toggle } = useFavorites()
+  const { toggle } = useFavoriteActions()
+  const saved = useIsFavorite(restaurantId)
   const router = useRouter()
-  const saved = isFavorite(restaurantId)
 
   const onClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -61,7 +62,9 @@ export function OpenBadge({ open }: { open: boolean | null }) {
   )
 }
 
-export function RestaurantCard({ restaurant, match, index = 0 }: { restaurant: Card; match?: number | null; index?: number }) {
+// memo: listas crescem ("carregar mais", novas respostas no chat) e o pai
+// re-renderiza por estado próprio; cards com as mesmas props ficam parados
+export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, index = 0 }: { restaurant: Card; match?: number | null; index?: number }) {
   const rating = Number(restaurant.average_rating)
   return (
     <Link
@@ -101,7 +104,7 @@ export function RestaurantCard({ restaurant, match, index = 0 }: { restaurant: C
       </div>
     </Link>
   )
-}
+})
 
 export function CardGrid({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
