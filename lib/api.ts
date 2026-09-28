@@ -2,7 +2,7 @@
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
-const TOKENS_KEY = 'datafood.tokens'
+export const TOKENS_KEY = 'datafood.tokens'
 /** disparado quando a sessão morre (refresh inválido) — o AuthContext escuta */
 export const SESSION_EXPIRED_EVENT = 'datafood:session-expired'
 
@@ -97,7 +97,12 @@ async function refreshAccess(): Promise<string | null> {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refresh: tokens.refresh }),
         })
-        if (!res.ok) return null
+        if (!res.ok) {
+          // outra aba pode ter rotacionado o refresh no meio do caminho (o
+          // antigo vai pra blacklist): se o storage já tem um par novo, usa ele
+          const latest = tokenStore.get()
+          return latest && latest.refresh !== tokens.refresh ? latest.access : null
+        }
         const data = (await res.json()) as Partial<Tokens>
         if (!data.access) return null
         // ROTATE_REFRESH_TOKENS: o back devolve um refresh novo
@@ -153,7 +158,10 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
   try {
     const access = auth ? tokenStore.get()?.access : undefined
     res = await doFetch(access)
-    if (res.status === 401 && auth && tokenStore.get()) {
+    if (res.status === 401 && auth && access) {
+      // access vencido: um refresh (single-flight) e repete; sem refresh válido
+      // (expirou ou foi revogado, ex.: senha trocada em outro dispositivo)
+      // encerra a sessão
       const fresh = await refreshAccess()
       if (fresh) {
         res = await doFetch(fresh)

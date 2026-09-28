@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { api, SESSION_EXPIRED_EVENT, tokenStore } from '@/lib/api'
+import { api, ApiError, SESSION_EXPIRED_EVENT, TOKENS_KEY, tokenStore } from '@/lib/api'
 import type { AuthResponse, User } from '@/lib/types'
 
 export interface RegisterPayload {
@@ -40,8 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const me = await api<User>('/api/users/me/')
           if (!cancelled) setUser(me)
-        } catch {
-          tokenStore.clear()
+        } catch (err) {
+          // só descarta a sessão se o back recusou; API fora do ar/rede caída
+          // não desloga (o próximo carregamento tenta de novo)
+          if (err instanceof ApiError && (err.status === 401 || err.status === 403)) tokenStore.clear()
         }
       }
       if (!cancelled) setLoading(false)
@@ -54,8 +56,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onExpired = () => setUser(null)
+    // logout em outra aba apaga os tokens do localStorage: reflete aqui
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === TOKENS_KEY && e.newValue === null) setUser(null)
+    }
     window.addEventListener(SESSION_EXPIRED_EVENT, onExpired)
-    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired)
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired)
+      window.removeEventListener('storage', onStorage)
+    }
   }, [])
 
   const startSession = useCallback((data: AuthResponse) => {

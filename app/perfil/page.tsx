@@ -5,7 +5,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { Avatar, Field, Spinner, Toggle } from '@/components/ui'
-import { api, ApiError, errorMessage } from '@/lib/api'
+import { api, ApiError, errorMessage, tokenStore, type Tokens } from '@/lib/api'
 import { formatDate, maskPhone, onlyDigits } from '@/lib/format'
 import type { Affinity, Preferences, SearchHistoryEntry, User } from '@/lib/types'
 import { useAuth } from '../context/AuthContext'
@@ -117,8 +117,7 @@ function AffinityRow({ affinity, path, onSaved }: { affinity: Affinity; path: st
         max={100}
         value={value}
         onChange={e => setValue(Number(e.target.value))}
-        onMouseUp={commit}
-        onTouchEnd={commit}
+        onPointerUp={commit}
         onKeyUp={commit}
         aria-label={`afinidade com ${affinity.name}`}
         className="flex-1 accent-rust"
@@ -134,12 +133,21 @@ function PrivacyPanel({ user }: { user: User }) {
   const { setUser } = useAuth()
   const toast = useToast()
   const [saving, setSaving] = useState(false)
-  const [prefs, setPrefs] = useState<Preferences | null>(null)
-  const [history, setHistory] = useState<SearchHistoryEntry[] | null>(null)
+  const [data, setData] = useState<{ prefs: Preferences; history: SearchHistoryEntry[] } | null>(null)
+  const prefs = data?.prefs ?? null
+  const history = data?.history ?? null
+  const setPrefs = (fn: (p: Preferences) => Preferences) => setData(d => (d ? { ...d, prefs: fn(d.prefs) } : d))
 
+  // as duas leituras chegam juntas: um render em vez de dois
   useEffect(() => {
-    api<Preferences>('/api/preferences/').then(setPrefs).catch(() => setPrefs({ cuisines: [], ambients: [], price_ranges: [] }))
-    api<SearchHistoryEntry[]>('/api/preferences/searches/').then(setHistory).catch(() => setHistory([]))
+    let cancelled = false
+    Promise.all([
+      api<Preferences>('/api/preferences/').catch(() => ({ cuisines: [], ambients: [], price_ranges: [] })),
+      api<SearchHistoryEntry[]>('/api/preferences/searches/').catch(() => []),
+    ]).then(([p, h]) => !cancelled && setData({ prefs: p, history: h }))
+    return () => {
+      cancelled = true
+    }
   }, [user.allow_info])
 
   const setConsent = async (value: boolean) => {
@@ -186,7 +194,7 @@ function PrivacyPanel({ user }: { user: User }) {
                     key={a.id}
                     affinity={a}
                     path={d.path}
-                    onSaved={saved => setPrefs(p => (p ? { ...p, [d.key]: p[d.key].map(x => (x.id === saved.id ? { ...x, ...saved } : x)) } : p))}
+                    onSaved={saved => setPrefs(p => ({ ...p, [d.key]: p[d.key].map(x => (x.id === saved.id ? { ...x, ...saved } : x)) }))}
                   />
                 ))}
               </div>
@@ -230,8 +238,10 @@ function SecurityPanel({ user }: { user: User }) {
     setSaving(true)
     setErrors({})
     try {
-      await api(`/api/users/${user.id}/change-password/`, { method: 'POST', body: form })
-      toast.success('Senha alterada.')
+      // o back derruba todas as sessões e devolve um par novo para esta continuar
+      const tokens = await api<Tokens>(`/api/users/${user.id}/change-password/`, { method: 'POST', body: form })
+      tokenStore.set({ access: tokens.access, refresh: tokens.refresh })
+      toast.success('Senha alterada. As outras sessões foram encerradas.')
       setForm({ current_password: '', new_password: '', confirm_password: '' })
     } catch (err) {
       if (err instanceof ApiError) setErrors(err.fields)
