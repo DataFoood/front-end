@@ -1,0 +1,12 @@
+{
+  "name": "datafood-final-tests",
+  "private": true,
+  "type": "module",
+  "description": "Navegação E2E + contagem de renders contra o front e a API rodando",
+  "scripts": {
+    "e2e": "node navigation.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
