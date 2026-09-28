@@ -39,7 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (tokenStore.get()) {
         try {
           const me = await api<User>('/api/users/me/')
-          if (!cancelled) setUser(me)
+          // a sessão pode ter saído (outra aba) enquanto o /me estava em voo
+          if (!cancelled && tokenStore.get()) setUser(me)
         } catch (err) {
           // só descarta a sessão se o back recusou; API fora do ar/rede caída
           // não desloga (o próximo carregamento tenta de novo)
