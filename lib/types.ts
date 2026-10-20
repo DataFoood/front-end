@@ -211,3 +211,73 @@ export interface Address {
   longitude: string | null
   is_default: boolean
 }
+
+export type PromotionStatus = 'draft' | 'scheduled' | 'sending' | 'sent'
+export type DeliveryStatus = 'pending' | 'sending' | 'sent' | 'failed' | 'skipped'
+
+/** gestão (dono/admin): GET/POST /api/restaurants/<id>/promotions/ */
+export interface Promotion {
+  id: number
+  restaurant: number
+  title: string
+  message: string
+  coupon_code: string
+  valid_until: string | null
+  send_telegram: boolean
+  send_email: boolean
+  status: PromotionStatus
+  scheduled_for: string | null
+  dispatched_at: string | null
+  sent_at: string | null
+  created_at: string
+  updated_at: string
+  /** texto pronto (o mesmo do Telegram/e-mail) */
+  share_text: string
+  /** wa.me/?text=… — o dono escolhe lista de transmissão, grupo ou status */
+  whatsapp_url: string
+  public_url: string
+  stats: Record<DeliveryStatus, number>
+}
+
+/** vitrine pública: GET /api/restaurants/<id>/promotions/active/ */
+export interface PublicPromotion {
+  id: number
+  title: string
+  message: string
+  coupon_code: string
+  valid_until: string | null
+  sent_at: string | null
+}
+
+export interface PromotionAudience {
+  favorites: number
+  opted_in: number
+  telegram: number
+  email: number
+  telegram_configured: boolean
+}
+
+export interface MessagingPreference {
+  promotions_opt_in: boolean
+  opted_in_at: string | null
+  channel_email: boolean
+  channel_telegram: boolean
+  telegram_linked: boolean
+  telegram_linked_at: string | null
+}
+
+export interface InfraSuggestion {
+  level: 'ok' | 'attention' | 'hire'
+  recommend: boolean
+  reasons: string[]
+  weekend: { start: string; end: string }
+  projected: { messages_peak_day: number; searches_peak_day: number }
+  capacity: { messages_per_day: number; searches_per_day: number }
+  utilization: number
+  weekday_baseline: { messages_per_day: number; searches_per_day: number }
+  history_by_weekday: { day_week: number; messages: number; searches: number }[]
+  scheduled: { promotions: number; messages: number }
+  suggested_window: { start: string; end: string; hours: number }
+  estimated_cost: { currency: string; hourly: number; total: number }
+  history_weeks: number
+}

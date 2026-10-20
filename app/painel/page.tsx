@@ -6,6 +6,7 @@ import { Suspense, useCallback, useEffect, useState } from 'react'
 import { AddressEditor, HoursEditor, MenuEditor, PhotosEditor } from '@/components/painel/Editors'
 import { CreateRestaurant, InfoForm } from '@/components/painel/InfoForm'
 import { Overview } from '@/components/painel/Overview'
+import { PromotionsEditor } from '@/components/painel/Promotions'
 import { RequireAuth } from '@/components/RequireAuth'
 import { SiteHeader } from '@/components/SiteHeader'
 import { PageLoader } from '@/components/ui'
@@ -20,6 +21,7 @@ const TABS = [
   { id: 'horarios', label: 'horários' },
   { id: 'endereco', label: 'endereço' },
   { id: 'fotos', label: 'fotos' },
+  { id: 'promocoes', label: 'promoções' },
 ] as const
 type TabId = (typeof TABS)[number]['id'] | 'novo'
 
@@ -166,6 +168,7 @@ function Panel() {
             {tab === 'horarios' && <HoursEditor restaurant={restaurant} onChange={loadRestaurant} />}
             {tab === 'endereco' && <AddressEditor restaurant={restaurant} onChange={reloadAll} />}
             {tab === 'fotos' && <PhotosEditor restaurant={restaurant} onChange={loadRestaurant} />}
+            {tab === 'promocoes' && <PromotionsEditor restaurant={restaurant} />}
           </div>
         )}
       </section>

@@ -1,20 +1,22 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useState, type FormEvent } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState, type FormEvent } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
-import { Avatar, Field, Spinner, Toggle } from '@/components/ui'
+import { Avatar, Field, PageLoader, Spinner, Toggle } from '@/components/ui'
 import { api, ApiError, errorMessage, tokenStore, type Tokens } from '@/lib/api'
 import { formatDate, maskPhone, onlyDigits } from '@/lib/format'
-import type { Affinity, Preferences, SearchHistoryEntry, User } from '@/lib/types'
+import type { Affinity, MessagingPreference, Preferences, SearchHistoryEntry, User } from '@/lib/types'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
-type Tab = 'dados' | 'privacidade' | 'seguranca'
+type Tab = 'dados' | 'privacidade' | 'promocoes' | 'seguranca'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'dados', label: 'meus dados' },
   { id: 'privacidade', label: 'privacidade' },
+  { id: 'promocoes', label: 'promoções' },
   { id: 'seguranca', label: 'segurança' },
 ]
 
@@ -224,6 +226,137 @@ function PrivacyPanel({ user }: { user: User }) {
   )
 }
 
+function ChannelRow({ title, text, children }: { title: string; text: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-6 py-4 first:pt-0 last:pb-0">
+      <div>
+        <p className="mb-1 text-[14px]">{title}</p>
+        <div className="max-w-md text-[12px] leading-relaxed text-muted">{text}</div>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  )
+}
+
+function PromotionsPanel({ user }: { user: User }) {
+  const toast = useToast()
+  const [pref, setPref] = useState<MessagingPreference | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [link, setLink] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    api<MessagingPreference>('/api/promotions/preferences/')
+      .then(p => !cancelled && setPref(p))
+      .catch(err => !cancelled && setError(errorMessage(err)))
+    return () => {
+      cancelled = true
+    }
+  }, [reloadKey])
+
+  const patch = async (body: Partial<MessagingPreference>, success?: string) => {
+    setSaving(true)
+    try {
+      setPref(await api<MessagingPreference>('/api/promotions/preferences/', { method: 'PATCH', body }))
+      if (success) toast.success(success)
+    } catch (err) {
+      toast.error(errorMessage(err))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const linkTelegram = async () => {
+    try {
+      const res = await api<{ url: string }>('/api/promotions/preferences/telegram/', { method: 'POST' })
+      setLink(res.url)
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
+
+  const unlinkTelegram = async () => {
+    try {
+      await api('/api/promotions/preferences/telegram/', { method: 'DELETE' })
+      setLink(null)
+      setReloadKey(k => k + 1)
+      toast.info('Telegram desvinculado.')
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
+
+  if (error) return <p className="text-sm text-danger">{error}</p>
+  if (!pref) return <Spinner />
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="card flex items-start justify-between gap-6 p-6">
+        <div>
+          <h3 className="mb-1.5 text-[15px] font-medium">receber promoções</h3>
+          <p className="max-w-lg text-[13px] leading-relaxed text-muted">
+            ligado, você recebe as promoções dos restaurantes que <Link href="/salvos" className="text-rust underline">salvou</Link> — só deles, no máximo algumas por dia. desligue quando quiser (também pelo link no fim de cada e-mail ou enviando /sair no telegram).
+          </p>
+          {pref.promotions_opt_in && pref.opted_in_at && <p className="mt-2 text-[11px] text-ink-250">consentimento registrado em {formatDate(pref.opted_in_at)}</p>}
+        </div>
+        <Toggle
+          checked={pref.promotions_opt_in}
+          onChange={v => patch({ promotions_opt_in: v }, v ? 'Pronto! Você vai receber promoções dos seus salvos.' : 'Você não vai mais receber promoções.')}
+          disabled={saving}
+          label="receber promoções"
+        />
+      </div>
+
+      <div className={`card p-6 ${pref.promotions_opt_in ? '' : 'opacity-60'}`}>
+        <h3 className="mb-4 text-[15px] font-medium">por onde</h3>
+        <div className="divide-y divide-line-soft">
+        <ChannelRow title="e-mail" text={<>para {user.email}</>}>
+          <Toggle checked={pref.channel_email} onChange={v => patch({ channel_email: v })} disabled={saving || !pref.promotions_opt_in} label="receber por e-mail" />
+        </ChannelRow>
+        <ChannelRow
+          title="telegram"
+          text={
+            pref.telegram_linked ? (
+              <>
+                vinculado{pref.telegram_linked_at && ` desde ${formatDate(pref.telegram_linked_at)}`}.{' '}
+                <button onClick={unlinkTelegram} className="text-rust underline">
+                  desvincular
+                </button>
+              </>
+            ) : link ? (
+              <>
+                <a href={link} target="_blank" rel="noopener noreferrer" className="text-rust underline">
+                  abrir o bot no telegram
+                </a>{' '}
+                e toque em <strong>iniciar</strong>. depois,{' '}
+                <button onClick={() => setReloadKey(k => k + 1)} className="text-rust underline">
+                  confirme aqui
+                </button>
+                . o link vale 15 minutos.
+              </>
+            ) : (
+              <>
+                chega na hora, no celular.{' '}
+                <button onClick={linkTelegram} disabled={!pref.promotions_opt_in} className="text-rust underline disabled:text-ink-250 disabled:no-underline">
+                  vincular telegram
+                </button>
+              </>
+            )
+          }
+        >
+          <Toggle checked={pref.channel_telegram} onChange={v => patch({ channel_telegram: v })} disabled={saving || !pref.promotions_opt_in} label="receber pelo telegram" />
+        </ChannelRow>
+        <ChannelRow title="whatsapp" text="o restaurante compartilha as promoções na própria lista de transmissão ou grupo — peça para entrar direto com ele. não repassamos seu telefone.">
+          <span className="text-[11px] text-ink-250">pelo restaurante</span>
+        </ChannelRow>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function SecurityPanel({ user }: { user: User }) {
   const { logout } = useAuth()
   const toast = useToast()
@@ -294,7 +427,9 @@ function SecurityPanel({ user }: { user: User }) {
 
 function Profile() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<Tab>('dados')
+  const params = useSearchParams()
+  // ?aba=promocoes (link da página do restaurante) abre direto na aba
+  const [tab, setTab] = useState<Tab>(() => TABS.find(t => t.id === params.get('aba'))?.id ?? 'dados')
   if (!user) return null
   return (
     <>
@@ -313,6 +448,7 @@ function Profile() {
       </div>
       {tab === 'dados' && <ProfileForm user={user} />}
       {tab === 'privacidade' && <PrivacyPanel user={user} />}
+      {tab === 'promocoes' && <PromotionsPanel user={user} />}
       {tab === 'seguranca' && <SecurityPanel user={user} />}
     </>
   )
@@ -326,7 +462,9 @@ export default function PerfilPage() {
         <p className="eyebrow mb-3">conta</p>
         <h1 className="mb-8 font-serif text-4xl">meu perfil</h1>
         <RequireAuth>
-          <Profile />
+          <Suspense fallback={<PageLoader />}>
+            <Profile />
+          </Suspense>
         </RequireAuth>
       </main>
       <SiteFooter />

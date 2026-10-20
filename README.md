@@ -35,12 +35,13 @@ Contas de demonstração (criadas pelo `seed_demo --demo-users` do back):
 |---|---|---|
 | `/` | público | landing + destaques reais |
 | `/explorar` | público | lista com filtros (cozinha, ambiente, preço, delivery, ordem) |
-| `/restaurante/[slug]` | público (interagir: logado) | detalhe, cardápio, horários, fotos, avaliações, salvar, contato/WhatsApp |
+| `/restaurante/[slug]` | público (interagir: logado) | detalhe, promoções ativas, cardápio, horários, fotos, avaliações, salvar, contato/WhatsApp |
 | `/login`, `/cadastro` | público | JWT; cadastro escolhe pessoa/restaurante e consentimento LGPD |
 | `/chat` | logado | busca semântica em linguagem natural (conversas salvas no navegador) |
 | `/salvos` | logado | favoritos |
-| `/perfil` | logado | dados, privacidade (consentimento, afinidades, histórico), senha, encerrar conta |
-| `/painel` | logado | dono: métricas, informações, cardápio, horários, endereço, fotos; cadastro de restaurante |
+| `/perfil` | logado | dados, privacidade (consentimento, afinidades, histórico), promoções (opt-in, e-mail, vincular Telegram), senha, encerrar conta |
+| `/painel` | logado | dono: métricas, informações, cardápio, horários, endereço, fotos, promoções (Telegram/e-mail/WhatsApp, agendamento, sugestão de infra no fim de semana); cadastro de restaurante |
+| `/promocoes/descadastrar` | público | link do fim dos e-mails de promoção |
 | `/privacidade`, `/termos` | público | textos legais (revisar com jurídico) |
 
 ## Estrutura

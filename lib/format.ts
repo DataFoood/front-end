@@ -79,8 +79,29 @@ export function whatsappLink(raw: string): string | null {
   return `https://wa.me/55${d}`
 }
 
+/** "AAAA-MM-DD" puro é meia-noite UTC para o `Date` — no Brasil vira o dia
+ * anterior. Datas sem hora são lidas no fuso local. */
+function parseDate(iso: string): Date {
+  const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  return day ? new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3])) : new Date(iso)
+}
+
 export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+  return parseDate(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
+/** valor de <input type="datetime-local"> (hora local, sem fuso) */
+export function toDateTimeLocal(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+export function formatMoney(value: number, currency = 'BRL'): string {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency })
 }
 
 export function firstName(name: string): string {

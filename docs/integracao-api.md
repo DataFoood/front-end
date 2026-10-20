@@ -62,12 +62,13 @@ Eventos que encerram a sessão do lado do back (e o front já trata):
 |---|---|
 | `/` | `GET /api/restaurants/?ordering=rating&page_size=3` |
 | `/explorar` | `GET /api/restaurants/taxonomies/` (cache), `GET /api/restaurants/?…` paginado |
-| `/restaurante/[slug]` | `GET /api/restaurants/by-slug/<slug>/`, reviews `POST/DELETE` |
+| `/restaurante/[slug]` | `GET /api/restaurants/by-slug/<slug>/`, reviews `POST/DELETE`, `GET …/<id>/promotions/active/` |
 | `/chat` | `POST /api/search/ { query, limit: 6 }` |
 | `/salvos` | `GET /api/restaurants/favorites/` |
 | favoritos (global) | `GET …/favorites/` no login; `POST/DELETE …/<id>/favorite/` |
-| `/perfil` | `PATCH /users/me/`, `PATCH /users/consent/`, `GET /preferences/`, `GET /preferences/searches/`, `PATCH /preferences/<dim>/<id>/`, `POST /users/<id>/change-password/`, `DELETE /users/<id>/delete/` |
-| `/painel` | `GET /restaurants/mine/`, `GET/PATCH/DELETE /restaurants/<id>/`, `GET …/stats/`, items/hours/images, `GET/POST/PATCH /addresses/` |
+| `/perfil` | `PATCH /users/me/`, `PATCH /users/consent/`, `GET /preferences/`, `GET /preferences/searches/`, `PATCH /preferences/<dim>/<id>/`, `GET/PATCH /promotions/preferences/`, `POST/DELETE /promotions/preferences/telegram/`, `POST /users/<id>/change-password/`, `DELETE /users/<id>/delete/` |
+| `/painel` | `GET /restaurants/mine/`, `GET/PATCH/DELETE /restaurants/<id>/`, `GET …/stats/`, items/hours/images, `GET/POST/PATCH /addresses/`, promoções (`…/<id>/promotions/` + `audience/`, `<pid>/send/`, `<pid>/unschedule/`), `GET /promotions/infra-suggestion/` |
+| `/promocoes/descadastrar` | `POST /promotions/unsubscribe/ {token}` (sem auth, só no clique) |
 
 O dono abrir a própria página ou o painel não soma visualização (o back
 ignora views do dono/admin).

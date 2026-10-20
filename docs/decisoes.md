@@ -3,6 +3,32 @@
 Registro append-only. Mais recente no topo. Cada entrada: o que, por quê e
 o que foi descartado.
 
+## 2026-10-20 — promoções por mensageiros
+
+**WhatsApp por link, não por API.** O painel gera `wa.me/?text=…` e o dono
+dispara pela própria lista de transmissão/grupo/status. A Cloud API exige
+conta Meta Business, templates aprovados e cobra por conversa; e mandar
+para o número de cada cliente vazaria telefones para o dono. Telegram e
+e-mail, que têm envio automático grátis, saem pelo back.
+
+**Telegram vinculado por deep link + botão "confirme aqui".** O back devolve
+`t.me/<bot>?start=<token>`; mostramos como link (não `window.open` após o
+`await`, que bloqueador de pop-up barra) e a pessoa volta e recarrega o
+estado. Descartado: polling automático do status — o vínculo é raro e o
+long polling do back já tem atraso de até 10 s.
+
+**Descadastro só com clique.** A página `/promocoes/descadastrar` não chama a
+API ao carregar: leitores de link dos provedores de e-mail abrem a URL
+sozinhos e descadastrariam a pessoa.
+
+**Aba de promoções acompanha o envio por polling (3 s) só enquanto há uma
+promoção `enviando`.** O envio roda no worker; sem isso o dono veria
+"enviando" até recarregar.
+
+**`formatDate` lê `AAAA-MM-DD` no fuso local.** `new Date('2026-10-20')` é
+meia-noite UTC — no Brasil aparecia o dia anterior (gráfico do painel e
+validade das promoções).
+
 ## 2026-09-28 — rodada de testes finais
 
 **Favoritos via store + `useSyncExternalStore` dentro do context.**

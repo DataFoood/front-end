@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Navegação E2E + contagem de renders contra o front e a API rodando",
   "scripts": {
-    "e2e": "node navigation.mjs"
+    "e2e": "node navigation.mjs",
+    "e2e:promocoes": "node promotions.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.1"

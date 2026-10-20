@@ -22,7 +22,7 @@ import {
   todayIndex,
   whatsappLink,
 } from '@/lib/format'
-import type { Restaurant, Review } from '@/lib/types'
+import type { PublicPromotion, Restaurant, Review } from '@/lib/types'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 
@@ -35,6 +35,60 @@ const CHANNEL_LABELS: [keyof Restaurant, string][] = [
   ['accepts_vale_refeicao', 'vale-refeição'],
   ['accepts_online_order', 'pedido online'],
 ]
+
+function ActivePromotions({ restaurant, loggedIn, isOwner }: { restaurant: Restaurant; loggedIn: boolean; isOwner: boolean }) {
+  const [state, setState] = useState<{ id: number; list: PublicPromotion[] } | null>(null)
+
+  useEffect(() => {
+    const id = restaurant.id
+    api<PublicPromotion[]>(`/api/restaurants/${id}/promotions/active/`, { auth: false })
+      .then(list => setState({ id, list }))
+      .catch(() => setState({ id, list: [] }))
+  }, [restaurant.id])
+
+  const list = state?.id === restaurant.id ? state.list : []
+  if (!list.length) return null
+
+  return (
+    <section className="mb-12" aria-label="promoções">
+      <div className="flex flex-col gap-3">
+        {list.map(p => (
+          <article key={p.id} className="rounded-md border-l-[3px] border-rust bg-white px-5 py-4">
+            <p className="eyebrow mb-1">promoção</p>
+            <h2 className="mb-1 text-[16px] font-medium">{p.title}</h2>
+            <p className="whitespace-pre-line text-[13px] leading-relaxed text-ink-600">{p.message}</p>
+            {(p.coupon_code || p.valid_until) && (
+              <p className="mt-2 text-[12px] text-ink-350">
+                {p.coupon_code && (
+                  <>
+                    cupom <strong className="text-ink">{p.coupon_code}</strong>
+                  </>
+                )}
+                {p.coupon_code && p.valid_until && ' · '}
+                {p.valid_until && `válida até ${formatDate(p.valid_until)}`}
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+      {!isOwner && (
+        <p className="mt-3 text-[12px] text-ink-300">
+          quer receber as próximas no telegram ou e-mail?{' '}
+          {loggedIn ? (
+            <Link href="/perfil?aba=promocoes" className="text-rust underline">
+              salve o restaurante e ative promoções no perfil
+            </Link>
+          ) : (
+            <Link href={`/login?next=/restaurante/${restaurant.slug}`} className="text-rust underline">
+              entre e salve o restaurante
+            </Link>
+          )}
+          .
+        </p>
+      )}
+    </section>
+  )
+}
 
 function ReviewForm({ restaurantId, onCreated }: { restaurantId: number; onCreated: () => void }) {
   const toast = useToast()
@@ -214,6 +268,8 @@ export default function RestaurantePage() {
             </div>
           </div>
         </div>
+
+        <ActivePromotions restaurant={r} loggedIn={!!user} isOwner={isOwner} />
 
         <hr className="mb-12 border-line" />
 
