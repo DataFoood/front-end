@@ -107,9 +107,10 @@ function Explorer() {
     setLoadingMore(true)
     try {
       const data = await api<Paginated<Card>>('/api/restaurants/', { query: { ...filters, page: current.page + 1, page_size: PAGE_SIZE } })
-      setResult({ ...current, items: [...current.items, ...data.results], page: current.page + 1 })
+      // o filtro pode ter mudado no meio: só anexa se ainda é a mesma lista
+      setResult(prev => (prev?.key === current.key ? { ...prev, items: [...prev.items, ...data.results], page: current.page + 1 } : prev))
     } catch (err) {
-      setResult({ ...current, error: errorMessage(err) })
+      setResult(prev => (prev?.key === current.key ? { ...prev, error: errorMessage(err) } : prev))
     } finally {
       setLoadingMore(false)
     }

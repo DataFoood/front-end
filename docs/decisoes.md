@@ -3,6 +3,18 @@
 Registro append-only. Mais recente no topo. Cada entrada: o que, por quê e
 o que foi descartado.
 
+## 2026-10-20 — revisão geral
+
+**`safeNext` resolve a URL em vez de checar prefixo.** `/\evil.com` passava
+por "começa com `/` e não com `//`", mas o navegador trata `\` como `/` e
+o login redirecionava para outro site. Agora `new URL(next, base)` e só
+aceita a mesma origem. Descartado: lista de rotas permitidas — quebraria
+`?next=` para qualquer página nova.
+
+**"carregar mais" só anexa se o filtro não mudou.** A resposta da página 2
+chegando depois de trocar o filtro sobrescrevia a lista nova e a tela
+ficava carregando para sempre.
+
 ## 2026-10-20 — promoções por mensageiros
 
 **WhatsApp por link, não por API.** O painel gera `wa.me/?text=…` e o dono
