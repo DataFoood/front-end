@@ -35,7 +35,7 @@ export function FavoriteButton({ restaurantId, variant = 'icon' }: { restaurantI
     return (
       <button onClick={onClick} aria-pressed={saved} className={`btn border ${saved ? 'border-saved-line bg-saved-bg text-ink-800' : 'border-ink-100 bg-transparent text-ink-800 hover:bg-white'}`}>
         {icon}
-        {saved ? 'salvo' : 'salvar'}
+        {saved ? 'Salvo' : 'Salvar'}
       </button>
     )
   }
@@ -43,7 +43,7 @@ export function FavoriteButton({ restaurantId, variant = 'icon' }: { restaurantI
     <button
       onClick={onClick}
       aria-pressed={saved}
-      aria-label={saved ? 'remover dos salvos' : 'salvar restaurante'}
+      aria-label={saved ? 'Remover dos salvos' : 'Salvar restaurante'}
       className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-xs transition hover:scale-105 ${saved ? 'text-rust' : 'text-ink-600'}`}
     >
       {icon}
@@ -55,10 +55,10 @@ export function OpenBadge({ open }: { open: boolean | null }) {
   if (open === null) return null
   return open ? (
     <span className="inline-flex items-center gap-1 rounded-full border border-success-line bg-success-bg px-2.5 py-0.5 text-[11px] text-success">
-      <span className="h-1.5 w-1.5 rounded-full bg-success-bright" /> aberto agora
+      <span className="h-1.5 w-1.5 rounded-full bg-success-bright" /> Aberto agora
     </span>
   ) : (
-    <span className="inline-flex items-center rounded-full border border-ink-100 px-2.5 py-0.5 text-[11px] text-ink-300">fechado agora</span>
+    <span className="inline-flex items-center rounded-full border border-ink-100 px-2.5 py-0.5 text-[11px] text-ink-300">Fechado agora</span>
   )
 }
 
@@ -80,7 +80,7 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, 
       </div>
       <div className="flex flex-1 flex-col px-4 pb-5 pt-4">
         <div className="mb-1.5 flex items-baseline justify-between gap-3">
-          <h3 className="truncate font-serif text-xl lowercase">{restaurant.name}</h3>
+          <h3 className="truncate font-serif text-xl">{restaurant.name}</h3>
           {typeof match === 'number' && <span className="shrink-0 text-xs font-medium text-rust">{match}% match</span>}
         </div>
         <p className="mb-3 text-xs text-ink-300">{cardSubtitle(restaurant) || '—'}</p>
@@ -95,7 +95,7 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, 
             )}
           </div>
           <span className="flex items-center gap-1 text-xs text-rust">
-            ver
+            Ver
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>

@@ -39,7 +39,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-8">
         <Logo />
 
-        <nav className="hidden items-center gap-7 md:flex" aria-label="principal">
+        <nav className="hidden items-center gap-7 md:flex" aria-label="Principal">
           {links.map(l => (
             <Link key={l.href} href={l.href} className={linkClass(l.href)}>
               {l.label}
@@ -48,12 +48,12 @@ export function SiteHeader() {
           ))}
           {user ? (
             <div className="flex items-center gap-3">
-              <Link href="/perfil" className="flex items-center gap-2 text-[13px] text-ink-600 hover:text-ink" title="meu perfil">
+              <Link href="/perfil" className="flex items-center gap-2 text-[13px] text-ink-600 hover:text-ink" title="Meu perfil">
                 <Avatar name={user.name} url={user.avatar_url} size={30} />
-                <span className="hidden lg:inline">{firstName(user.name).toLowerCase()}</span>
+                <span className="hidden lg:inline">{firstName(user.name)}</span>
               </Link>
               <button onClick={handleLogout} className="text-xs text-ink-250 hover:text-error">
-                sair
+                Sair
               </button>
             </div>
           ) : (
@@ -70,7 +70,7 @@ export function SiteHeader() {
 
         <button
           className="flex h-10 w-10 items-center justify-center rounded-sm md:hidden"
-          aria-label={open ? 'fechar menu' : 'abrir menu'}
+          aria-label={open ? 'Fechar menu' : 'Abrir menu'}
           aria-expanded={open}
           onClick={() => setOpenAt(open ? null : pathname)}
         >
@@ -81,7 +81,7 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <nav className="border-t border-line bg-cream px-4 pb-5 pt-2 md:hidden" aria-label="principal (mobile)">
+        <nav className="border-t border-line bg-cream px-4 pb-5 pt-2 md:hidden" aria-label="Principal (mobile)">
           {links.map(l => (
             <Link key={l.href} href={l.href} className="flex items-center justify-between border-b border-line py-3.5 text-sm">
               {l.label}

@@ -1,6 +1,6 @@
 import type { BusinessHour, Lookup, RestaurantAddress, RestaurantCard } from './types'
 
-export const DAYS = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo']
+export const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
 
 /** "Moderado (R$ 30–80/pessoa)" -> "$$" (ordem das faixas no seed) */
 const PRICE_SYMBOLS: Record<string, string> = {
@@ -24,12 +24,13 @@ export function priceDetail(ranges: Lookup[]): string | null {
   return match ? match[1] : ranges[0]?.name ?? null
 }
 
-export function lowerNames(items: Lookup[], max = 2): string {
-  return items.slice(0, max).map(i => i.name.toLowerCase()).join(', ')
+/** nomes como cadastrados ("Italiana, Pizzaria") — sem forçar caixa */
+export function joinNames(items: Lookup[], max = 2): string {
+  return items.slice(0, max).map(i => i.name).join(', ')
 }
 
 export function cardSubtitle(r: RestaurantCard): string {
-  return [r.address?.neighborhood?.toLowerCase(), lowerNames(r.cuisines, 1), priceSymbol(r.price_ranges)]
+  return [r.address?.neighborhood, joinNames(r.cuisines, 1), priceSymbol(r.price_ranges)]
     .filter(Boolean)
     .join(' · ')
 }
@@ -56,9 +57,9 @@ export function formatRating(value: string | number): string {
 const hhmm = (t: string) => t.slice(0, 5)
 
 export function formatIntervals(hour: BusinessHour | undefined): string {
-  if (!hour || hour.is_closed) return 'fechado'
+  if (!hour || hour.is_closed) return 'Fechado'
   const parts = Object.values(hour.meta_interval || {}).map(([s, e]) => `${hhmm(s)} – ${hhmm(e) === '23:59' ? '00:00' : hhmm(e)}`)
-  return parts.length ? parts.join(' · ') : 'fechado'
+  return parts.length ? parts.join(' · ') : 'Fechado'
 }
 
 export function todayIndex(): number {

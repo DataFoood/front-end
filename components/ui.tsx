@@ -7,7 +7,7 @@ import { initials } from '@/lib/format'
 
 export function Logo({ dark = false, size = 32 }: { dark?: boolean; size?: number }) {
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label="datafood — início">
+    <Link href="/" className="flex items-center gap-2" aria-label="DataFood — início">
       <Image src="/imgs/icon.svg" alt="" width={size} height={size} className="object-contain" priority />
       <span className={`text-base font-medium tracking-wide ${dark ? 'text-rust-soft' : 'text-rust'}`}>DATAFOOD</span>
     </Link>
@@ -18,7 +18,7 @@ export function Spinner({ className = '' }: { className?: string }) {
   return (
     <span
       role="status"
-      aria-label="carregando"
+      aria-label="Carregando"
       className={`inline-block h-5 w-5 animate-spin rounded-full border-2 border-ink-100 border-t-rust ${className}`}
     />
   )
@@ -165,6 +165,23 @@ export function SectionTitle({ title, eyebrow, action }: { title: string; eyebro
       <h2 className="font-serif text-2xl sm:text-[28px]">{title}</h2>
       {eyebrow && <span className="text-[11px] tracking-[0.1em] text-ink-200">{eyebrow}</span>}
       {action}
+    </div>
+  )
+}
+
+/** Rodapé padrão das listas paginadas (usePaginated). */
+export function LoadMore({ shown, total, hasMore, loading, onClick, noun = 'itens' }: { shown: number; total: number; hasMore: boolean; loading: boolean; onClick: () => void; noun?: string }) {
+  if (!hasMore && total <= shown) return null
+  return (
+    <div className="mt-6 flex flex-col items-center gap-2">
+      <p className="text-[11px] text-ink-300">
+        Mostrando {shown} de {total} {noun}
+      </p>
+      {hasMore && (
+        <button type="button" onClick={onClick} disabled={loading} className="btn-ghost py-2 text-[13px]">
+          {loading ? <Spinner className="h-4 w-4" /> : 'Carregar mais'}
+        </button>
+      )}
     </div>
   )
 }

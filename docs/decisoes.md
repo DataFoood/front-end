@@ -3,6 +3,37 @@
 Registro append-only. Mais recente no topo. Cada entrada: o que, por quê e
 o que foi descartado.
 
+## 2026-10-21 — sessão em cookie, paginação padrão, caixa de frase
+
+**Sessão em cookies HttpOnly, não em `localStorage`.** Token no
+`localStorage` é lido por qualquer XSS. Agora o back grava os cookies e
+tira os tokens do corpo (inclusive do refresh); o front só roda o refresh.
+Proteção CSRF pelo cabeçalho `X-Requested-With` (exige preflight; o CORS só
+libera o front). Descartado: BFF no Next (rota `/api` do Next guardando os
+tokens) — o app é todo client-side e o deploy ficaria com mais uma peça;
+e cookie não-HttpOnly com o token — não resolve o XSS.
+
+**Refresh coordenado entre abas com Web Locks.** As abas dividem os cookies;
+sem a trava, duas renovando juntas mandavam o mesmo refresh rotacionado e a
+segunda derrubava a sessão. Quem pega a trava logo depois de outra aba ter
+renovado não renova de novo.
+
+**Marcador `datafood.session` no `localStorage`.** O JS não sabe se existe
+cookie HttpOnly; sem o marcador, todo visitante faria `/me` + refresh à toa
+ao abrir o site. Ele não carrega nada sensível.
+
+**Conversas do chat na conta (`/api/chats/`).** No `localStorage` elas não
+seguiam a pessoa e sobreviviam ao encerramento da conta. A cópia antiga é
+importada uma vez (deduplicada — o efeito roda 2× no StrictMode) e apagada.
+
+**`usePaginated` para toda lista.** Um hook só, chaveado pela consulta, com
+`<LoadMore>` padrão. Avaliações saíram do detalhe do restaurante
+(`has_reviewed` no lugar) e viraram lista paginada.
+
+**Caixa de frase em vez de tudo minúsculo.** Leitura mais fácil e nomes
+próprios (restaurantes, WhatsApp, LGPD) com a grafia certa. Regras em
+[estilizacao.md](estilizacao.md#voz).
+
 ## 2026-10-20 — revisão geral
 
 **`safeNext` resolve a URL em vez de checar prefixo.** `/\evil.com` passava

@@ -10,7 +10,7 @@ let cache: Taxonomies | null = null
 let inflight: Promise<Taxonomies> | null = null
 
 function loadTaxonomies(): Promise<Taxonomies> {
-  inflight ??= api<Taxonomies>('/api/restaurants/taxonomies/', { auth: false })
+  inflight ??= api<Taxonomies>('/api/restaurants/taxonomies/')
     .then(t => (cache = t))
     .catch(err => {
       inflight = null // deixa tentar de novo no próximo uso

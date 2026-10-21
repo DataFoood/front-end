@@ -16,29 +16,29 @@ function Unsubscribe() {
   const confirm = async () => {
     setState('sending')
     try {
-      await api('/api/promotions/unsubscribe/', { method: 'POST', body: { token }, auth: false })
+      await api('/api/promotions/unsubscribe/', { method: 'POST', body: { token } })
       setState('done')
     } catch (err) {
       setState({ error: errorMessage(err) })
     }
   }
 
-  if (!token) return <p className="text-sm text-muted">link incompleto. use o link do fim do e-mail ou desligue em perfil → promoções.</p>
+  if (!token) return <p className="text-sm text-muted">Link incompleto. Use o link do fim do e-mail ou desligue em Perfil → Promoções.</p>
   if (state === 'done') {
     return (
       <>
-        <p className="mb-8 text-sm text-muted">pronto. você não vai mais receber promoções. dá para religar quando quiser no seu perfil.</p>
+        <p className="mb-8 text-sm text-muted">Pronto. Você não vai mais receber promoções. Dá para religar quando quiser no seu perfil.</p>
         <Link href="/" className="btn-primary">
-          voltar ao início
+          Voltar ao início
         </Link>
       </>
     )
   }
   return (
     <>
-      <p className="mb-8 text-sm text-muted">você deixa de receber promoções por e-mail e telegram de todos os restaurantes.</p>
+      <p className="mb-8 text-sm text-muted">Você deixa de receber promoções por e-mail e Telegram de todos os restaurantes.</p>
       <button onClick={confirm} disabled={state === 'sending'} className="btn-primary">
-        {state === 'sending' ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'parar de receber promoções'}
+        {state === 'sending' ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Parar de receber promoções'}
       </button>
       {typeof state === 'object' && <p className="mt-4 text-sm text-danger">{state.error}</p>}
     </>
@@ -50,8 +50,8 @@ export default function DescadastrarPage() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="mx-auto flex max-w-xl flex-1 flex-col items-center justify-center px-4 py-24 text-center">
-        <p className="eyebrow mb-4">promoções</p>
-        <h1 className="mb-4 font-serif text-4xl">cancelar inscrição</h1>
+        <p className="eyebrow mb-4">Promoções</p>
+        <h1 className="mb-4 font-serif text-4xl">Cancelar inscrição</h1>
         <Suspense fallback={<PageLoader />}>
           <Unsubscribe />
         </Suspense>

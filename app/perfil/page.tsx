@@ -5,19 +5,20 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState, type FormEvent } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
-import { Avatar, Field, PageLoader, Spinner, Toggle } from '@/components/ui'
-import { api, ApiError, errorMessage, tokenStore, type Tokens } from '@/lib/api'
+import { Avatar, Field, LoadMore, PageLoader, Spinner, Toggle } from '@/components/ui'
+import { api, ApiError, errorMessage } from '@/lib/api'
 import { formatDate, maskPhone, onlyDigits } from '@/lib/format'
 import type { Affinity, MessagingPreference, Preferences, SearchHistoryEntry, User } from '@/lib/types'
+import { usePaginated } from '@/lib/usePaginated'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
 type Tab = 'dados' | 'privacidade' | 'promocoes' | 'seguranca'
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'dados', label: 'meus dados' },
-  { id: 'privacidade', label: 'privacidade' },
-  { id: 'promocoes', label: 'promoções' },
-  { id: 'seguranca', label: 'segurança' },
+  { id: 'dados', label: 'Meus dados' },
+  { id: 'privacidade', label: 'Privacidade' },
+  { id: 'promocoes', label: 'Promoções' },
+  { id: 'seguranca', label: 'Segurança' },
 ]
 
 function ProfileForm({ user }: { user: User }) {
@@ -60,38 +61,38 @@ function ProfileForm({ user }: { user: User }) {
       <div className="flex items-center gap-4">
         <Avatar name={form.name} url={form.avatar_url} size={56} />
         <div className="text-xs text-ink-300">
-          conta {user.role === 'owner' ? 'de restaurante' : user.role === 'admin' ? 'administradora' : 'pessoal'} · desde {formatDate(user.created_at)}
+          Conta {user.role === 'owner' ? 'de restaurante' : user.role === 'admin' ? 'administradora' : 'pessoal'} · desde {formatDate(user.created_at)}
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="nome completo" name="name" value={form.name} onChange={set('name')} error={errors.name} />
-        <Field label="e-mail" name="email" type="email" value={form.email} onChange={set('email')} error={errors.email} />
-        <Field label="telefone" name="phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: maskPhone(e.target.value) }))} error={errors.phone} />
-        <Field label="data de nascimento" name="birthday" type="date" value={form.birthday} onChange={set('birthday')} error={errors.birthday} />
+        <Field label="Nome completo" name="name" value={form.name} onChange={set('name')} error={errors.name} />
+        <Field label="E-mail" name="email" type="email" value={form.email} onChange={set('email')} error={errors.email} />
+        <Field label="Telefone" name="phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: maskPhone(e.target.value) }))} error={errors.phone} />
+        <Field label="Data de nascimento" name="birthday" type="date" value={form.birthday} onChange={set('birthday')} error={errors.birthday} />
         <label className="flex flex-col">
-          <span className="label">gênero</span>
+          <span className="label">Gênero</span>
           <select value={form.gender} onChange={set('gender')} className="input">
-            <option value="">prefiro não dizer</option>
-            <option value="F">feminino</option>
-            <option value="M">masculino</option>
-            <option value="O">outro</option>
-            <option value="N">não informado</option>
+            <option value="">Prefiro não dizer</option>
+            <option value="F">Feminino</option>
+            <option value="M">Masculino</option>
+            <option value="O">Outro</option>
+            <option value="N">Não informado</option>
           </select>
         </label>
-        <Field label="foto (url)" name="avatar_url" type="url" value={form.avatar_url} onChange={set('avatar_url')} error={errors.avatar_url} placeholder="https://…" />
+        <Field label="Foto (URL)" name="avatar_url" type="url" value={form.avatar_url} onChange={set('avatar_url')} error={errors.avatar_url} placeholder="https://…" />
       </div>
       {user.cpf && <p className="text-xs text-ink-300">CPF cadastrado: ***.***.{user.cpf.slice(6, 9)}-{user.cpf.slice(9)} (não editável)</p>}
       <button type="submit" disabled={saving} className="btn-primary self-start">
-        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'salvar alterações'}
+        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Salvar alterações'}
       </button>
     </form>
   )
 }
 
 const DIMENSIONS: { key: keyof Preferences; path: string; label: string }[] = [
-  { key: 'cuisines', path: 'cuisines', label: 'cozinhas' },
-  { key: 'ambients', path: 'ambients', label: 'ambientes' },
-  { key: 'price_ranges', path: 'prices', label: 'faixas de preço' },
+  { key: 'cuisines', path: 'cuisines', label: 'Cozinhas' },
+  { key: 'ambients', path: 'ambients', label: 'Ambientes' },
+  { key: 'price_ranges', path: 'prices', label: 'Faixas de preço' },
 ]
 
 function AffinityRow({ affinity, path, onSaved }: { affinity: Affinity; path: string; onSaved: (a: Affinity) => void }) {
@@ -121,7 +122,7 @@ function AffinityRow({ affinity, path, onSaved }: { affinity: Affinity; path: st
         onChange={e => setValue(Number(e.target.value))}
         onPointerUp={commit}
         onKeyUp={commit}
-        aria-label={`afinidade com ${affinity.name}`}
+        aria-label={`Afinidade com ${affinity.name}`}
         className="flex-1 accent-rust"
       />
       <span className="w-16 text-right text-[11px] text-ink-300">
@@ -135,18 +136,14 @@ function PrivacyPanel({ user }: { user: User }) {
   const { setUser } = useAuth()
   const toast = useToast()
   const [saving, setSaving] = useState(false)
-  const [data, setData] = useState<{ prefs: Preferences; history: SearchHistoryEntry[] } | null>(null)
-  const prefs = data?.prefs ?? null
-  const history = data?.history ?? null
-  const setPrefs = (fn: (p: Preferences) => Preferences) => setData(d => (d ? { ...d, prefs: fn(d.prefs) } : d))
+  const [prefs, setPrefsState] = useState<Preferences | null>(null)
+  const setPrefs = (fn: (p: Preferences) => Preferences) => setPrefsState(p => (p ? fn(p) : p))
 
-  // as duas leituras chegam juntas: um render em vez de dois
   useEffect(() => {
     let cancelled = false
-    Promise.all([
-      api<Preferences>('/api/preferences/').catch(() => ({ cuisines: [], ambients: [], price_ranges: [] })),
-      api<SearchHistoryEntry[]>('/api/preferences/searches/').catch(() => []),
-    ]).then(([p, h]) => !cancelled && setData({ prefs: p, history: h }))
+    api<Preferences>('/api/preferences/')
+      .catch(() => ({ cuisines: [], ambients: [], price_ranges: [] }))
+      .then(p => !cancelled && setPrefsState(p))
     return () => {
       cancelled = true
     }
@@ -171,21 +168,21 @@ function PrivacyPanel({ user }: { user: User }) {
     <div className="flex flex-col gap-6">
       <div className="card flex items-start justify-between gap-6 p-6">
         <div>
-          <h3 className="mb-1.5 text-[15px] font-medium">personalizar recomendações</h3>
+          <h3 className="mb-1.5 text-[15px] font-medium">Personalizar recomendações</h3>
           <p className="max-w-lg text-[13px] leading-relaxed text-muted">
-            com isso ligado, guardamos suas últimas buscas e os restaurantes que você visita para aprender seu gosto (LGPD, art. 7º, I). desligado, a busca funciona igual, mas nada novo é registrado sobre você.
+            Com isso ligado, guardamos suas últimas buscas e os restaurantes que você visita para aprender seu gosto (LGPD, art. 7º, I). Desligado, a busca funciona igual, mas nada novo é registrado sobre você.
           </p>
         </div>
-        <Toggle checked={user.allow_info} onChange={setConsent} disabled={saving} label="personalizar recomendações" />
+        <Toggle checked={user.allow_info} onChange={setConsent} disabled={saving} label="Personalizar recomendações" />
       </div>
 
       <div className="card p-6">
-        <h3 className="mb-1.5 text-[15px] font-medium">suas afinidades</h3>
-        <p className="mb-4 text-[13px] text-muted">calculadas a partir do que você salva e visita. ajuste à vontade — ajustes manuais não são sobrescritos.</p>
+        <h3 className="mb-1.5 text-[15px] font-medium">Suas afinidades</h3>
+        <p className="mb-4 text-[13px] text-muted">Calculadas a partir do que você salva e visita. Ajuste à vontade — ajustes manuais não são sobrescritos.</p>
         {!prefs ? (
           <Spinner />
         ) : !hasPrefs ? (
-          <p className="text-[13px] text-ink-250">{user.allow_info ? 'ainda aprendendo seu gosto — salve e visite alguns lugares.' : 'ative a personalização para montarmos suas afinidades.'}</p>
+          <p className="text-[13px] text-ink-250">{user.allow_info ? 'Ainda aprendendo seu gosto — salve e visite alguns lugares.' : 'Ative a personalização para montarmos suas afinidades.'}</p>
         ) : (
           DIMENSIONS.map(d =>
             prefs[d.key].length ? (
@@ -205,23 +202,41 @@ function PrivacyPanel({ user }: { user: User }) {
         )}
       </div>
 
+      {/* chaveado pelo consentimento: ligar/desligar recarrega o histórico */}
+      <SearchHistoryCard key={String(user.allow_info)} allowInfo={user.allow_info} />
+
       <div className="card p-6">
-        <h3 className="mb-4 text-[15px] font-medium">buscas recentes</h3>
-        {!history ? (
-          <Spinner />
-        ) : history.length === 0 ? (
-          <p className="text-[13px] text-ink-250">{user.allow_info ? 'nenhuma busca registrada ainda.' : 'sem personalização, suas buscas não são guardadas.'}</p>
-        ) : (
+        <h3 className="mb-1.5 text-[15px] font-medium">Conversas da busca</h3>
+        <p className="max-w-lg text-[13px] leading-relaxed text-muted">
+          As conversas do <Link href="/chat" className="text-rust underline">chat</Link> ficam salvas na sua conta — aparecem em qualquer navegador em que você entrar. Apague cada uma pelo chat; ao encerrar a conta, todas são apagadas junto.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function SearchHistoryCard({ allowInfo }: { allowInfo: boolean }) {
+  const history = usePaginated<SearchHistoryEntry>('/api/preferences/searches/', {}, 10)
+  return (
+    <div className="card p-6">
+      <h3 className="mb-4 text-[15px] font-medium">Buscas recentes</h3>
+      {history.loading ? (
+        <Spinner />
+      ) : history.items.length === 0 ? (
+        <p className="text-[13px] text-ink-250">{allowInfo ? 'Nenhuma busca registrada ainda.' : 'Sem personalização, suas buscas não são guardadas.'}</p>
+      ) : (
+        <>
           <ul className="divide-y divide-line-soft">
-            {history.slice(0, 20).map(h => (
+            {history.items.map(h => (
               <li key={h.id} className="flex justify-between gap-4 py-2 text-[13px]">
                 <span className="truncate text-ink-800">{h.query}</span>
                 <span className="shrink-0 text-[11px] text-ink-250">{formatDate(h.created_at)}</span>
               </li>
             ))}
           </ul>
-        )}
-      </div>
+          <LoadMore shown={history.items.length} total={history.count} hasMore={history.hasMore} loading={history.loadingMore} onClick={history.loadMore} noun="buscas" />
+        </>
+      )}
     </div>
   )
 }
@@ -295,61 +310,61 @@ function PromotionsPanel({ user }: { user: User }) {
     <div className="flex flex-col gap-6">
       <div className="card flex items-start justify-between gap-6 p-6">
         <div>
-          <h3 className="mb-1.5 text-[15px] font-medium">receber promoções</h3>
+          <h3 className="mb-1.5 text-[15px] font-medium">Receber promoções</h3>
           <p className="max-w-lg text-[13px] leading-relaxed text-muted">
-            ligado, você recebe as promoções dos restaurantes que <Link href="/salvos" className="text-rust underline">salvou</Link> — só deles, no máximo algumas por dia. desligue quando quiser (também pelo link no fim de cada e-mail ou enviando /sair no telegram).
+            Ligado, você recebe as promoções dos restaurantes que <Link href="/salvos" className="text-rust underline">salvou</Link> — só deles, no máximo algumas por dia. Desligue quando quiser (também pelo link no fim de cada e-mail ou enviando /sair no Telegram).
           </p>
-          {pref.promotions_opt_in && pref.opted_in_at && <p className="mt-2 text-[11px] text-ink-250">consentimento registrado em {formatDate(pref.opted_in_at)}</p>}
+          {pref.promotions_opt_in && pref.opted_in_at && <p className="mt-2 text-[11px] text-ink-250">Consentimento registrado em {formatDate(pref.opted_in_at)}</p>}
         </div>
         <Toggle
           checked={pref.promotions_opt_in}
           onChange={v => patch({ promotions_opt_in: v }, v ? 'Pronto! Você vai receber promoções dos seus salvos.' : 'Você não vai mais receber promoções.')}
           disabled={saving}
-          label="receber promoções"
+          label="Receber promoções"
         />
       </div>
 
       <div className={`card p-6 ${pref.promotions_opt_in ? '' : 'opacity-60'}`}>
-        <h3 className="mb-4 text-[15px] font-medium">por onde</h3>
+        <h3 className="mb-4 text-[15px] font-medium">Por onde</h3>
         <div className="divide-y divide-line-soft">
-        <ChannelRow title="e-mail" text={<>para {user.email}</>}>
-          <Toggle checked={pref.channel_email} onChange={v => patch({ channel_email: v })} disabled={saving || !pref.promotions_opt_in} label="receber por e-mail" />
+        <ChannelRow title="E-mail" text={<>Para {user.email}</>}>
+          <Toggle checked={pref.channel_email} onChange={v => patch({ channel_email: v })} disabled={saving || !pref.promotions_opt_in} label="Receber por e-mail" />
         </ChannelRow>
         <ChannelRow
-          title="telegram"
+          title="Telegram"
           text={
             pref.telegram_linked ? (
               <>
-                vinculado{pref.telegram_linked_at && ` desde ${formatDate(pref.telegram_linked_at)}`}.{' '}
+                Vinculado{pref.telegram_linked_at && ` desde ${formatDate(pref.telegram_linked_at)}`}.{' '}
                 <button onClick={unlinkTelegram} className="text-rust underline">
-                  desvincular
+                  Desvincular
                 </button>
               </>
             ) : link ? (
               <>
                 <a href={link} target="_blank" rel="noopener noreferrer" className="text-rust underline">
-                  abrir o bot no telegram
+                  Abra o bot no Telegram
                 </a>{' '}
-                e toque em <strong>iniciar</strong>. depois,{' '}
+                e toque em <strong>Iniciar</strong>. Depois,{' '}
                 <button onClick={() => setReloadKey(k => k + 1)} className="text-rust underline">
                   confirme aqui
                 </button>
-                . o link vale 15 minutos.
+                . O link vale 15 minutos.
               </>
             ) : (
               <>
-                chega na hora, no celular.{' '}
+                Chega na hora, no celular.{' '}
                 <button onClick={linkTelegram} disabled={!pref.promotions_opt_in} className="text-rust underline disabled:text-ink-250 disabled:no-underline">
-                  vincular telegram
+                  Vincular Telegram
                 </button>
               </>
             )
           }
         >
-          <Toggle checked={pref.channel_telegram} onChange={v => patch({ channel_telegram: v })} disabled={saving || !pref.promotions_opt_in} label="receber pelo telegram" />
+          <Toggle checked={pref.channel_telegram} onChange={v => patch({ channel_telegram: v })} disabled={saving || !pref.promotions_opt_in} label="Receber pelo Telegram" />
         </ChannelRow>
-        <ChannelRow title="whatsapp" text="o restaurante compartilha as promoções na própria lista de transmissão ou grupo — peça para entrar direto com ele. não repassamos seu telefone.">
-          <span className="text-[11px] text-ink-250">pelo restaurante</span>
+        <ChannelRow title="WhatsApp" text="O restaurante compartilha as promoções na própria lista de transmissão ou grupo — peça para entrar direto com ele. Não repassamos seu telefone.">
+          <span className="text-[11px] text-ink-250">Pelo restaurante</span>
         </ChannelRow>
         </div>
       </div>
@@ -371,9 +386,8 @@ function SecurityPanel({ user }: { user: User }) {
     setSaving(true)
     setErrors({})
     try {
-      // o back derruba todas as sessões e devolve um par novo para esta continuar
-      const tokens = await api<Tokens>(`/api/users/${user.id}/change-password/`, { method: 'POST', body: form })
-      tokenStore.set({ access: tokens.access, refresh: tokens.refresh })
+      // o back derruba todas as sessões e grava um par novo em cookie para esta continuar
+      await api(`/api/users/${user.id}/change-password/`, { method: 'POST', body: form })
       toast.success('Senha alterada. As outras sessões foram encerradas.')
       setForm({ current_password: '', new_password: '', confirm_password: '' })
     } catch (err) {
@@ -386,7 +400,13 @@ function SecurityPanel({ user }: { user: User }) {
 
   const deleteAccount = async () => {
     try {
+      // o back apaga a conta, as conversas e os cookies de sessão
       await api(`/api/users/${user.id}/delete/`, { method: 'DELETE' })
+      try {
+        window.localStorage.removeItem(`datafood.chats.${user.id}`) // cópia antiga, de antes de irem para a conta
+      } catch {
+        /* noop */
+      }
       await logout()
       toast.info('Sua conta foi encerrada.')
       router.replace('/')
@@ -400,24 +420,24 @@ function SecurityPanel({ user }: { user: User }) {
   return (
     <div className="flex flex-col gap-6">
       <form onSubmit={changePassword} className="card flex flex-col gap-4 p-6">
-        <h3 className="text-[15px] font-medium">alterar senha</h3>
-        <Field label="senha atual" name="current_password" type="password" autoComplete="current-password" value={form.current_password} onChange={set('current_password')} error={errors.current_password} />
+        <h3 className="text-[15px] font-medium">Alterar senha</h3>
+        <Field label="Senha atual" name="current_password" type="password" autoComplete="current-password" value={form.current_password} onChange={set('current_password')} error={errors.current_password} />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="nova senha" name="new_password" type="password" autoComplete="new-password" value={form.new_password} onChange={set('new_password')} error={errors.new_password} />
-          <Field label="confirmar nova senha" name="confirm_password" type="password" autoComplete="new-password" value={form.confirm_password} onChange={set('confirm_password')} error={errors.confirm_password} />
+          <Field label="Nova senha" name="new_password" type="password" autoComplete="new-password" value={form.new_password} onChange={set('new_password')} error={errors.new_password} />
+          <Field label="Confirmar nova senha" name="confirm_password" type="password" autoComplete="new-password" value={form.confirm_password} onChange={set('confirm_password')} error={errors.confirm_password} />
         </div>
         <button type="submit" disabled={saving || !form.current_password || !form.new_password} className="btn-primary self-start">
-          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'alterar senha'}
+          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Alterar senha'}
         </button>
       </form>
 
       <div className="card border-danger-line p-6">
-        <h3 className="mb-1.5 text-[15px] font-medium text-danger">encerrar conta</h3>
-        <p className="mb-4 text-[13px] leading-relaxed text-muted">seu acesso é bloqueado imediatamente. digite <strong>encerrar</strong> para confirmar.</p>
+        <h3 className="mb-1.5 text-[15px] font-medium text-danger">Encerrar conta</h3>
+        <p className="mb-4 text-[13px] leading-relaxed text-muted">Seu acesso é bloqueado imediatamente e suas conversas da busca são apagadas. Digite <strong>encerrar</strong> para confirmar.</p>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <input value={confirmText} onChange={e => setConfirmText(e.target.value)} className="input sm:max-w-xs" aria-label="confirmação" placeholder="encerrar" />
+          <input value={confirmText} onChange={e => setConfirmText(e.target.value)} className="input sm:max-w-xs" aria-label="Confirmação" placeholder="encerrar" />
           <button onClick={deleteAccount} disabled={confirmText.trim().toLowerCase() !== 'encerrar'} className="btn-danger">
-            encerrar minha conta
+            Encerrar minha conta
           </button>
         </div>
       </div>
@@ -459,8 +479,8 @@ export default function PerfilPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 pb-20 pt-10 sm:px-8">
-        <p className="eyebrow mb-3">conta</p>
-        <h1 className="mb-8 font-serif text-4xl">meu perfil</h1>
+        <p className="eyebrow mb-3">Conta</p>
+        <h1 className="mb-8 font-serif text-4xl">Meu perfil</h1>
         <RequireAuth>
           <Suspense fallback={<PageLoader />}>
             <Profile />

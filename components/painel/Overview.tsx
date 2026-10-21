@@ -27,8 +27,8 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
   if (values.every(v => v === 0)) {
     return (
       <div className="card flex flex-col p-5 sm:p-6">
-        <p className="mb-1 text-sm">novos favoritos por dia</p>
-        <p className="my-auto py-12 text-center text-[13px] text-ink-300">nenhum favorito nos últimos {windowDays} dias.</p>
+        <p className="mb-1 text-sm">Novos favoritos por dia</p>
+        <p className="my-auto py-12 text-center text-[13px] text-ink-300">Nenhum favorito nos últimos {windowDays} dias.</p>
       </div>
     )
   }
@@ -36,19 +36,19 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
   return (
     <div className="card p-5 sm:p-6">
       <div className="mb-1 flex items-baseline justify-between gap-4">
-        <p className="text-sm">novos favoritos por dia</p>
+        <p className="text-sm">Novos favoritos por dia</p>
         <p className="text-[11px] text-muted" aria-live="polite">
-          {active ? `${formatDate(active.date)} · ${active.favorites} favorito${active.favorites === 1 ? '' : 's'}` : `últimos ${windowDays} dias`}
+          {active ? `${formatDate(active.date)} · ${active.favorites} favorito${active.favorites === 1 ? '' : 's'}` : `Últimos ${windowDays} dias`}
         </p>
       </div>
-      <p className="mb-5 text-[11px] text-ink-300">quantas pessoas salvaram o restaurante em cada dia</p>
+      <p className="mb-5 text-[11px] text-ink-300">Quantas pessoas salvaram o restaurante em cada dia</p>
       <div className="relative">
         {/* grid recessiva: só a linha do máximo */}
         <div className="absolute inset-x-0 top-0 border-t border-dashed border-ink-50" aria-hidden />
         <span className="absolute -top-2 right-0 bg-white pl-1 text-[10px] text-ink-300" aria-hidden>
           {max}
         </span>
-        <div className="flex h-36 items-end gap-[2px]" role="img" aria-label={`favoritos por dia nos últimos ${windowDays} dias, máximo de ${max}`}>
+        <div className="flex h-36 items-end gap-[2px]" role="img" aria-label={`Favoritos por dia nos últimos ${windowDays} dias, máximo de ${max}`}>
           {series.map((s, i) => (
             <div
               key={s.date}
@@ -66,11 +66,11 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
       </div>
       <div className="mt-2 flex justify-between text-[10px] text-ink-300">
         <span>{formatDate(series[0].date)}</span>
-        <span>hoje</span>
+        <span>Hoje</span>
       </div>
       {/* versão tabular p/ leitores de tela */}
       <table className="sr-only">
-        <caption>favoritos por dia</caption>
+        <caption>Favoritos por dia</caption>
         <tbody>
           {series.map(s => (
             <tr key={s.date}>
@@ -88,8 +88,8 @@ function RatingBars({ distribution, total }: { distribution: RestaurantStats['ra
   const max = Math.max(1, ...Object.values(distribution))
   return (
     <div className="card p-5 sm:p-6">
-      <p className="mb-1 text-sm">distribuição das notas</p>
-      <p className="mb-5 text-[11px] text-ink-300">{total} avaliações no total</p>
+      <p className="mb-1 text-sm">Distribuição das notas</p>
+      <p className="mb-5 text-[11px] text-ink-300">{total} {total === 1 ? 'avaliação' : 'avaliações'} no total</p>
       <div className="flex flex-col gap-3">
         {(['5', '4', '3', '2', '1'] as const).map(star => (
           <div key={star} className="flex items-center gap-3">
@@ -135,14 +135,14 @@ export function Overview({ restaurant }: { restaurant: Restaurant }) {
     <div className="flex flex-col gap-5">
       {missing.length > 0 && (
         <div className="rounded-md border-l-[3px] border-rust bg-white px-5 py-4 text-[13px] leading-relaxed text-ink-600">
-          complete o cadastro para aparecer melhor na busca inteligente: falta <strong>{missing.join(', ')}</strong>.
+          Complete o cadastro para aparecer melhor na busca inteligente: falta <strong>{missing.join(', ')}</strong>.
         </div>
       )}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Tile label="VISUALIZAÇÕES" value={stats.view_count.toLocaleString('pt-BR')} note="acessos à página (total)" />
+        <Tile label="VISUALIZAÇÕES" value={stats.view_count.toLocaleString('pt-BR')} note="Acessos à página (total)" />
         <Tile label="FAVORITOS" value={stats.favorites_total} note={`+${stats.favorites_window} nos últimos ${stats.window_days} dias`} />
         <Tile label="AVALIAÇÕES" value={stats.reviews_total} note={`+${stats.reviews_window} nos últimos ${stats.window_days} dias`} />
-        <Tile label="NOTA MÉDIA" value={formatRating(stats.average_rating)} note={stats.reviews_total ? 'de 5,0' : 'sem avaliações ainda'} />
+        <Tile label="NOTA MÉDIA" value={formatRating(stats.average_rating)} note={stats.reviews_total ? 'De 5,0' : 'Sem avaliações ainda'} />
       </div>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
         <DailyBars series={stats.series} windowDays={stats.window_days} />
@@ -150,13 +150,13 @@ export function Overview({ restaurant }: { restaurant: Restaurant }) {
       </div>
       <div className="card p-5 sm:p-6">
         <div className="mb-4 flex items-baseline justify-between">
-          <p className="text-sm">avaliações recentes</p>
+          <p className="text-sm">Avaliações recentes</p>
           <Link href={`/restaurante/${restaurant.slug}`} className="text-xs text-rust underline">
-            ver página pública
+            Ver página pública
           </Link>
         </div>
         {stats.recent_reviews.length === 0 ? (
-          <p className="text-[13px] text-ink-300">nenhuma avaliação ainda.</p>
+          <p className="text-[13px] text-ink-300">Nenhuma avaliação ainda.</p>
         ) : (
           <ul className="divide-y divide-line-soft">
             {stats.recent_reviews.map(r => (

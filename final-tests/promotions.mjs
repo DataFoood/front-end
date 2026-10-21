@@ -10,7 +10,9 @@
 //   API_LOG=/caminho/api.log bun run e2e:promocoes
 //
 // Faz 2 logins (limite do back: 5/min por IP). Remove a promoção no fim e
-// religa o opt-in do cliente demo.
+// religa o opt-in do cliente demo. Cada execução gasta 1 da cota diária de
+// promoções do restaurante (remover não devolve): para repetir no mesmo dia,
+// suba a API com PROMOTIONS_MAX_PER_DAY alto.
 
 import { readFileSync } from 'node:fs'
 import { chromium } from 'playwright'
@@ -86,7 +88,7 @@ async function main() {
     check((await customer.getByRole('tab', { name: 'promoções' }).getAttribute('aria-selected')) === 'true', '?aba=promocoes abre a aba certa')
     if ((await optIn.getAttribute('aria-checked')) !== 'true') {
       await optIn.click()
-      await customer.waitForFunction(() => document.querySelector('[aria-label="receber promoções"]')?.getAttribute('aria-checked') === 'true')
+      await customer.waitForFunction(() => document.querySelector('[aria-label="Receber promoções"]')?.getAttribute('aria-checked') === 'true')
     }
     check((await optIn.getAttribute('aria-checked')) === 'true', 'opt-in ligado')
     check(await customer.getByRole('switch', { name: 'receber por e-mail' }).isEnabled(), 'canal e-mail habilitado com opt-in')
@@ -99,8 +101,9 @@ async function main() {
     await login(owner, OWNER)
     await owner.goto(`${FRONT}/painel?r=${dallas.id}&aba=promocoes`)
     await owner.getByRole('heading', { name: 'nova promoção' }).waitFor({ timeout: 15000 })
-    check(await owner.getByText(/fim de semana tranquilo|fim de semana movimentado|contrate infraestrutura/).isVisible(), 'sugestão de infra do fim de semana aparece')
-    check(await owner.getByText(/1 pessoa/).first().isVisible(), 'alcance mostra o cliente demo (e-mail)')
+    check(!(await owner.getByText(/fim de semana tranquilo|fim de semana movimentado|contrate infraestrutura/i).count()), 'dono não vê a sugestão de infra (só admin)')
+    await owner.getByText(/1 pessoa/).first().waitFor({ timeout: 10000 })
+    check(true, 'alcance mostra o cliente demo (e-mail)')
 
     await owner.fill('input[name=promo-title]', title)
     await owner.fill('textarea[name=promo-message]', 'Burger em dobro hoje à noite.')
@@ -111,7 +114,7 @@ async function main() {
     check(true, 'rascunho criado e listado')
 
     await row.getByRole('button', { name: 'enviar agora' }).click()
-    await row.getByText('enviada', { exact: true }).waitFor({ timeout: 20000 })
+    await row.getByText('Enviada', { exact: true }).waitFor({ timeout: 20000 })
     check(true, 'enviar agora → enviada')
     const meta = await row.innerText()
     check(/entregue|limite diário/.test(meta), 'estatística de entrega na linha', meta.split('\n').slice(-2).join(' | '))
@@ -149,7 +152,7 @@ async function main() {
     await optIn.waitFor()
     check((await optIn.getAttribute('aria-checked')) === 'false', 'perfil reflete o descadastro')
     await optIn.click() // restaura o estado do seed
-    await customer.waitForFunction(() => document.querySelector('[aria-label="receber promoções"]')?.getAttribute('aria-checked') === 'true')
+    await customer.waitForFunction(() => document.querySelector('[aria-label="Receber promoções"]')?.getAttribute('aria-checked') === 'true')
   })
 
   await step('limpeza', async () => {

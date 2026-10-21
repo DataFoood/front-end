@@ -72,10 +72,21 @@ Componentes React equivalentes em `components/ui.tsx`: `Field`, `TextArea`,
 
 ## Voz
 
-Textos da interface em **minúsculas** ("explorar restaurantes", "salvar
-alterações"), inclusive nomes de restaurante em títulos (`lowercase`).
-Exceções: toasts, que são frases completas ("Dados atualizados."), e o
-logotipo DATAFOOD.
+**Caixa de frase** em toda a interface: só a primeira letra maiúscula, como
+numa frase ("Explorar restaurantes", "Salvar alterações", "Nova
+promoção"). Vale para títulos, botões, rótulos, abas, placeholders,
+mensagens de erro e toasts.
+
+- Nomes próprios e siglas mantêm a grafia: DataFood, WhatsApp, Telegram,
+  LGPD, CPF, CNPJ, CEP, URL, UF.
+- Nome de restaurante e de taxonomia aparecem **como cadastrados** — nada de
+  `lowercase`/`capitalize`/`toLowerCase()` em dado vindo da API.
+- `.label` e `.eyebrow` ficam em caixa alta pelo CSS (`uppercase`); escreva
+  o texto em caixa de frase mesmo assim (leitores de tela e copiar/colar
+  usam o texto original).
+- Continuação de frase depois de `·` ou `—` segue minúscula
+  ("Cupom SEXTOU · válida até 25 out.").
+- Logotipo: DATAFOOD (é imagem de marca, não texto corrido).
 
 ## Layout e responsividade
 

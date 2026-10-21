@@ -26,6 +26,10 @@ bun run e2e                        # HEADED=1 bun run e2e para ver o navegador
 API_LOG=/caminho/do/log-da-api bun run e2e:promocoes
 ```
 
+Cada execução gasta 1 da cota diária de promoções do Dallas (3 por padrão;
+remover não devolve a cota): para repetir no mesmo dia, suba a API com
+`PROMOTIONS_MAX_PER_DAY=100`.
+
 `e2e:promocoes` lê o log da API para achar o e-mail (backend de console) e
 testar o link de descadastro; sem `API_LOG` essa parte é pulada. Com Celery
 eager (`CELERY_TASK_ALWAYS_EAGER=True`) o envio acontece na própria
@@ -40,7 +44,7 @@ Efeitos colaterais: cria uma conta `e2e-…@e2e.test` e um restaurante
 `E2E Temp …` do dono demo, e remove os dois no fim; edita e restaura a
 descrição e salva os horários do restaurante demo.
 
-## O que é verificado (48 checagens)
+## O que é verificado (49 checagens)
 
 - **Visitante:** landing com destaques da API; `/explorar` com busca por nome,
   filtro na URL e "limpar filtros"; detalhe; salvar sem login → login com
@@ -48,11 +52,13 @@ descrição e salva os horários do restaurante demo.
   inexistente.
 - **Cliente novo:** validação do cadastro; cadastro já loga; logado não vê
   `/cadastro`; busca semântica; favoritar pelo chat e contador do header;
-  conversa persiste após recarregar; `/salvos`; avaliar e excluir avaliação;
-  salvar perfil; histórico com consentimento; desligar consentimento; trocar
-  senha **e continuar logado**; logout numa aba desloga a outra; encerrar
+  conversa salva na conta persiste após recarregar; `/salvos`; avaliar e
+  excluir avaliação; salvar perfil; histórico com consentimento; desligar
+  consentimento; sessão só em cookies HttpOnly (nada de token no
+  `localStorage`); trocar senha **e continuar logado** com o access vencido
+  (refresh pelo cookie); logout numa aba desloga a outra; encerrar
   conta e não conseguir entrar de novo.
-- **Dono:** painel com métricas; todas as abas; salvar informações e horários;
+- **Dono:** painel com métricas; todas as abas (inclusive promoções); salvar informações e horários;
   cadastrar restaurante pelo painel; trocar de restaurante sem herdar o
   endereço do anterior; remover; "editar no painel" na página pública; ver a
   própria página não soma visualização.

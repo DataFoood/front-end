@@ -19,10 +19,10 @@ export interface User {
   created_at: string
 }
 
+/** login/cadastro no navegador: os tokens ficam em cookie HttpOnly */
 export interface AuthResponse {
-  access: string
-  refresh: string
   user: User
+  access_expires_in: number
 }
 
 export interface Lookup {
@@ -134,7 +134,8 @@ export interface Restaurant extends Omit<RestaurantCard, 'has_delivery' | 'has_r
   created_at: string
   updated_at: string
   images: RestaurantImage[]
-  reviews: Review[]
+  /** avaliações vêm paginadas de …/reviews/; aqui só se o usuário já avaliou */
+  has_reviewed: boolean
   business_hours: BusinessHour[]
   items: MenuItem[]
   service_models: Lookup[]
@@ -143,6 +144,7 @@ export interface Restaurant extends Omit<RestaurantCard, 'has_delivery' | 'has_r
   physical_formats: Lookup[]
 }
 
+/** formato de toda listagem da API (DefaultPagination do back) */
 export interface Paginated<T> {
   count: number
   next: string | null
@@ -280,4 +282,27 @@ export interface InfraSuggestion {
   suggested_window: { start: string; end: string; hours: number }
   estimated_cost: { currency: string; hourly: number; total: number }
   history_weeks: number
+}
+
+/** mensagem do chat (formato guardado em /api/chats/<id>/) */
+export type ChatMessage =
+  | { role: 'user'; text: string }
+  | {
+      role: 'assistant'
+      content: { kind: 'results'; results: SearchResult[] } | { kind: 'error'; message: string; unavailable?: boolean }
+    }
+
+/** item da lista lateral: GET /api/chats/ */
+export interface ChatSummary {
+  id: number
+  title: string
+  created_at: string
+  updated_at: string
+}
+
+/** conversa aberta; id null = ainda não salva na conta */
+export interface Conversation {
+  id: number | null
+  title: string
+  messages: ChatMessage[]
 }

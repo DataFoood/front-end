@@ -6,10 +6,10 @@ import { ToastProvider } from './context/ToastContext'
 
 export const metadata: Metadata = {
   title: {
-    default: 'datafood — encontre o lugar perfeito para o momento',
-    template: '%s · datafood',
+    default: 'DataFood — encontre o lugar perfeito para o momento',
+    template: '%s · DataFood',
   },
-  description: 'descreva o momento. datafood encontra o restaurante certo com busca semântica.',
+  description: 'Descreva o momento. O DataFood encontra o restaurante certo com busca semântica.',
   icons: { icon: '/imgs/icon.svg' },
 }
 

@@ -1,19 +1,20 @@
 'use client'
 
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useToast } from '@/app/context/ToastContext'
-import { Checkbox, Field, Spinner, TextArea } from '@/components/ui'
+import { Checkbox, Field, LoadMore, Spinner, TextArea } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { formatDate, formatDateTime, formatMoney, toDateTimeLocal } from '@/lib/format'
 import type { InfraSuggestion, Promotion, PromotionAudience, PromotionStatus, Restaurant } from '@/lib/types'
+import { usePaginated } from '@/lib/usePaginated'
 
 const MAX_MESSAGE = 1000
 
 const STATUS_LABEL: Record<PromotionStatus, string> = {
-  draft: 'rascunho',
-  scheduled: 'agendada',
-  sending: 'enviando',
-  sent: 'enviada',
+  draft: 'Rascunho',
+  scheduled: 'Agendada',
+  sending: 'Enviando',
+  sent: 'Enviada',
 }
 
 const STATUS_CLASS: Record<PromotionStatus, string> = {
@@ -23,9 +24,11 @@ const STATUS_CLASS: Record<PromotionStatus, string> = {
   sent: 'border-success-line bg-success-bg text-success',
 }
 
-/* ─── Sugestão de infra no fim de semana ─────────────────────────────── */
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
-function InfraCard() {
+/* ─── Sugestão de infra no fim de semana (só admin) ──────────────────── */
+
+export function InfraCard() {
   const [data, setData] = useState<InfraSuggestion | null>(null)
 
   // aviso, não bloqueio: se falhar, o painel segue sem ele
@@ -37,12 +40,12 @@ function InfraCard() {
 
   if (!data) return null
   const slot = data.suggested_window
-  const peak = `${data.projected.messages_peak_day} mensagens e ${data.projected.searches_peak_day} buscas/dia`
+  const peak = `${data.projected.messages_peak_day} mensagens e ${data.projected.searches_peak_day} buscas por dia`
 
   if (!data.recommend) {
     return (
       <p className="text-[12px] text-ink-300">
-        fim de semana tranquilo: a máquina local dá conta (pico previsto de {peak}, {Math.round(data.utilization * 100)}% da capacidade).
+        Fim de semana tranquilo: a máquina local dá conta (pico previsto de {peak}, {Math.round(data.utilization * 100)}% da capacidade).
       </p>
     )
   }
@@ -50,11 +53,11 @@ function InfraCard() {
   return (
     <div className={`rounded-md border-l-[3px] bg-white px-5 py-4 text-[13px] leading-relaxed text-ink-600 ${data.level === 'hire' ? 'border-danger' : 'border-rust'}`}>
       <p className="mb-1 font-medium text-ink">
-        {data.level === 'hire' ? 'contrate infraestrutura para o fim de semana' : 'fim de semana movimentado à vista'}
+        {data.level === 'hire' ? 'Contrate infraestrutura para o fim de semana' : 'Fim de semana movimentado à vista'}
       </p>
       <p className="mb-2">
-        o pico previsto é de {peak} — {Math.round(data.utilization * 100)}% do que a máquina local aguenta. sugerimos subir a stack de produção numa
-        VPS só de <strong>{formatDateTime(slot.start)}</strong> a <strong>{formatDateTime(slot.end)}</strong> ({slot.hours}h, cerca de{' '}
+        O pico previsto é de {peak} — {Math.round(data.utilization * 100)}% do que a máquina local aguenta. Sugerimos subir a stack de produção numa
+        VPS só de <strong>{formatDateTime(slot.start)}</strong> a <strong>{formatDateTime(slot.end)}</strong> ({slot.hours} h, cerca de{' '}
         <strong>{formatMoney(data.estimated_cost.total, data.estimated_cost.currency)}</strong>) e desligar na segunda.
       </p>
       {data.reasons.length > 0 && (
@@ -65,7 +68,7 @@ function InfraCard() {
         </ul>
       )}
       <p className="mt-2 text-[11px] text-ink-300">
-        projeção pelas últimas {data.history_weeks} semanas + promoções já agendadas. passo a passo no guia de infraestrutura de fim de semana (docs do back).
+        Projeção pelas últimas {data.history_weeks} semanas + promoções já agendadas. Passo a passo no guia de infraestrutura de fim de semana (docs do back).
       </p>
     </div>
   )
@@ -108,35 +111,35 @@ function PromotionForm({
 
   return (
     <form onSubmit={submit} className="card flex flex-col gap-4 p-5 sm:p-6">
-      {!initial && <h3 className="text-[15px] font-medium">nova promoção</h3>}
-      <Field label="título" name="promo-title" maxLength={120} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} error={errors.title} required placeholder="ex.: rodízio em dobro na sexta" />
+      {!initial && <h3 className="text-[15px] font-medium">Nova promoção</h3>}
+      <Field label="Título" name="promo-title" maxLength={120} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} error={errors.title} required placeholder="Ex.: rodízio em dobro na sexta" />
       <div>
-        <TextArea label="mensagem" name="promo-message" maxLength={MAX_MESSAGE} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} error={errors.message} required />
+        <TextArea label="Mensagem" name="promo-message" maxLength={MAX_MESSAGE} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} error={errors.message} required />
         <p className="mt-1 text-right text-[11px] text-ink-250">
           {form.message.length}/{MAX_MESSAGE}
         </p>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="cupom (opcional)" name="promo-coupon" maxLength={40} value={form.coupon_code} onChange={e => setForm(f => ({ ...f, coupon_code: e.target.value }))} error={errors.coupon_code} />
-        <Field label="válida até (opcional)" name="promo-valid" type="date" value={form.valid_until} onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))} error={errors.valid_until} />
+        <Field label="Cupom (opcional)" name="promo-coupon" maxLength={40} value={form.coupon_code} onChange={e => setForm(f => ({ ...f, coupon_code: e.target.value }))} error={errors.coupon_code} />
+        <Field label="Válida até (opcional)" name="promo-valid" type="date" value={form.valid_until} onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))} error={errors.valid_until} />
       </div>
       <div className="flex flex-col gap-2">
-        <span className="label">enviar por</span>
+        <span className="label">Enviar por</span>
         <Checkbox id={`tg-${initial?.id ?? 'new'}`} checked={form.send_telegram} onChange={v => setForm(f => ({ ...f, send_telegram: v }))}>
-          telegram {audience && (audience.telegram_configured ? `· ${audience.telegram} pessoa${audience.telegram === 1 ? '' : 's'}` : '· bot não configurado no servidor')}
+          Telegram {audience && (audience.telegram_configured ? `· ${plural(audience.telegram, 'pessoa', 'pessoas')}` : '· bot não configurado no servidor')}
         </Checkbox>
         <Checkbox id={`em-${initial?.id ?? 'new'}`} checked={form.send_email} onChange={v => setForm(f => ({ ...f, send_email: v }))}>
-          e-mail {audience && `· ${audience.email} pessoa${audience.email === 1 ? '' : 's'}`}
+          E-mail {audience && `· ${plural(audience.email, 'pessoa', 'pessoas')}`}
         </Checkbox>
-        <p className="text-[12px] text-ink-300">whatsapp: depois de enviar, o botão &quot;compartilhar no whatsapp&quot; abre o seu app com o texto pronto para a lista de transmissão, grupo ou status.</p>
+        <p className="text-[12px] text-ink-300">WhatsApp: depois de enviar, o botão &quot;Compartilhar no WhatsApp&quot; abre o seu app com o texto pronto para a lista de transmissão, um grupo ou o status.</p>
       </div>
       <div className="flex gap-2">
         <button type="submit" disabled={saving || !form.title.trim() || !form.message.trim()} className="btn-primary py-2">
-          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : initial ? 'salvar' : 'salvar rascunho'}
+          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : initial ? 'Salvar' : 'Salvar rascunho'}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} className="btn-ghost py-2">
-            cancelar
+            Cancelar
           </button>
         )}
       </div>
@@ -150,9 +153,9 @@ function ScheduleInput({ onSchedule }: { onSchedule: (iso: string) => void }) {
   const [value, setValue] = useState(() => toDateTimeLocal(new Date(Date.now() + 60 * 60 * 1000)))
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <input type="datetime-local" value={value} onChange={e => setValue(e.target.value)} className="input w-auto py-1.5 text-[13px]" aria-label="data e hora do envio" />
+      <input type="datetime-local" value={value} onChange={e => setValue(e.target.value)} className="input w-auto py-1.5 text-[13px]" aria-label="Data e hora do envio" />
       <button type="button" disabled={!value} onClick={() => onSchedule(new Date(value).toISOString())} className="btn-ghost py-1.5 text-[13px]">
-        agendar
+        Agendar
       </button>
     </div>
   )
@@ -190,7 +193,12 @@ function PromotionRow({
   const reach = audience ? (p.send_telegram ? audience.telegram : 0) + (p.send_email ? audience.email : 0) : null
 
   const sendNow = () => {
-    const text = reach === null ? 'Enviar agora?' : reach === 0 ? 'Ninguém para receber por telegram/e-mail ainda. Publicar mesmo assim (fica na página e no whatsapp)?' : `Enviar agora? Até ${reach} mensagem(ns).`
+    const text =
+      reach === null
+        ? 'Enviar agora?'
+        : reach === 0
+          ? 'Ninguém para receber por Telegram ou e-mail ainda. Publicar mesmo assim (fica na página e no WhatsApp)?'
+          : `Enviar agora? Até ${plural(reach, 'mensagem', 'mensagens')}.`
     if (!confirm(text)) return
     run(() => api(`${url}send/`, { method: 'POST', body: {} }), 'Promoção enviada para a fila.')
   }
@@ -227,6 +235,16 @@ function PromotionRow({
 
   const delivered = p.stats.sent
   const problems = p.stats.failed + p.stats.skipped
+  const meta = [
+    p.coupon_code && `Cupom ${p.coupon_code}`,
+    p.valid_until && `válida até ${formatDate(p.valid_until)}`,
+    p.status === 'scheduled' && p.scheduled_for && `envio em ${formatDateTime(p.scheduled_for)}`,
+    p.sent_at && `enviada em ${formatDateTime(p.sent_at)}`,
+    (p.status === 'sent' || p.status === 'sending') &&
+      `${plural(delivered, 'entregue', 'entregues')}${problems ? ` · ${plural(p.stats.failed, 'falha', 'falhas')} · ${p.stats.skipped} no limite diário` : ''}`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <li className="card p-5">
@@ -235,37 +253,28 @@ function PromotionRow({
         <span className={`rounded-full border px-2.5 py-0.5 text-[11px] ${STATUS_CLASS[p.status]}`}>{STATUS_LABEL[p.status]}</span>
       </div>
       <p className="mb-3 whitespace-pre-line text-[13px] leading-relaxed text-ink-600">{p.message}</p>
-      <p className="mb-4 text-[11px] text-ink-300">
-        {[
-          p.coupon_code && `cupom ${p.coupon_code}`,
-          p.valid_until && `válida até ${formatDate(p.valid_until)}`,
-          p.status === 'scheduled' && p.scheduled_for && `envio em ${formatDateTime(p.scheduled_for)}`,
-          p.sent_at && `enviada em ${formatDateTime(p.sent_at)}`,
-          (p.status === 'sent' || p.status === 'sending') && `${delivered} entregue${delivered === 1 ? '' : 's'}${problems ? ` · ${p.stats.failed} falha(s) · ${p.stats.skipped} no limite diário` : ''}`,
-        ]
-          .filter(Boolean)
-          .join(' · ')}
-      </p>
+      {/* frase única: só a primeira letra em maiúscula */}
+      {meta && <p className="mb-4 text-[11px] text-ink-300">{meta.charAt(0).toUpperCase() + meta.slice(1)}</p>}
 
       <div className="flex flex-wrap items-center gap-2">
         {p.status === 'draft' && (
           <>
             <button onClick={sendNow} disabled={busy} className="btn-accent py-1.5 text-[13px]">
-              enviar agora
+              Enviar agora
             </button>
             <ScheduleInput onSchedule={iso => run(() => api(`${url}send/`, { method: 'POST', body: { scheduled_for: iso } }), 'Promoção agendada.')} />
             <button onClick={() => setEditing(true)} className="btn-ghost py-1.5 text-[13px]">
-              editar
+              Editar
             </button>
           </>
         )}
         {p.status === 'scheduled' && (
           <>
             <button onClick={() => run(() => api(`${url}unschedule/`, { method: 'POST' }), 'Agendamento cancelado.')} disabled={busy} className="btn-ghost py-1.5 text-[13px]">
-              cancelar agendamento
+              Cancelar agendamento
             </button>
             <button onClick={() => setEditing(true)} className="btn-ghost py-1.5 text-[13px]">
-              editar
+              Editar
             </button>
           </>
         )}
@@ -273,10 +282,10 @@ function PromotionRow({
         {p.status === 'sent' && (
           <>
             <a href={p.whatsapp_url} target="_blank" rel="noopener noreferrer" className="btn-primary py-1.5 text-[13px]">
-              compartilhar no whatsapp
+              Compartilhar no WhatsApp
             </a>
             <button onClick={copy} className="btn-ghost py-1.5 text-[13px]">
-              copiar texto
+              Copiar texto
             </button>
           </>
         )}
@@ -286,7 +295,7 @@ function PromotionRow({
             disabled={busy}
             className="ml-auto text-xs text-ink-250 hover:text-danger"
           >
-            {p.status === 'sent' ? 'tirar da página' : 'remover'}
+            {p.status === 'sent' ? 'Tirar da página' : 'Remover'}
           </button>
         )}
       </div>
@@ -299,28 +308,19 @@ function PromotionRow({
 export function PromotionsEditor({ restaurant }: { restaurant: Restaurant }) {
   const toast = useToast()
   const base = `/api/restaurants/${restaurant.id}/promotions/`
-  const [state, setState] = useState<{ list: Promotion[]; audience: PromotionAudience | null } | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [reloadKey, setReloadKey] = useState(0)
-  const reload = useCallback(() => setReloadKey(k => k + 1), [])
+  const list = usePaginated<Promotion>(base, {}, 10)
+  const [audience, setAudience] = useState<PromotionAudience | null>(null)
 
   // o painel remonta este componente por restaurante (key), então `base` é fixo aqui
   useEffect(() => {
-    let cancelled = false
-    Promise.all([api<Promotion[]>(base), api<PromotionAudience>(`${base}audience/`).catch(() => null)])
-      .then(([list, audience]) => {
-        if (cancelled) return
-        setState({ list, audience })
-        setError(null)
-      })
-      .catch(err => !cancelled && setError(errorMessage(err)))
-    return () => {
-      cancelled = true
-    }
-  }, [base, reloadKey])
+    api<PromotionAudience>(`${base}audience/`)
+      .then(setAudience)
+      .catch(() => setAudience(null))
+  }, [base])
 
   // envio roda no worker: acompanha até terminar
-  const sending = state?.list.some(p => p.status === 'sending') ?? false
+  const sending = list.items.some(p => p.status === 'sending')
+  const { reload } = list
   useEffect(() => {
     if (!sending) return
     const id = setInterval(reload, 3000)
@@ -339,49 +339,45 @@ export function PromotionsEditor({ restaurant }: { restaurant: Restaurant }) {
     }
   }
 
-  if (error) {
-    return (
-      <p className="text-sm text-danger">
-        {error}{' '}
-        <button onClick={reload} className="underline">
-          tentar de novo
-        </button>
-      </p>
-    )
-  }
-  if (!state) return <Spinner />
-  const { list, audience } = state
-
   return (
     <div className="flex flex-col gap-5">
-      <InfraCard />
       <p className="text-[13px] text-muted">
-        promoções chegam por telegram e e-mail para quem salvou o restaurante <strong>e</strong> aceitou receber promoções
+        As promoções chegam por Telegram e e-mail para quem salvou o restaurante <strong>e</strong> aceitou receber promoções
         {audience && (
           <>
             {' '}
-            — hoje, {audience.opted_in} de {audience.favorites} pessoa{audience.favorites === 1 ? '' : 's'} que salvaram
+            — hoje, {audience.opted_in} de {plural(audience.favorites, 'pessoa que salvou', 'pessoas que salvaram')}
           </>
         )}
-        . cada pessoa recebe no máximo algumas promoções por dia, de todos os restaurantes.
+        . Cada pessoa recebe no máximo algumas promoções por dia, somando todos os restaurantes.
       </p>
       <PromotionForm audience={audience} onSubmit={create} />
-      {list.length === 0 ? (
-        <p className="text-[13px] text-ink-300">nenhuma promoção ainda.</p>
+      {list.error && list.items.length === 0 ? (
+        <p className="text-sm text-danger">
+          {list.error}{' '}
+          <button onClick={reload} className="underline">
+            Tentar de novo
+          </button>
+        </p>
+      ) : list.loading ? (
+        <Spinner />
+      ) : list.items.length === 0 ? (
+        <p className="text-[13px] text-ink-300">Nenhuma promoção ainda.</p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {list.map(p => (
-            <PromotionRow
-              key={p.id}
-              promotion={p}
-              audience={audience}
-              base={base}
-              onChange={updated =>
-                updated ? setState(s => (s ? { ...s, list: s.list.map(x => (x.id === updated.id ? updated : x)) } : s)) : reload()
-              }
-            />
-          ))}
-        </ul>
+        <>
+          <ul className="flex flex-col gap-3">
+            {list.items.map(p => (
+              <PromotionRow
+                key={p.id}
+                promotion={p}
+                audience={audience}
+                base={base}
+                onChange={updated => (updated ? list.update(items => items.map(x => (x.id === updated.id ? updated : x))) : reload())}
+              />
+            ))}
+          </ul>
+          <LoadMore shown={list.items.length} total={list.count} hasMore={list.hasMore} loading={list.loadingMore} onClick={list.loadMore} noun="promoções" />
+        </>
       )}
     </div>
   )
