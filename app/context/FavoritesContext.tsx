@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { api, errorMessage } from '@/lib/api'
+import { fetchAll } from '@/lib/usePaginated'
 import type { Favorite } from '@/lib/types'
 import { useAuth } from './AuthContext'
 import { useToast } from './ToastContext'
@@ -64,7 +65,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     store.setIds(EMPTY)
     if (userId === null) return
     let cancelled = false
-    api<Favorite[]>('/api/restaurants/favorites/')
+    // paginado no back: percorre as páginas (são só os ids da própria conta)
+    fetchAll<Favorite>('/api/restaurants/favorites/')
       .then(list => !cancelled && store.setIds(new Set(list.map(f => f.restaurant.id))))
       .catch(() => undefined)
     return () => {

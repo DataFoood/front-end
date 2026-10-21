@@ -32,8 +32,8 @@ function LoginForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const errs: Record<string, string> = {}
-    if (!isValidEmail(email.trim())) errs.email = 'informe um e-mail válido.'
-    if (!password) errs.password = 'informe sua senha.'
+    if (!isValidEmail(email.trim())) errs.email = 'Informe um e-mail válido.'
+    if (!password) errs.password = 'Informe sua senha.'
     setErrors(errs)
     if (Object.keys(errs).length) return
 
@@ -45,7 +45,7 @@ function LoginForm() {
     } catch (err) {
       setSubmitting(false)
       if (err instanceof ApiError && err.status === 401) {
-        setErrors({ password: 'e-mail ou senha incorretos.' })
+        setErrors({ password: 'E-mail ou senha incorretos.' })
       } else if (err instanceof ApiError && Object.keys(err.fields).length) {
         setErrors(err.fields)
       } else {
@@ -57,7 +57,7 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
       <Field
-        label="e-mail"
+        label="E-mail"
         name="email"
         type="email"
         autoComplete="email"
@@ -68,7 +68,7 @@ function LoginForm() {
       />
       <div>
         <Field
-          label="senha"
+          label="Senha"
           name="password"
           type={showPass ? 'text' : 'password'}
           autoComplete="current-password"
@@ -78,7 +78,7 @@ function LoginForm() {
           error={errors.password}
           right={
             <button type="button" onClick={() => setShowPass(s => !s)} className="text-xs text-ink-250 hover:text-ink">
-              {showPass ? 'ocultar' : 'ver'}
+              {showPass ? 'Ocultar' : 'Ver'}
             </button>
           }
         />
@@ -100,14 +100,14 @@ export default function LoginPage() {
         </>
       }
     >
-      <p className="eyebrow mb-6">entrar</p>
+      <p className="eyebrow mb-6">Entrar</p>
       <h2 className="mb-4 font-serif text-[clamp(36px,4vw,52px)] leading-[1.1]">
         Seu lugar,
         <br />
         seu jeito.
       </h2>
       <p className="mb-10 max-w-sm text-sm leading-relaxed text-muted">
-        Use sua conta datafood para salvar lugares, ver seu histórico e receber sugestões cada vez mais precisas.
+        Use sua conta DataFood para salvar lugares, ver seu histórico e receber sugestões cada vez mais precisas.
       </p>
       <Suspense>
         <LoginForm />

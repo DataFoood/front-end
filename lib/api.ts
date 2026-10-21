@@ -1,36 +1,41 @@
-// Cliente HTTP da API Django: JWT Bearer, refresh automático e erros tipados.
+// Cliente HTTP da API Django. A sessão vive em cookies HttpOnly gravados pelo
+// back (o JS nunca vê os tokens); aqui só mandamos os cookies e rodamos o
+// refresh quando o access vence.
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
-export const TOKENS_KEY = 'datafood.tokens'
-/** disparado quando a sessão morre (refresh inválido) — o AuthContext escuta */
+/** disparado quando a sessão morre (refresh recusado) — o AuthContext escuta */
 export const SESSION_EXPIRED_EVENT = 'datafood:session-expired'
 
-export interface Tokens {
-  access: string
-  refresh: string
-}
+/** Cabeçalho anti-CSRF: o back só aceita escrita via cookie com ele (um site
+ * de terceiro não consegue mandá-lo sem passar pelo CORS). Também liga o
+ * "modo navegador" nas rotas de sessão (tokens em cookie, fora do corpo). */
+const BROWSER_HEADERS = { 'X-Requested-With': 'datafood' }
 
-export const tokenStore = {
-  get(): Tokens | null {
-    if (typeof window === 'undefined') return null
+/** Marcador de "tem sessão" no localStorage — nenhum token, só um sinal para
+ * não chamar /me à toa em visitantes e para avisar as outras abas. */
+export const SESSION_KEY = 'datafood.session'
+const REFRESHED_AT_KEY = 'datafood.session.refreshedAt'
+
+export const sessionMarker = {
+  has(): boolean {
     try {
-      const raw = window.localStorage.getItem(TOKENS_KEY)
-      return raw ? (JSON.parse(raw) as Tokens) : null
+      return typeof window !== 'undefined' && window.localStorage.getItem(SESSION_KEY) === '1'
     } catch {
-      return null
+      return false
     }
   },
-  set(tokens: Tokens) {
+  set() {
     try {
-      window.localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens))
+      window.localStorage.setItem(SESSION_KEY, '1')
     } catch {
-      /* storage indisponível: sessão vive só em memória nesta aba */
+      /* storage indisponível: a sessão funciona, só não sincroniza abas */
     }
   },
   clear() {
     try {
-      window.localStorage.removeItem(TOKENS_KEY)
+      window.localStorage.removeItem(SESSION_KEY)
+      window.localStorage.removeItem(REFRESHED_AT_KEY)
     } catch {
       /* noop */
     }
@@ -83,49 +88,56 @@ function messageFor(status: number, data: unknown, retryAfter: string | null): s
   return 'Não foi possível concluir a operação.'
 }
 
-// refresh "single-flight": várias requisições com 401 simultâneo esperam o mesmo refresh
-let refreshing: Promise<string | null> | null = null
+// Refresh "single-flight" nesta aba + trava entre abas (Web Locks). As abas
+// dividem os cookies: se duas renovassem juntas, a segunda mandaria o refresh
+// que a primeira acabou de rotacionar (blacklist) e derrubaria a sessão.
+let refreshing: Promise<boolean> | null = null
+const RECENT_MS = 10_000
 
-async function refreshAccess(): Promise<string | null> {
-  const tokens = tokenStore.get()
-  if (!tokens?.refresh) return null
+async function doRefresh(): Promise<boolean> {
+  try {
+    // outra aba acabou de renovar: os cookies já são os novos
+    const last = Number(window.localStorage.getItem(REFRESHED_AT_KEY) || 0)
+    if (Date.now() - last < RECENT_MS) return true
+  } catch {
+    /* sem storage: renova mesmo */
+  }
+  try {
+    const res = await fetch(`${API_URL}/api/users/login/refresh/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { ...BROWSER_HEADERS, 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+    if (!res.ok) return false
+    try {
+      window.localStorage.setItem(REFRESHED_AT_KEY, String(Date.now()))
+    } catch {
+      /* noop */
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Renova a sessão (cookies). true = renovou ou outra aba renovou. */
+export function refreshSession(): Promise<boolean> {
   if (!refreshing) {
-    refreshing = (async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/users/login/refresh/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh: tokens.refresh }),
-        })
-        if (!res.ok) {
-          // outra aba pode ter rotacionado o refresh no meio do caminho (o
-          // antigo vai pra blacklist): se o storage já tem um par novo, usa ele
-          const latest = tokenStore.get()
-          return latest && latest.refresh !== tokens.refresh ? latest.access : null
-        }
-        const data = (await res.json()) as Partial<Tokens>
-        if (!data.access) return null
-        // ROTATE_REFRESH_TOKENS: o back devolve um refresh novo
-        tokenStore.set({ access: data.access, refresh: data.refresh ?? tokens.refresh })
-        return data.access
-      } catch {
-        return null
-      } finally {
-        setTimeout(() => (refreshing = null), 0)
-      }
-    })()
+    const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined
+    refreshing = (locks ? locks.request('datafood-refresh', doRefresh) : doRefresh()).finally(() => {
+      setTimeout(() => (refreshing = null), 0)
+    })
   }
   return refreshing
 }
 
-type Query = Record<string, string | number | boolean | undefined | null>
+export type Query = Record<string, string | number | boolean | undefined | null>
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Query
-  /** false = não manda o Bearer (rotas públicas de auth) */
-  auth?: boolean
   signal?: AbortSignal
 }
 
@@ -139,16 +151,19 @@ function buildUrl(path: string, query?: Query) {
   return url.toString()
 }
 
-export async function api<T = unknown>(path: string, opts: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, query, auth = true, signal } = opts
+// rotas de sessão respondem 401 por credencial errada, não por access vencido
+const SESSION_ROUTES = ['/api/users/login/', '/api/users/register/', '/api/users/logout/']
 
-  const doFetch = (access?: string) => {
-    const headers: Record<string, string> = { Accept: 'application/json' }
+export async function api<T = unknown>(path: string, opts: RequestOptions = {}): Promise<T> {
+  const { method = 'GET', body, query, signal } = opts
+
+  const doFetch = () => {
+    const headers: Record<string, string> = { Accept: 'application/json', ...BROWSER_HEADERS }
     if (body !== undefined) headers['Content-Type'] = 'application/json'
-    if (access) headers.Authorization = `Bearer ${access}`
     return fetch(buildUrl(path, query), {
       method,
       headers,
+      credentials: 'include',
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal,
     })
@@ -156,17 +171,14 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
 
   let res: Response
   try {
-    const access = auth ? tokenStore.get()?.access : undefined
-    res = await doFetch(access)
-    if (res.status === 401 && auth && access) {
-      // access vencido: um refresh (single-flight) e repete; sem refresh válido
-      // (expirou ou foi revogado, ex.: senha trocada em outro dispositivo)
-      // encerra a sessão
-      const fresh = await refreshAccess()
-      if (fresh) {
-        res = await doFetch(fresh)
+    res = await doFetch()
+    if (res.status === 401 && sessionMarker.has() && !SESSION_ROUTES.some(r => path.startsWith(r))) {
+      // access vencido: um refresh e repete. Sem refresh válido (expirou ou
+      // foi revogado, ex.: senha trocada em outro dispositivo) a sessão acaba
+      if (await refreshSession()) {
+        res = await doFetch()
       } else {
-        tokenStore.clear()
+        sessionMarker.clear()
         window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
       }
     }

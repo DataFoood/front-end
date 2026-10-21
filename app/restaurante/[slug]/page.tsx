@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Cover } from '@/components/Illustration'
 import { FavoriteButton, OpenBadge } from '@/components/RestaurantCard'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
-import { EmptyState, PageLoader, SectionTitle, Spinner, Stars, TextArea } from '@/components/ui'
+import { EmptyState, LoadMore, PageLoader, SectionTitle, Spinner, Stars, TextArea } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import {
   DAYS,
@@ -16,25 +16,72 @@ import {
   formatPhone,
   formatPrice,
   formatRating,
-  lowerNames,
+  joinNames,
   priceDetail,
   priceSymbol,
   todayIndex,
   whatsappLink,
 } from '@/lib/format'
-import type { Restaurant, Review } from '@/lib/types'
+import type { PublicPromotion, Restaurant, Review } from '@/lib/types'
+import { usePaginated } from '@/lib/usePaginated'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 
 const CHANNEL_LABELS: [keyof Restaurant, string][] = [
-  ['has_dine_in', 'salão'],
-  ['has_delivery', 'delivery'],
-  ['has_take_out', 'retirada'],
-  ['has_drive_thru', 'drive-thru'],
-  ['has_reservation', 'aceita reserva'],
-  ['accepts_vale_refeicao', 'vale-refeição'],
-  ['accepts_online_order', 'pedido online'],
+  ['has_dine_in', 'Salão'],
+  ['has_delivery', 'Delivery'],
+  ['has_take_out', 'Retirada'],
+  ['has_drive_thru', 'Drive-thru'],
+  ['has_reservation', 'Aceita reserva'],
+  ['accepts_vale_refeicao', 'Vale-refeição'],
+  ['accepts_online_order', 'Pedido online'],
 ]
+
+function ActivePromotions({ restaurant, loggedIn, isOwner }: { restaurant: Restaurant; loggedIn: boolean; isOwner: boolean }) {
+  // vitrine: as 5 mais recentes (paginação padrão, uma página)
+  const { items } = usePaginated<PublicPromotion>(`/api/restaurants/${restaurant.id}/promotions/active/`, {}, 5)
+  if (!items.length) return null
+
+  return (
+    <section className="mb-12" aria-label="Promoções">
+      <div className="flex flex-col gap-3">
+        {items.map(p => (
+          <article key={p.id} className="rounded-md border-l-[3px] border-rust bg-white px-5 py-4">
+            <p className="eyebrow mb-1">Promoção</p>
+            <h2 className="mb-1 text-[16px] font-medium">{p.title}</h2>
+            <p className="whitespace-pre-line text-[13px] leading-relaxed text-ink-600">{p.message}</p>
+            {(p.coupon_code || p.valid_until) && (
+              <p className="mt-2 text-[12px] text-ink-350">
+                {p.coupon_code && (
+                  <>
+                    Cupom <strong className="text-ink">{p.coupon_code}</strong>
+                  </>
+                )}
+                {p.coupon_code && p.valid_until && ' · '}
+                {p.valid_until && `${p.coupon_code ? 'válida' : 'Válida'} até ${formatDate(p.valid_until)}`}
+              </p>
+            )}
+          </article>
+        ))}
+      </div>
+      {!isOwner && (
+        <p className="mt-3 text-[12px] text-ink-300">
+          Quer receber as próximas no Telegram ou por e-mail?{' '}
+          {loggedIn ? (
+            <Link href="/perfil?aba=promocoes" className="text-rust underline">
+              Salve o restaurante e ative as promoções no perfil
+            </Link>
+          ) : (
+            <Link href={`/login?next=/restaurante/${restaurant.slug}`} className="text-rust underline">
+              Entre e salve o restaurante
+            </Link>
+          )}
+          .
+        </p>
+      )}
+    </section>
+  )
+}
 
 function ReviewForm({ restaurantId, onCreated }: { restaurantId: number; onCreated: () => void }) {
   const toast = useToast()
@@ -71,8 +118,8 @@ function ReviewForm({ restaurantId, onCreated }: { restaurantId: number; onCreat
   return (
     <form onSubmit={submit} className="card flex flex-col gap-4 p-5">
       <div>
-        <span className="label">sua nota</span>
-        <div className="flex gap-1" role="radiogroup" aria-label="nota" onMouseLeave={() => setHover(0)}>
+        <span className="label">Sua nota</span>
+        <div className="flex gap-1" role="radiogroup" aria-label="Nota" onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map(n => (
             <button
               key={n}
@@ -91,12 +138,78 @@ function ReviewForm({ restaurantId, onCreated }: { restaurantId: number; onCreat
           ))}
         </div>
       </div>
-      <input className="input" placeholder="título (opcional)" maxLength={150} value={title} onChange={e => setTitle(e.target.value)} aria-label="título" />
-      <TextArea label="comentário (opcional)" value={description} onChange={e => setDescription(e.target.value)} placeholder="como foi a experiência?" />
+      <input className="input" placeholder="Título (opcional)" maxLength={150} value={title} onChange={e => setTitle(e.target.value)} aria-label="Título" />
+      <TextArea label="Comentário (opcional)" value={description} onChange={e => setDescription(e.target.value)} placeholder="Como foi a experiência?" />
       <button type="submit" disabled={sending} className="btn-primary self-start">
-        {sending ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'publicar avaliação'}
+        {sending ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Publicar avaliação'}
       </button>
     </form>
+  )
+}
+
+function Reviews({ restaurant, onChange }: { restaurant: Restaurant; onChange: () => void }) {
+  const { user } = useAuth()
+  const toast = useToast()
+  const reviews = usePaginated<Review>(`/api/restaurants/${restaurant.id}/reviews/`, {}, 5)
+  const isOwner = !!user && user.id === restaurant.owner
+
+  const changed = () => {
+    reviews.reload()
+    onChange() // nota média, total e has_reviewed vêm do detalhe
+  }
+
+  const deleteReview = async (review: Review) => {
+    if (!confirm('Excluir sua avaliação?')) return
+    try {
+      await api(`/api/restaurants/${restaurant.id}/reviews/${review.id}/`, { method: 'DELETE' })
+      toast.success('Avaliação excluída.')
+      changed()
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
+      <div className="flex flex-col gap-4">
+        {reviews.loading && <Spinner />}
+        {!reviews.loading && reviews.items.length === 0 && <p className="text-sm text-ink-300">Ainda sem avaliações. Seja o primeiro!</p>}
+        {reviews.items.map(rv => (
+          <article key={rv.id} className="card p-5">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <Stars value={rv.rating} />
+              <span className="text-[11px] text-ink-250">
+                {rv.author_name} · {formatDate(rv.created_at)}
+              </span>
+            </div>
+            {rv.title && <h3 className="mb-1 text-[15px] font-medium">{rv.title}</h3>}
+            {rv.description && <p className="text-sm leading-relaxed text-ink-600">{rv.description}</p>}
+            {user && rv.author === user.id && (
+              <button onClick={() => deleteReview(rv)} className="mt-3 text-xs text-ink-250 hover:text-error">
+                Excluir minha avaliação
+              </button>
+            )}
+          </article>
+        ))}
+        <LoadMore shown={reviews.items.length} total={reviews.count} hasMore={reviews.hasMore} loading={reviews.loadingMore} onClick={reviews.loadMore} noun="avaliações" />
+      </div>
+      <div>
+        {!user ? (
+          <div className="card p-5 text-sm text-ink-500">
+            <Link href={`/login?next=/restaurante/${restaurant.slug}`} className="text-rust underline">
+              Entre
+            </Link>{' '}
+            para avaliar este restaurante.
+          </div>
+        ) : isOwner ? (
+          <p className="text-sm text-ink-300">Donos não avaliam o próprio restaurante.</p>
+        ) : restaurant.has_reviewed ? (
+          <p className="text-sm text-ink-300">Você já avaliou este restaurante.</p>
+        ) : (
+          <ReviewForm restaurantId={restaurant.id} onCreated={changed} />
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -104,7 +217,6 @@ export default function RestaurantePage() {
   const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const { user } = useAuth()
-  const toast = useToast()
   // resultado chaveado pelo slug + contador de recarga (após avaliar/excluir)
   const [reloadKey, setReloadKey] = useState(0)
   const [state, setState] = useState<{ slug: string; data?: Restaurant; error?: 'not-found' | 'error' } | null>(null)
@@ -114,7 +226,7 @@ export default function RestaurantePage() {
     api<Restaurant>(`/api/restaurants/by-slug/${encodeURIComponent(slug)}/`)
       .then(data => {
         setState({ slug, data })
-        document.title = `${data.name} · datafood`
+        document.title = `${data.name} · DataFood`
       })
       .catch(err => setState({ slug, error: err instanceof ApiError && err.status === 404 ? 'not-found' : 'error' }))
   }, [slug, reloadKey])
@@ -123,33 +235,22 @@ export default function RestaurantePage() {
   const restaurant = current?.data ?? null
   const error = current?.error ?? null
 
-  const deleteReview = async (review: Review) => {
-    if (!restaurant || !confirm('Excluir sua avaliação?')) return
-    try {
-      await api(`/api/restaurants/${restaurant.id}/reviews/${review.id}/`, { method: 'DELETE' })
-      toast.success('Avaliação excluída.')
-      load()
-    } catch (err) {
-      toast.error(errorMessage(err))
-    }
-  }
-
   const body = () => {
     if (error === 'not-found') {
       return (
         <EmptyState
-          title="restaurante não encontrado"
-          text="ele pode ter saído do ar ou o link está incorreto."
+          title="Restaurante não encontrado"
+          text="Ele pode ter saído do ar ou o link está incorreto."
           action={
             <Link href="/explorar" className="btn-primary">
-              explorar restaurantes
+              Explorar restaurantes
             </Link>
           }
         />
       )
     }
     if (error) {
-      return <EmptyState title="não foi possível carregar" text="tente novamente em instantes." action={<button onClick={load} className="btn-primary">tentar de novo</button>} />
+      return <EmptyState title="Não foi possível carregar" text="Tente novamente em instantes." action={<button onClick={load} className="btn-primary">Tentar de novo</button>} />
     }
     if (!restaurant) return <PageLoader />
 
@@ -161,9 +262,8 @@ export default function RestaurantePage() {
     // editar: dono ou admin; avaliar: o back só barra o dono (admin pode avaliar)
     const canManage = !!user && (user.id === r.owner || user.role === 'admin')
     const isOwner = !!user && user.id === r.owner
-    const alreadyReviewed = !!user && r.reviews.some(rv => rv.author === user.id)
     const channels = CHANNEL_LABELS.filter(([k]) => r[k]).map(([, label]) => label)
-    const tags = [r.address?.neighborhood, lowerNames(r.cuisines), priceSymbol(r.price_ranges), lowerNames(r.ambients)].filter(Boolean) as string[]
+    const tags = [r.address?.neighborhood, joinNames(r.cuisines), priceSymbol(r.price_ranges), joinNames(r.ambients)].filter(Boolean) as string[]
     const mapsUrl = r.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address!.replace('\n', ', '))}` : null
 
     return (
@@ -172,7 +272,7 @@ export default function RestaurantePage() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
-          voltar
+          Voltar
         </button>
 
         <div className="mb-14 grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-12">
@@ -186,11 +286,11 @@ export default function RestaurantePage() {
                 </span>
               )}
             </div>
-            <h1 className="mb-4 font-serif text-[clamp(38px,5vw,52px)] lowercase leading-[1.05]">{r.name}</h1>
+            <h1 className="mb-4 font-serif text-[clamp(38px,5vw,52px)] leading-[1.05]">{r.name}</h1>
             <p className="mb-6 max-w-md text-[15px] leading-relaxed text-ink-600">{r.description}</p>
             <div className="mb-6 flex flex-wrap gap-2">
               {tags.map(t => (
-                <span key={t} className="chip lowercase">
+                <span key={t} className="chip">
                   {t}
                 </span>
               ))}
@@ -198,40 +298,42 @@ export default function RestaurantePage() {
             <div className="flex flex-wrap gap-3">
               {whats ? (
                 <a href={whats} target="_blank" rel="noopener noreferrer" className="btn-primary">
-                  {r.has_reservation ? 'reservar pelo whatsapp' : 'falar com o restaurante'}
+                  {r.has_reservation ? 'Reservar pelo WhatsApp' : 'Falar com o restaurante'}
                 </a>
               ) : r.phone ? (
                 <a href={`tel:${r.phone}`} className="btn-primary">
-                  ligar
+                  Ligar
                 </a>
               ) : null}
               <FavoriteButton restaurantId={r.id} variant="full" />
               {canManage && (
                 <Link href={`/painel?r=${r.id}`} className="btn-ghost">
-                  editar no painel
+                  Editar no painel
                 </Link>
               )}
             </div>
           </div>
         </div>
 
+        <ActivePromotions restaurant={r} loggedIn={!!user} isOwner={isOwner} />
+
         <hr className="mb-12 border-line" />
 
         <section className="mb-14">
-          <SectionTitle title="fatos" eyebrow="01 / informações" />
+          <SectionTitle title="Fatos" eyebrow="01 / Informações" />
           <div className="grid grid-cols-1 overflow-hidden rounded-md border border-line sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 label: 'ENDEREÇO',
-                value: address ?? 'não informado',
+                value: address ?? 'Não informado',
                 note: mapsUrl ? (
                   <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="underline">
-                    abrir no mapa
+                    Abrir no mapa
                   </a>
                 ) : null,
               },
               { label: 'FAIXA DE PREÇO', value: priceSymbol(r.price_ranges) ?? '—', note: priceDetail(r.price_ranges) },
-              { label: 'CONTATO', value: r.phone ? formatPhone(r.phone) : '—', note: r.website ? <a href={r.website} target="_blank" rel="noopener noreferrer" className="underline">site</a> : r.email || null },
+              { label: 'CONTATO', value: r.phone ? formatPhone(r.phone) : '—', note: r.website ? <a href={r.website} target="_blank" rel="noopener noreferrer" className="underline">Site</a> : r.email || null },
               { label: 'ATENDIMENTO', value: channels.length ? channels.join(' · ') : '—', note: null },
             ].map((item, i) => (
               <div key={item.label} className={`border-line px-5 pb-6 pt-5 ${i > 0 ? 'border-t sm:border-t-0' : ''} ${i % 2 === 1 ? 'sm:border-l' : ''} ${i >= 2 ? 'sm:border-t lg:border-t-0' : ''} ${i > 0 ? 'lg:border-l' : ''}`}>
@@ -245,7 +347,7 @@ export default function RestaurantePage() {
 
         {r.items.length > 0 && (
           <section className="mb-14">
-            <SectionTitle title="destaques do cardápio" eyebrow={`02 / ${r.items.length} pratos`} />
+            <SectionTitle title="Destaques do cardápio" eyebrow={`02 / ${r.items.length} pratos`} />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {r.items.map((item, i) => (
                 <div key={item.id} className="card overflow-hidden transition hover:-translate-y-1 hover:shadow-md">
@@ -262,7 +364,7 @@ export default function RestaurantePage() {
             </div>
             {r.menu_url && (
               <a href={r.menu_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm text-rust underline">
-                ver cardápio completo
+                Ver cardápio completo
               </a>
             )}
           </section>
@@ -270,11 +372,11 @@ export default function RestaurantePage() {
 
         {r.images.length > 0 && (
           <section className="mb-14">
-            <SectionTitle title="fotos" />
+            <SectionTitle title="Fotos" />
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {r.images.map(img => (
                 <a key={img.id} href={img.url} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-md bg-ink">
-                  <img src={img.url} alt={`foto de ${r.name}`} loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />
+                  <img src={img.url} alt={`Foto de ${r.name}`} loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />
                 </a>
               ))}
             </div>
@@ -282,9 +384,9 @@ export default function RestaurantePage() {
         )}
 
         <section className="mb-14">
-          <SectionTitle title="horários" eyebrow="03 / funcionamento" />
+          <SectionTitle title="Horários" eyebrow="03 / Funcionamento" />
           {r.business_hours.length === 0 ? (
-            <p className="text-sm text-ink-300">horários não informados.</p>
+            <p className="text-sm text-ink-300">Horários não informados.</p>
           ) : (
             <div className="max-w-md">
               {DAYS.map((day, i) => {
@@ -292,7 +394,7 @@ export default function RestaurantePage() {
                 const text = formatIntervals(hour)
                 const isToday = i === today
                 return (
-                  <div key={day} className={`flex justify-between border-b border-line-soft py-2.5 text-[13px] ${isToday ? 'font-medium text-ink' : text === 'fechado' ? 'text-ink-150' : 'text-ink-600'}`}>
+                  <div key={day} className={`flex justify-between border-b border-line-soft py-2.5 text-[13px] ${isToday ? 'font-medium text-ink' : text === 'Fechado' ? 'text-ink-150' : 'text-ink-600'}`}>
                     <span>
                       {day}
                       {isToday && ' · hoje'}
@@ -306,45 +408,8 @@ export default function RestaurantePage() {
         </section>
 
         <section>
-          <SectionTitle title="avaliações" eyebrow={`04 / ${r.total_reviews}`} />
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
-            <div className="flex flex-col gap-4">
-              {r.reviews.length === 0 && <p className="text-sm text-ink-300">ainda sem avaliações. seja o primeiro!</p>}
-              {r.reviews.map(rv => (
-                <article key={rv.id} className="card p-5">
-                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                    <Stars value={rv.rating} />
-                    <span className="text-[11px] text-ink-250">
-                      {rv.author_name} · {formatDate(rv.created_at)}
-                    </span>
-                  </div>
-                  {rv.title && <h3 className="mb-1 text-[15px] font-medium">{rv.title}</h3>}
-                  {rv.description && <p className="text-sm leading-relaxed text-ink-600">{rv.description}</p>}
-                  {user && rv.author === user.id && (
-                    <button onClick={() => deleteReview(rv)} className="mt-3 text-xs text-ink-250 hover:text-error">
-                      excluir minha avaliação
-                    </button>
-                  )}
-                </article>
-              ))}
-            </div>
-            <div>
-              {!user ? (
-                <div className="card p-5 text-sm text-ink-500">
-                  <Link href={`/login?next=/restaurante/${r.slug}`} className="text-rust underline">
-                    entre
-                  </Link>{' '}
-                  para avaliar este restaurante.
-                </div>
-              ) : isOwner ? (
-                <p className="text-sm text-ink-300">donos não avaliam o próprio restaurante.</p>
-              ) : alreadyReviewed ? (
-                <p className="text-sm text-ink-300">você já avaliou este restaurante.</p>
-              ) : (
-                <ReviewForm restaurantId={r.id} onCreated={load} />
-              )}
-            </div>
-          </div>
+          <SectionTitle title="Avaliações" eyebrow={`04 / ${r.total_reviews}`} />
+          <Reviews restaurant={r} onChange={load} />
         </section>
       </>
     )

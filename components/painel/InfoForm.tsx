@@ -9,23 +9,23 @@ import { useTaxonomies } from '@/lib/taxonomies'
 import { SALES_CHANNELS, type Restaurant, type SalesChannel, type TaxonomyKey } from '@/lib/types'
 
 const TAXONOMY_LABELS: { key: TaxonomyKey; label: string; single?: boolean }[] = [
-  { key: 'cuisines', label: 'cozinhas' },
-  { key: 'price_ranges', label: 'faixa de preço', single: true },
-  { key: 'ambients', label: 'ambientes' },
-  { key: 'service_models', label: 'modelo de serviço' },
-  { key: 'target_audiences', label: 'público' },
-  { key: 'business_models', label: 'modelo de negócio' },
-  { key: 'physical_formats', label: 'formato físico' },
+  { key: 'cuisines', label: 'Cozinhas' },
+  { key: 'price_ranges', label: 'Faixa de preço', single: true },
+  { key: 'ambients', label: 'Ambientes' },
+  { key: 'service_models', label: 'Modelo de serviço' },
+  { key: 'target_audiences', label: 'Público' },
+  { key: 'business_models', label: 'Modelo de negócio' },
+  { key: 'physical_formats', label: 'Formato físico' },
 ]
 
 const CHANNEL_LABELS: Record<SalesChannel, string> = {
-  has_dine_in: 'atendimento no salão',
-  has_delivery: 'delivery',
-  has_take_out: 'retirada no local',
-  has_drive_thru: 'drive-thru',
-  has_reservation: 'aceita reservas',
-  accepts_vale_refeicao: 'aceita vale-refeição',
-  accepts_online_order: 'pedido online',
+  has_dine_in: 'Atendimento no salão',
+  has_delivery: 'Delivery',
+  has_take_out: 'Retirada no local',
+  has_drive_thru: 'Drive-thru',
+  has_reservation: 'Aceita reservas',
+  accepts_vale_refeicao: 'Aceita vale-refeição',
+  accepts_online_order: 'Pedido online',
 }
 
 function initialState(r: Restaurant) {
@@ -84,7 +84,7 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
   }
 
   const remove = async () => {
-    if (!confirm(`Remover "${restaurant.name}" do datafood? Ele deixa de aparecer nas buscas.`)) return
+    if (!confirm(`Remover "${restaurant.name}" do DataFood? Ele deixa de aparecer nas buscas.`)) return
     try {
       await api(`/api/restaurants/${restaurant.id}/`, { method: 'DELETE' })
       toast.info('Restaurante removido.')
@@ -97,30 +97,30 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
       <div className="card flex flex-col gap-4 p-5 sm:p-6">
-        <h3 className="text-[15px] font-medium">dados básicos</h3>
-        <Field label="nome" name="name" value={form.name as string} onChange={e => set('name', e.target.value)} error={errors.name} required />
+        <h3 className="text-[15px] font-medium">Dados básicos</h3>
+        <Field label="Nome" name="name" value={form.name as string} onChange={e => set('name', e.target.value)} error={errors.name} required />
         <TextArea
-          label="descrição"
+          label="Descrição"
           name="description"
           value={form.description as string}
           onChange={e => set('description', e.target.value)}
           error={errors.description}
-          placeholder="conte o que torna o lugar especial: clima, pratos, ocasiões. a busca inteligente usa este texto."
+          placeholder="Conte o que torna o lugar especial: clima, pratos, ocasiões. A busca inteligente usa este texto."
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="telefone / whatsapp" name="phone" value={form.phone as string} onChange={e => set('phone', maskPhone(e.target.value))} error={errors.phone} />
-          <Field label="e-mail" name="email" type="email" value={form.email as string} onChange={e => set('email', e.target.value)} error={errors.email} />
-          <Field label="site" name="website" type="url" value={form.website as string} onChange={e => set('website', e.target.value)} error={errors.website} placeholder="https://" />
-          <Field label="link do cardápio completo" name="menu_url" type="url" value={form.menu_url as string} onChange={e => set('menu_url', e.target.value)} error={errors.menu_url} placeholder="https://" />
-          <Field label="foto de capa (url)" name="cover_image" type="url" value={form.cover_image as string} onChange={e => set('cover_image', e.target.value)} error={errors.cover_image} placeholder="https://" />
-          <Field label="cnpj (opcional)" name="cnpj" inputMode="numeric" value={form.cnpj as string} onChange={e => set('cnpj', e.target.value.replace(/[^\d./-]/g, ''))} error={errors.cnpj} />
+          <Field label="Telefone / WhatsApp" name="phone" value={form.phone as string} onChange={e => set('phone', maskPhone(e.target.value))} error={errors.phone} />
+          <Field label="E-mail" name="email" type="email" value={form.email as string} onChange={e => set('email', e.target.value)} error={errors.email} />
+          <Field label="Site" name="website" type="url" value={form.website as string} onChange={e => set('website', e.target.value)} error={errors.website} placeholder="https://" />
+          <Field label="Link do cardápio completo" name="menu_url" type="url" value={form.menu_url as string} onChange={e => set('menu_url', e.target.value)} error={errors.menu_url} placeholder="https://" />
+          <Field label="Foto de capa (URL)" name="cover_image" type="url" value={form.cover_image as string} onChange={e => set('cover_image', e.target.value)} error={errors.cover_image} placeholder="https://" />
+          <Field label="CNPJ (opcional)" name="cnpj" inputMode="numeric" value={form.cnpj as string} onChange={e => set('cnpj', e.target.value.replace(/[^\d./-]/g, ''))} error={errors.cnpj} />
         </div>
       </div>
 
       <div className="card flex flex-col gap-5 p-5 sm:p-6">
         <div>
-          <h3 className="text-[15px] font-medium">categorias</h3>
-          <p className="text-[12px] text-ink-300">ajudam a busca a entender quando recomendar você.</p>
+          <h3 className="text-[15px] font-medium">Categorias</h3>
+          <p className="text-[12px] text-ink-300">Ajudam a busca a entender quando recomendar você.</p>
         </div>
         {!taxonomies ? (
           <Spinner />
@@ -150,7 +150,7 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
       </div>
 
       <div className="card p-5 sm:p-6">
-        <h3 className="mb-4 text-[15px] font-medium">atendimento</h3>
+        <h3 className="mb-4 text-[15px] font-medium">Atendimento</h3>
         <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
           {SALES_CHANNELS.map(c => (
             <div key={c} className="flex items-center justify-between gap-3 text-[13px] text-ink-700">
@@ -163,10 +163,10 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <button type="submit" disabled={saving} className="btn-primary">
-          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'salvar informações'}
+          {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Salvar informações'}
         </button>
         <button type="button" onClick={remove} className="text-xs text-ink-250 hover:text-danger">
-          remover restaurante
+          Remover restaurante
         </button>
       </div>
     </form>
@@ -184,7 +184,7 @@ export function CreateRestaurant({ onCreated }: { onCreated: (id: number) => voi
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      setErrors({ name: 'informe o nome do restaurante.' })
+      setErrors({ name: 'Informe o nome do restaurante.' })
       return
     }
     setSaving(true)
@@ -205,13 +205,13 @@ export function CreateRestaurant({ onCreated }: { onCreated: (id: number) => voi
 
   return (
     <form onSubmit={submit} className="card mx-auto flex max-w-xl flex-col gap-4 p-6 sm:p-8">
-      <h2 className="font-serif text-3xl">cadastre seu restaurante</h2>
-      <p className="text-[13px] leading-relaxed text-muted">comece pelo básico — você completa cardápio, horários, endereço e fotos em seguida.</p>
-      <Field label="nome do restaurante" name="name" value={name} onChange={e => setName(e.target.value)} error={errors.name} />
-      <TextArea label="descrição" name="description" value={description} onChange={e => setDescription(e.target.value)} error={errors.description} placeholder="clima, pratos, ocasiões ideais…" />
-      <Field label="telefone / whatsapp" name="phone" value={phone} onChange={e => setPhone(maskPhone(e.target.value))} error={errors.phone} />
+      <h2 className="font-serif text-3xl">Cadastre seu restaurante</h2>
+      <p className="text-[13px] leading-relaxed text-muted">Comece pelo básico — você completa cardápio, horários, endereço e fotos em seguida.</p>
+      <Field label="Nome do restaurante" name="name" value={name} onChange={e => setName(e.target.value)} error={errors.name} />
+      <TextArea label="Descrição" name="description" value={description} onChange={e => setDescription(e.target.value)} error={errors.description} placeholder="Clima, pratos, ocasiões ideais…" />
+      <Field label="Telefone / WhatsApp" name="phone" value={phone} onChange={e => setPhone(maskPhone(e.target.value))} error={errors.phone} />
       <button type="submit" disabled={saving} className="btn-primary self-start">
-        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'cadastrar'}
+        {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Cadastrar'}
       </button>
     </form>
   )

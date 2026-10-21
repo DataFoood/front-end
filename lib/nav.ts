@@ -1,8 +1,19 @@
 import type { User } from './types'
 
-/** Só caminhos internos (evita open redirect via ?next=https://...). */
+const BASE = 'http://datafood.local'
+
+/** Só caminhos internos (evita open redirect via ?next=https://...).
+ * Resolve como o navegador resolveria: `/\evil.com` e `/<tab>/evil.com` viram
+ * `//evil.com` (outro host) — checar só o prefixo deixava esses passarem. */
 export function safeNext(next: string | null): string | null {
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : null
+  if (!next || !next.startsWith('/')) return null
+  try {
+    const url = new URL(next, BASE)
+    if (url.origin !== BASE) return null
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return null
+  }
 }
 
 /** Página inicial de cada tipo de conta após login/cadastro. */

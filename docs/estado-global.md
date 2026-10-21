@@ -10,7 +10,9 @@ bastante para React puro, desde que cada tipo de estado fique no lugar certo.
 | Sessão e dados usados em todo o app | **Context** em `app/context/` | usuário logado, favoritos, toasts |
 | Estado que pode ir num link / voltar com o botão "voltar" | **URL** (`useSearchParams` + `router.replace`) | filtros do `/explorar`, `?r=`/`?aba=` do painel, `?next=` do login |
 | Dado de uma tela | `useState` na própria tela | restaurante do detalhe, métricas do painel, formulários |
-| Preferência só do navegador | `localStorage` | tokens (`datafood.tokens`), conversas do chat (`datafood.chats.<id>`) |
+| Dado da conta no servidor | API (cookie de sessão) | conversas do chat (`/api/chats/`), favoritos, preferências |
+| Preferência só do navegador | `localStorage` | marcador de sessão `datafood.session` (sem token — a sessão é cookie HttpOnly) |
+| Lista paginada | `usePaginated` na tela | explorar, salvos, avaliações, histórico, promoções, conversas |
 | Dado estático compartilhado | cache de módulo | taxonomias (`lib/taxonomies.ts`) |
 
 Regra de bolso: **só vira context o que mais de uma rota lê**. Se só uma
@@ -32,10 +34,13 @@ ToastProvider → AuthProvider → FavoritesProvider → página
 - `loading` é `true` até a sessão salva ser validada (`GET /me`). Telas
   protegidas usam `<RequireAuth>`, que espera o `loading` e manda para
   `/login?next=` sem usuário.
-- Restauração só descarta os tokens se o back **recusar** (401/403); API fora
-  do ar não desloga.
+- Restauração: com o marcador `datafood.session`, chama `/me` (o 401 dele
+  roda o refresh). Só apaga o marcador se o back **recusar** (401/403); API
+  fora do ar não desloga.
+- Com usuário logado, renova a sessão num intervalo (access − 90 s) e ao
+  voltar para a aba depois de suspensa.
 - Escuta `datafood:session-expired` (disparado pelo `api()` quando o refresh
-  falha) e o evento `storage` (logout em outra aba).
+  falha) e o evento `storage` no marcador (login/logout em outra aba).
 - O value muda quando o usuário muda (login, logout, perfil salvo). Isso é
   raro e esperado; quem só precisa saber "está logado?" pode ler `user`.
 

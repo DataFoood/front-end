@@ -22,6 +22,7 @@ lib/
   format.ts               formatação e máscaras (preço, telefone, CPF…)
   nav.ts                  safeNext (anti open-redirect), homeFor
   taxonomies.ts           useTaxonomies (cache de módulo)
+  usePaginated.ts         paginação padrão de toda lista (+ fetchAll)
 final-tests/              navegação E2E + contador de renders
 docs/                     esta documentação
 ```
@@ -29,7 +30,8 @@ docs/                     esta documentação
 ## Como uma página é montada
 
 Todas as páginas são Client Components (`'use client'`): dependem da sessão
-em `localStorage`, que o servidor não enxerga. O esqueleto se repete:
+do navegador (cookie da API + marcador no `localStorage`), que o servidor do
+Next não enxerga. O esqueleto se repete:
 
 ```tsx
 export default function XPage() {

@@ -35,12 +35,13 @@ Contas de demonstração (criadas pelo `seed_demo --demo-users` do back):
 |---|---|---|
 | `/` | público | landing + destaques reais |
 | `/explorar` | público | lista com filtros (cozinha, ambiente, preço, delivery, ordem) |
-| `/restaurante/[slug]` | público (interagir: logado) | detalhe, cardápio, horários, fotos, avaliações, salvar, contato/WhatsApp |
+| `/restaurante/[slug]` | público (interagir: logado) | detalhe, promoções ativas, cardápio, horários, fotos, avaliações, salvar, contato/WhatsApp |
 | `/login`, `/cadastro` | público | JWT; cadastro escolhe pessoa/restaurante e consentimento LGPD |
-| `/chat` | logado | busca semântica em linguagem natural (conversas salvas no navegador) |
+| `/chat` | logado | busca semântica em linguagem natural (conversas salvas na conta) |
 | `/salvos` | logado | favoritos |
-| `/perfil` | logado | dados, privacidade (consentimento, afinidades, histórico), senha, encerrar conta |
-| `/painel` | logado | dono: métricas, informações, cardápio, horários, endereço, fotos; cadastro de restaurante |
+| `/perfil` | logado | dados, privacidade (consentimento, afinidades, histórico), promoções (opt-in, e-mail, vincular Telegram), senha, encerrar conta |
+| `/painel` | logado | dono: métricas, informações, cardápio, horários, endereço, fotos, promoções (Telegram/e-mail/WhatsApp, agendamento, sugestão de infra no fim de semana); cadastro de restaurante |
+| `/promocoes/descadastrar` | público | link do fim dos e-mails de promoção |
 | `/privacidade`, `/termos` | público | textos legais (revisar com jurídico) |
 
 ## Estrutura
@@ -55,8 +56,10 @@ docs/           padrões: estilização, estado global, integração, decisões
 final-tests/    navegação E2E (Playwright) + contador de renders
 ```
 
-Sessão: tokens em `localStorage`; um 401 dispara um único refresh
-(o back rotaciona o refresh token); falhou → sessão encerrada.
+Sessão: tokens em **cookies HttpOnly** gravados pelo back (o JS não os vê);
+o front renova sozinho antes do access vencer e num 401 (um refresh por vez,
+coordenado entre abas); falhou → sessão encerrada. Toda listagem usa a
+paginação padrão (`lib/usePaginated.ts` + `<LoadMore>`).
 
 Antes de mexer em estilo ou estado compartilhado, leia [`docs/`](docs/README.md).
 Para testar a navegação ponta a ponta: [`final-tests/README.md`](final-tests/README.md).

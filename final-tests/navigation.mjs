@@ -86,7 +86,7 @@ async function main() {
 
   await step('visitante · landing e explorar', async () => {
     await v.goto(FRONT)
-    check(await v.getByRole('heading', { name: /o jantar começa antes/ }).isVisible(), 'landing carrega')
+    check(await v.getByRole('heading', { name: /o jantar começa antes/i }).isVisible(), 'landing carrega')
     await v.waitForSelector('text=bem avaliados agora.', { timeout: 10000 })
     check((await v.locator('a[href^="/restaurante/"]').count()) >= 1, 'destaques vindos da API')
 
@@ -96,7 +96,7 @@ async function main() {
     check(total > 0, `lista com ${total} restaurantes`)
 
     await resetRenders(v)
-    await v.locator('input[aria-label="buscar por nome"]').pressSequentially('restaurante', { delay: 15 })
+    await v.locator('input[aria-label="buscar por nome" i]').pressSequentially('restaurante', { delay: 15 })
     const typed = await renders(v)
     check(!typed.RestaurantCard && !typed.Explorer, 'digitar na busca não re-renderiza a lista', JSON.stringify(typed))
     await v.keyboard.press('Enter')
@@ -112,7 +112,7 @@ async function main() {
     check(true, 'filtro de cozinha vai para a URL')
     await v.getByRole('button', { name: 'limpar filtros' }).click()
     await v.waitForURL(url => !url.search.includes('cuisine') && !url.search.includes('q='))
-    check((await v.locator('input[aria-label="buscar por nome"]').inputValue()) === '', 'limpar filtros zera o campo de busca')
+    check((await v.locator('input[aria-label="buscar por nome" i]').inputValue()) === '', 'limpar filtros zera o campo de busca')
   })
 
   let slug
@@ -176,30 +176,33 @@ async function main() {
     ])
     check(true, `busca respondeu (${outcome})`)
     if (outcome !== 'ok') return
+    // a conversa é salva na conta logo depois da resposta: espera aparecer na lista
+    await c.locator('aside[aria-label="conversas" i] button', { hasText: 'um lugar tranquilo para um jantar' }).waitFor()
+    await c.waitForLoadState('networkidle')
 
     await resetRenders(c)
-    await c.locator('input[aria-label="descreva o momento"]').pressSequentially('pizza no centro', { delay: 15 })
+    await c.locator('input[aria-label="descreva o momento" i]').pressSequentially('pizza no centro', { delay: 15 })
     const typed = await renders(c)
     check(!typed.RestaurantCard && !typed.ChatApp, 'digitar no chat não re-renderiza o histórico', JSON.stringify(typed))
-    await c.locator('input[aria-label="descreva o momento"]').fill('')
+    await c.locator('input[aria-label="descreva o momento" i]').fill('')
 
     await resetRenders(c)
-    await c.locator('button[aria-label="salvar restaurante"]').first().click()
-    await c.waitForSelector('button[aria-label="remover dos salvos"]')
+    await c.locator('button[aria-label="salvar restaurante" i]').first().click()
+    await c.waitForSelector('button[aria-label="remover dos salvos" i]')
     const clicked = await renders(c)
     check((clicked.FavoriteButton || 0) <= 1, `favoritar re-renderiza só o botão clicado (${clicked.FavoriteButton || 0})`)
     const badge = await c.locator('a[href="/salvos"] span').innerText()
     check(badge.trim() === '1', 'contador de salvos atualiza na hora')
     await c.reload()
     // recarregar abre uma busca nova; a conversa fica salva na barra lateral
-    await c.locator('aside[aria-label=conversas] button', { hasText: 'um lugar tranquilo para um jantar' }).click()
-    await c.waitForSelector('button[aria-label="remover dos salvos"]', { timeout: 10000 })
+    await c.locator('aside[aria-label="conversas" i] button', { hasText: 'um lugar tranquilo para um jantar' }).click()
+    await c.waitForSelector('button[aria-label="remover dos salvos" i]', { timeout: 10000 })
     check(true, 'conversa e favorito persistem após recarregar')
 
     await c.goto(`${FRONT}/salvos`)
     await c.waitForSelector('a[href^="/restaurante/"]')
     check((await c.locator('a[href^="/restaurante/"]').count()) === 1, '/salvos lista o favorito')
-    await c.locator('button[aria-label="remover dos salvos"]').click()
+    await c.locator('button[aria-label="remover dos salvos" i]').click()
     await c.waitForSelector('text=nada salvo por enquanto')
     check(true, 'desfavoritar em /salvos some na hora')
   })
@@ -229,7 +232,7 @@ async function main() {
     await c.waitForSelector('text=buscas recentes')
     await c.waitForTimeout(800)
     const history = await c.locator('li').allInnerTexts()
-    check(history.some(t => t.includes('um lugar tranquilo para um jantar')), 'com consentimento a busca aparece no histórico')
+    check(history.some(t => t.toLowerCase().includes('um lugar tranquilo para um jantar')), 'com consentimento a busca aparece no histórico')
     await c.getByRole('switch', { name: 'personalizar recomendações' }).click()
     await c.waitForSelector('text=Personalização desativada')
     check((await c.getByRole('switch').getAttribute('aria-checked')) === 'false', 'desligar consentimento (LGPD)')
@@ -241,11 +244,13 @@ async function main() {
     await c.getByRole('button', { name: 'alterar senha' }).click()
     await c.waitForSelector('text=Senha alterada.', { timeout: 10000 })
     check(true, 'trocar senha')
-    // o back revogou os refresh antigos: a sessão desta aba precisa seguir viva
-    await c.evaluate(() => {
-      const t = JSON.parse(localStorage.getItem('datafood.tokens'))
-      localStorage.setItem('datafood.tokens', JSON.stringify({ ...t, access: 'expirado' }))
-    })
+    // sessão em cookie HttpOnly: nenhum token ao alcance do JS
+    const stored = await c.evaluate(() => Object.keys(localStorage).filter(k => /token/i.test(k) || /eyJ/.test(localStorage.getItem(k) ?? '')))
+    // sem URL: o refresh tem path /api/users/ e não apareceria filtrando por /
+    const cookies = await ctx.cookies()
+    check(stored.length === 0 && cookies.some(k => k.name === 'datafood_refresh' && k.httpOnly) && cookies.some(k => k.name === 'datafood_access' && k.httpOnly), 'sessão em cookies HttpOnly, sem tokens no localStorage')
+    // o back revogou os refresh antigos: com o access vencido, esta aba renova com o par novo
+    await ctx.clearCookies({ name: 'datafood_access' })
     await c.reload()
     await c.waitForSelector('input[name=name]', { timeout: 10000 })
     check(c.url().endsWith('/perfil'), 'após trocar a senha a sessão atual continua (refresh com o par novo)')
@@ -256,7 +261,7 @@ async function main() {
     await other.goto(`${FRONT}/explorar`)
     await c.goto(`${FRONT}/salvos`)
     await c.waitForSelector('text=nada salvo por enquanto') // sessão restaurada
-    await other.getByRole('button', { name: 'sair', exact: true }).click()
+    await other.getByRole('button', { name: 'Sair', exact: true }).click()
     await c.waitForURL(/\/login\?next=/, { timeout: 10000 })
     check(true, 'sair numa aba desloga a outra')
     await other.close()
@@ -283,7 +288,7 @@ async function main() {
     await login(o, OWNER, /\/painel/)
     await o.waitForSelector('text=VISUALIZAÇÕES')
     check(true, 'login do dono abre o painel com métricas')
-    const tabs = ['informações', 'cardápio', 'horários', 'endereço', 'fotos', 'visão geral']
+    const tabs = ['Informações', 'Cardápio', 'Horários', 'Endereço', 'Fotos', 'Promoções', 'Visão geral']
     for (const tab of tabs) {
       await o.getByRole('button', { name: tab, exact: true }).click()
       await o.waitForURL(/aba=/)
@@ -291,7 +296,7 @@ async function main() {
     }
     check(true, 'todas as abas do painel abrem')
 
-    await o.getByRole('button', { name: 'informações', exact: true }).click()
+    await o.getByRole('button', { name: 'Informações', exact: true }).click()
     const desc = o.locator('textarea[name=description]')
     const original = await desc.inputValue()
     await desc.fill(`${original} `)
@@ -301,25 +306,25 @@ async function main() {
     await o.getByRole('button', { name: 'salvar informações' }).click()
     check(true, 'editar e salvar informações')
 
-    await o.getByRole('button', { name: 'horários', exact: true }).click()
+    await o.getByRole('button', { name: 'Horários', exact: true }).click()
     await o.getByRole('button', { name: 'salvar horários' }).click()
     await o.waitForSelector('text=Horários salvos.')
     check(true, 'salvar horários')
 
     // troca entre restaurantes: cadastra um temporário pelo painel, confere
     // que o editor de endereço não herda o formulário do anterior e remove
-    const list = o.locator('p:text-is("meus restaurantes") + div')
-    const demoName = (await list.locator('button').filter({ hasNotText: /novo restaurante|E2E Temp/ }).first().innerText()).trim()
+    const list = o.locator('p:text-is("Meus restaurantes") + div')
+    const demoName = (await list.locator('button').filter({ hasNotText: /novo restaurante|E2E Temp/i }).first().innerText()).trim()
     const tempName = `E2E Temp ${Date.now().toString(36)}`
     await o.getByRole('button', { name: '+ novo restaurante' }).click()
     await o.fill('input[name=name]', tempName)
-    await o.getByRole('button', { name: 'cadastrar', exact: true }).click()
+    await o.getByRole('button', { name: 'Cadastrar', exact: true }).click()
     await o.waitForSelector('text=Restaurante cadastrado!')
     await o.waitForURL(/aba=info/)
     check(true, 'cadastrar restaurante pelo painel')
     try {
       await list.getByRole('button', { name: demoName, exact: true }).click()
-      await o.getByRole('button', { name: 'endereço', exact: true }).click()
+      await o.getByRole('button', { name: 'Endereço', exact: true }).click()
       await o.waitForSelector('input[name=street]')
       const demoStreet = await o.locator('input[name=street]').inputValue()
       await list.getByRole('button', { name: tempName, exact: true }).click()
@@ -330,7 +335,7 @@ async function main() {
     } finally {
       // remove o temporário mesmo se a checagem acima falhar (ele é público)
       await list.getByRole('button', { name: tempName, exact: true }).click()
-      await o.getByRole('button', { name: 'informações', exact: true }).click()
+      await o.getByRole('button', { name: 'Informações', exact: true }).click()
       o.once('dialog', d => d.accept())
       await o.getByRole('button', { name: 'remover restaurante' }).click()
       await o.waitForSelector('text=Restaurante removido.')
@@ -338,7 +343,7 @@ async function main() {
       check(true, 'remover restaurante temporário')
     }
 
-    await o.getByRole('button', { name: 'visão geral', exact: true }).click()
+    await o.getByRole('button', { name: 'Visão geral', exact: true }).click()
     const viewsBefore = await o.locator('text=VISUALIZAÇÕES').locator('..').innerText()
     await o.getByRole('link', { name: 'ver página pública →' }).click()
     await o.waitForSelector('text=editar no painel')

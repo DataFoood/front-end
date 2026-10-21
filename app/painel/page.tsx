@@ -6,20 +6,23 @@ import { Suspense, useCallback, useEffect, useState } from 'react'
 import { AddressEditor, HoursEditor, MenuEditor, PhotosEditor } from '@/components/painel/Editors'
 import { CreateRestaurant, InfoForm } from '@/components/painel/InfoForm'
 import { Overview } from '@/components/painel/Overview'
+import { InfraCard, PromotionsEditor } from '@/components/painel/Promotions'
 import { RequireAuth } from '@/components/RequireAuth'
 import { SiteHeader } from '@/components/SiteHeader'
 import { PageLoader } from '@/components/ui'
 import { api, errorMessage } from '@/lib/api'
+import { fetchAll } from '@/lib/usePaginated'
 import type { Restaurant, RestaurantCard } from '@/lib/types'
 import { useAuth } from '../context/AuthContext'
 
 const TABS = [
-  { id: 'visao', label: 'visão geral' },
-  { id: 'info', label: 'informações' },
-  { id: 'cardapio', label: 'cardápio' },
-  { id: 'horarios', label: 'horários' },
-  { id: 'endereco', label: 'endereço' },
-  { id: 'fotos', label: 'fotos' },
+  { id: 'visao', label: 'Visão geral' },
+  { id: 'info', label: 'Informações' },
+  { id: 'cardapio', label: 'Cardápio' },
+  { id: 'horarios', label: 'Horários' },
+  { id: 'endereco', label: 'Endereço' },
+  { id: 'fotos', label: 'Fotos' },
+  { id: 'promocoes', label: 'Promoções' },
 ] as const
 type TabId = (typeof TABS)[number]['id'] | 'novo'
 
@@ -53,7 +56,8 @@ function Panel() {
   )
 
   useEffect(() => {
-    api<RestaurantCard[]>('/api/restaurants/mine/')
+    // paginado no back; a barra lateral mostra todos os do dono
+    fetchAll<RestaurantCard>('/api/restaurants/mine/')
       .then(list => {
         setMine(list)
         setMineError(null)
@@ -96,7 +100,7 @@ function Panel() {
     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 pb-20 pt-8 sm:px-8 lg:grid-cols-[220px_1fr]">
       <aside className="flex flex-col gap-6">
         <div>
-          <p className="eyebrow mb-3">meus restaurantes</p>
+          <p className="eyebrow mb-3">Meus restaurantes</p>
           <div className="flex flex-col gap-1">
             {mine.map(m => (
               <button
@@ -108,12 +112,12 @@ function Panel() {
               </button>
             ))}
             <button onClick={() => go({ r: null, aba: 'novo' })} className={`rounded-md px-3 py-2 text-left text-[13px] ${tab === 'novo' ? 'bg-ink text-white' : 'text-rust hover:bg-white'}`}>
-              + novo restaurante
+              + Novo restaurante
             </button>
           </div>
         </div>
         {restaurant && tab !== 'novo' && (
-          <nav className="flex gap-1 overflow-x-auto lg:flex-col" aria-label="seções do painel">
+          <nav className="flex gap-1 overflow-x-auto lg:flex-col" aria-label="Seções do painel">
             {TABS.map(t => (
               <button
                 key={t.id}
@@ -129,6 +133,12 @@ function Panel() {
       </aside>
 
       <section className="min-w-0">
+        {/* operação da plataforma (números agregados de todos): só admin */}
+        {user?.role === 'admin' && (
+          <div className="mb-6">
+            <InfraCard />
+          </div>
+        )}
         {tab === 'novo' ? (
           <CreateRestaurant
             onCreated={async id => {
@@ -142,9 +152,9 @@ function Panel() {
         ) : (
           <div key={restaurant.id}>
             <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
-              <h1 className="font-serif text-3xl lowercase sm:text-4xl">{restaurant.name}</h1>
+              <h1 className="font-serif text-3xl sm:text-4xl">{restaurant.name}</h1>
               <Link href={`/restaurante/${restaurant.slug}`} className="text-xs text-rust underline">
-                ver página pública →
+                Ver página pública →
               </Link>
             </div>
             {tab === 'visao' && <Overview restaurant={restaurant} />}
@@ -166,6 +176,7 @@ function Panel() {
             {tab === 'horarios' && <HoursEditor restaurant={restaurant} onChange={loadRestaurant} />}
             {tab === 'endereco' && <AddressEditor restaurant={restaurant} onChange={reloadAll} />}
             {tab === 'fotos' && <PhotosEditor restaurant={restaurant} onChange={loadRestaurant} />}
+            {tab === 'promocoes' && <PromotionsEditor restaurant={restaurant} />}
           </div>
         )}
       </section>
