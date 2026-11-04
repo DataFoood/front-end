@@ -122,6 +122,9 @@ export function SiteFooter() {
           <span className="text-[13px] text-ink-500">DataFood © {new Date().getFullYear()}</span>
         </div>
         <div className="flex gap-6">
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:text-ink">
+            © OpenStreetMap contributors · ODbL
+          </a>
           <Link href="/privacidade" className="hover:text-ink">
             Privacidade · LGPD
           </Link>

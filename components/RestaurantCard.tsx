@@ -8,6 +8,7 @@ import { useFavoriteActions, useIsFavorite } from '@/app/context/FavoritesContex
 import { cardSubtitle, formatRating } from '@/lib/format'
 import type { RestaurantCard as Card } from '@/lib/types'
 import { Cover } from './Illustration'
+import { CatalogProvenance } from './CatalogProvenance'
 
 export function FavoriteButton({ restaurantId, variant = 'icon' }: { restaurantId: number; variant?: 'icon' | 'full' }) {
   const { user } = useAuth()
@@ -85,6 +86,7 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, 
         </div>
         <p className="mb-3 text-xs text-ink-300">{cardSubtitle(restaurant) || '—'}</p>
         <p className="mb-4 line-clamp-3 text-[13px] leading-relaxed text-ink-600">{restaurant.description}</p>
+        <div className="mb-3"><CatalogProvenance restaurant={restaurant} /></div>
         <div className="mt-auto flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <OpenBadge open={restaurant.is_open_now} />

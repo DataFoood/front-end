@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Cover } from '@/components/Illustration'
+import { CatalogProvenance } from '@/components/CatalogProvenance'
 import { FavoriteButton, OpenBadge } from '@/components/RestaurantCard'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { EmptyState, LoadMore, PageLoader, SectionTitle, Spinner, Stars, TextArea } from '@/components/ui'
@@ -287,6 +288,7 @@ export default function RestaurantePage() {
               )}
             </div>
             <h1 className="mb-4 font-serif text-[clamp(38px,5vw,52px)] leading-[1.05]">{r.name}</h1>
+            <div className="mb-4"><CatalogProvenance restaurant={r} links /></div>
             <p className="mb-6 max-w-md text-[15px] leading-relaxed text-ink-600">{r.description}</p>
             <div className="mb-6 flex flex-wrap gap-2">
               {tags.map(t => (
