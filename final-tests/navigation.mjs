@@ -105,7 +105,7 @@ async function main() {
     const filtered = await v.locator('a[href^="/restaurante/"]').count()
     check(filtered > 0 && filtered <= total, `busca por nome filtra (${filtered})`)
 
-    const cuisine = v.locator('select').first()
+    const cuisine = v.getByLabel('Cozinha')
     const option = await cuisine.locator('option').nth(1).getAttribute('value')
     await cuisine.selectOption(option)
     await v.waitForURL(new RegExp(`cuisine=${option}`))
@@ -171,7 +171,7 @@ async function main() {
     await c.goto(`${FRONT}/chat`)
     await c.getByRole('button', { name: 'um lugar tranquilo para um jantar' }).click()
     const outcome = await Promise.race([
-      c.waitForSelector('text=% match', { timeout: 30000 }).then(() => 'ok'),
+      c.waitForSelector('text=Afinidade contextual', { timeout: 30000 }).then(() => 'ok'),
       c.waitForSelector('text=a busca inteligente está indisponível', { timeout: 30000 }).then(() => 'indisponível'),
     ])
     check(true, `busca respondeu (${outcome})`)

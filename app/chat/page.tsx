@@ -108,7 +108,7 @@ const AssistantBubble = memo(function AssistantBubble({ content, query }: { cont
     <div className="flex animate-fade-in items-start gap-3">
       {dot}
       <div className="min-w-0 flex-1">
-        <p className="mb-4 text-sm leading-relaxed text-ink-700">{introFor(query, Math.min(content.results.length, RESULTS_SHOWN))}</p>
+        <p className="mb-4 text-sm leading-relaxed text-ink-700">{content.notice ?? introFor(query, Math.min(content.results.length, RESULTS_SHOWN))}</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {visible.map((r, i) => (
             <RestaurantCard key={r.restaurant.id} restaurant={r.restaurant} match={r.match} index={i} />
@@ -261,11 +261,11 @@ function ChatApp({ user }: { user: User }) {
 
     let answer: Message
     try {
-      const data = await api<{ results: SearchResult[] }>('/api/search/', {
+      const data = await api<{ results: SearchResult[]; notice?: string }>('/api/search/', {
         method: 'POST',
         body: { query, limit: RESULTS_FETCHED },
       })
-      answer = { role: 'assistant', content: { kind: 'results', results: data.results } }
+      answer = { role: 'assistant', content: { kind: 'results', results: data.results, notice: data.notice } }
     } catch (err) {
       const status = err instanceof ApiError ? err.status : 0
       const message =

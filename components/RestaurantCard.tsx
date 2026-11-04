@@ -82,11 +82,11 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, 
       <div className="flex flex-1 flex-col px-4 pb-5 pt-4">
         <div className="mb-1.5 flex items-baseline justify-between gap-3">
           <h3 className="truncate font-serif text-xl">{restaurant.name}</h3>
-          {typeof match === 'number' && <span className="shrink-0 text-xs font-medium text-rust">{match}% match</span>}
+          {typeof match === 'number' && <span className="shrink-0 text-xs font-medium text-rust" title="Ordenação por similaridade; não é probabilidade de satisfação.">Afinidade contextual</span>}
         </div>
         <p className="mb-3 text-xs text-ink-300">{cardSubtitle(restaurant) || '—'}</p>
         <p className="mb-4 line-clamp-3 text-[13px] leading-relaxed text-ink-600">{restaurant.description}</p>
-        <div className="mb-3"><CatalogProvenance restaurant={restaurant} /></div>
+        <div className="mb-3">{typeof restaurant.distance_km === 'number' && <p className="mb-1 text-xs text-muted">A {restaurant.distance_km.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km de você</p>}<CatalogProvenance restaurant={restaurant} /></div>
         <div className="mt-auto flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <OpenBadge open={restaurant.is_open_now} />

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 import { CardGrid, RestaurantCard } from '@/components/RestaurantCard'
+import { LocationFilter } from '@/components/LocationFilter'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { EmptyState, LoadMore, Spinner } from '@/components/ui'
 import { useTaxonomies } from '@/lib/taxonomies'
@@ -16,6 +17,7 @@ const FILTERS: { key: 'cuisine' | 'ambient' | 'price_range'; tax: keyof Taxonomi
   { key: 'price_range', tax: 'price_ranges', label: 'Preço' },
 ]
 const ORDERINGS = [
+  { value: 'distance', label: 'Mais próximos (com localização)' },
   { value: 'rating', label: 'Melhor avaliados' },
   { value: 'recent', label: 'Mais recentes' },
   { value: 'name', label: 'Nome (A–Z)' },
@@ -70,6 +72,10 @@ function Explorer() {
     price_range: params.get('price_range') ?? '',
     delivery: params.get('delivery') ?? '',
     ordering: params.get('ordering') ?? 'rating',
+    city: params.get('city') ?? '',
+    lat: params.get('lat') ?? '',
+    lon: params.get('lon') ?? '',
+    radius_km: params.get('radius_km') ?? '',
   }
   // paginação padrão: chaveada pelos filtros (resposta antiga nunca entra na lista nova)
   const { items, count, hasMore, loading, loadingMore, loadMore, error } = usePaginated<Card>('/api/restaurants/', filters)
@@ -85,6 +91,14 @@ function Explorer() {
 
   return (
     <>
+      <LocationFilter key={`${filters.city}:${filters.lat}:${filters.lon}`} city={filters.city} radius={filters.radius_km} nearby={!!filters.lat && !!filters.lon} onChange={values => {
+        const next = new URLSearchParams(params.toString())
+        for (const [key, value] of Object.entries(values)) {
+          if (value) next.set(key, value)
+          else next.delete(key)
+        }
+        router.replace(`${pathname}?${next.toString()}`, { scroll: false })
+      }} />
       <SearchBox key={filters.q} initial={filters.q} onSearch={v => setParam('q', v)} />
 
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-5">

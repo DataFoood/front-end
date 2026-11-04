@@ -71,6 +71,7 @@ export interface RestaurantCard {
   is_favorited: boolean
   has_delivery: boolean
   has_reservation: boolean
+  distance_km?: number | null
   is_demo?: boolean
   sources?: { provider: string; url: string; attribution: string; license: string; fetched_at: string }[]
 }
@@ -130,6 +131,7 @@ export interface Restaurant extends Omit<RestaurantCard, 'has_delivery' | 'has_r
   owner: number | null
   cnpj: string | null
   phone: string
+  whatsapp_number?: string
   email: string
   website: string
   menu_url: string
@@ -291,7 +293,7 @@ export type ChatMessage =
   | { role: 'user'; text: string }
   | {
       role: 'assistant'
-      content: { kind: 'results'; results: SearchResult[] } | { kind: 'error'; message: string; unavailable?: boolean }
+      content: { kind: 'results'; results: SearchResult[]; notice?: string } | { kind: 'error'; message: string; unavailable?: boolean }
     }
 
 /** item da lista lateral: GET /api/chats/ */
