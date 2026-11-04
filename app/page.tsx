@@ -13,13 +13,13 @@ import { useAuth } from './context/AuthContext'
 const STEPS = [
   { num: '01', title: 'Diga o momento', desc: 'Uma frase basta. "um lugar tranquilo para um jantar", "almoço executivo no centro", "comemoração para seis pessoas".' },
   { num: '02', title: 'O DataFood interpreta', desc: 'Nossa busca semântica entende ocasião, clima, comida e preço — e, se você permitir, aprende com o que você salva e visita.' },
-  { num: '03', title: 'Três opções, nunca mais', desc: 'Poucos restaurantes, ranqueados pela qualidade do encaixe — não pela publicidade. Cada um com o grau de match.' },
+  { num: '03', title: 'Opções para decidir', desc: 'Poucos restaurantes, ranqueados pela qualidade do encaixe — não pela publicidade. Com indicação de afinidade contextual.' },
 ]
 
-const PLANS = [
-  { tier: 'ESSENCIAL', price: 'R$ 89', desc: 'Para restaurantes começando a entender sua demanda local.', features: ['Insights semanais do bairro', 'Até 100 consultas / mês', 'Dashboard básico'], bg: 'bg-rust' },
-  { tier: 'INTELLIGENCE', price: 'R$ 249', desc: 'Para quem quer ler o tecido de demanda em tempo real.', features: ['Insights diários', 'Consultas ilimitadas', 'Alertas de tendências', 'API de demanda'], bg: 'bg-rust-dark' },
-  { tier: 'SIGNATURE', price: 'R$ 590', desc: 'Para grupos e operações multiunidade que decidem com dados.', features: ['Tudo do Intelligence', 'Relatórios por unidade', 'Consultor dedicado', 'Modelos sob medida'], bg: 'bg-rust-deep' },
+const CAPABILITIES = [
+  { tier: 'PRESENÇA', title: 'Seu lugar', desc: 'Mantenha as informações que ajudam clientes a escolher seu restaurante.', features: ['Cadastro e cardápio', 'Busca por cidade e proximidade', 'Origem dos dados identificada'], bg: 'bg-rust' },
+  { tier: 'CAMPANHAS', title: 'Divulgue', desc: 'Crie ofertas para quem escolheu receber novidades do seu restaurante.', features: ['E-mail e Telegram quando configurados', 'Compartilhamento manual no WhatsApp', 'Agendamento e descadastro'], bg: 'bg-rust-dark' },
+  { tier: 'RESULTADOS', title: 'Acompanhe', desc: 'Observe o interesse no seu restaurante e os resultados das suas campanhas.', features: ['Períodos de 7, 30 e 90 dias', 'Visitas e contatos atribuídos', 'Resgates confirmados e exportação'], bg: 'bg-rust-deep' },
 ]
 
 function Highlights() {
@@ -123,16 +123,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="planos" className="px-4 py-24 sm:px-8">
+      <section id="recursos" className="px-4 py-24 sm:px-8">
         <div className="mx-auto max-w-5xl">
-          <h2 className="mb-14 text-center font-serif text-[clamp(32px,4vw,48px)]">Escolha o nível de leitura.</h2>
+          <h2 className="mb-14 text-center font-serif text-[clamp(32px,4vw,48px)]">Ferramentas para o seu restaurante.</h2>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {PLANS.map(p => (
+            {CAPABILITIES.map(p => (
               <div key={p.tier} className={`${p.bg} flex flex-col rounded-lg px-7 py-9 transition hover:-translate-y-1.5 hover:shadow-xl`}>
                 <p className="mb-6 text-[10px] tracking-[0.14em] text-white/60">{p.tier}</p>
                 <p className="mb-2">
-                  <span className="font-serif text-4xl text-white">{p.price}</span>
-                  <span className="ml-1 text-xs text-white/60">/mês</span>
+                  <span className="font-serif text-4xl text-white">{p.title}</span>
                 </p>
                 <p className="mb-7 text-[13px] leading-relaxed text-white/75">{p.desc}</p>
                 <ul className="mb-8 flex-1">
