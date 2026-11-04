@@ -111,7 +111,7 @@ const AssistantBubble = memo(function AssistantBubble({ content, query }: { cont
         <p className="mb-4 text-sm leading-relaxed text-ink-700">{content.notice ?? introFor(query, Math.min(content.results.length, RESULTS_SHOWN))}</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {visible.map((r, i) => (
-            <RestaurantCard key={r.restaurant.id} restaurant={r.restaurant} match={r.match} index={i} />
+            <RestaurantCard trackImpression key={r.restaurant.id} restaurant={r.restaurant} match={r.match} index={i} />
           ))}
         </div>
         {!expanded && content.results.length > RESULTS_SHOWN && (

@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { memo } from 'react'
+import { memo, useEffect, useRef } from 'react'
+import { recordEvent } from '@/lib/analytics'
 import { useAuth } from '@/app/context/AuthContext'
 import { useFavoriteActions, useIsFavorite } from '@/app/context/FavoritesContext'
 import { cardSubtitle, formatRating } from '@/lib/format'
@@ -65,10 +66,25 @@ export function OpenBadge({ open }: { open: boolean | null }) {
 
 // memo: listas crescem ("carregar mais", novas respostas no chat) e o pai
 // re-renderiza por estado próprio; cards com as mesmas props ficam parados
-export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, index = 0 }: { restaurant: Card; match?: number | null; index?: number }) {
+export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, index = 0, trackImpression = false }: { restaurant: Card; match?: number | null; index?: number; trackImpression?: boolean }) {
+  const cardRef = useRef<HTMLAnchorElement>(null)
+  const observed = useRef(false)
+  useEffect(() => {
+    if (!trackImpression || !cardRef.current || observed.current || !('IntersectionObserver' in window)) return
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        observed.current = true
+        recordEvent(restaurant.id, 'result_impression')
+        observer.disconnect()
+      }
+    }, { threshold: 0.5 })
+    observer.observe(cardRef.current)
+    return () => observer.disconnect()
+  }, [restaurant.id, trackImpression])
   const rating = Number(restaurant.average_rating)
   return (
     <Link
+      ref={cardRef}
       href={`/restaurante/${restaurant.slug}`}
       className="group flex min-w-0 animate-fade-in flex-col overflow-hidden rounded-lg border border-line bg-white transition hover:-translate-y-0.5 hover:border-ink-200"
       style={{ animationDelay: `${index * 0.08}s` }}

@@ -33,6 +33,7 @@ function initialState(r: Restaurant) {
     name: r.name,
     description: r.description,
     phone: maskPhone(r.phone || ''),
+    whatsapp_number: r.whatsapp_number || '',
     email: r.email,
     website: r.website,
     cover_image: r.cover_image,
@@ -108,7 +109,8 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
           placeholder="Conte o que torna o lugar especial: clima, pratos, ocasiões. A busca inteligente usa este texto."
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Telefone / WhatsApp" name="phone" value={form.phone as string} onChange={e => set('phone', maskPhone(e.target.value))} error={errors.phone} />
+          <Field label="Telefone" name="phone" value={form.phone as string} onChange={e => set('phone', maskPhone(e.target.value))} error={errors.phone} />
+          <Field label="WhatsApp confirmado (opcional)" name="whatsapp_number" value={form.whatsapp_number as string} onChange={e => set('whatsapp_number', e.target.value)} error={errors.whatsapp_number} placeholder="DDD e número que recebe mensagens" />
           <Field label="E-mail" name="email" type="email" value={form.email as string} onChange={e => set('email', e.target.value)} error={errors.email} />
           <Field label="Site" name="website" type="url" value={form.website as string} onChange={e => set('website', e.target.value)} error={errors.website} placeholder="https://" />
           <Field label="Link do cardápio completo" name="menu_url" type="url" value={form.menu_url as string} onChange={e => set('menu_url', e.target.value)} error={errors.menu_url} placeholder="https://" />
@@ -209,7 +211,7 @@ export function CreateRestaurant({ onCreated }: { onCreated: (id: number) => voi
       <p className="text-[13px] leading-relaxed text-muted">Comece pelo básico — você completa cardápio, horários, endereço e fotos em seguida.</p>
       <Field label="Nome do restaurante" name="name" value={name} onChange={e => setName(e.target.value)} error={errors.name} />
       <TextArea label="Descrição" name="description" value={description} onChange={e => setDescription(e.target.value)} error={errors.description} placeholder="Clima, pratos, ocasiões ideais…" />
-      <Field label="Telefone / WhatsApp" name="phone" value={phone} onChange={e => setPhone(maskPhone(e.target.value))} error={errors.phone} />
+      <Field label="Telefone" name="phone" value={phone} onChange={e => setPhone(maskPhone(e.target.value))} error={errors.phone} />
       <button type="submit" disabled={saving} className="btn-primary self-start">
         {saving ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Cadastrar'}
       </button>

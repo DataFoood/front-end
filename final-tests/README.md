@@ -98,3 +98,13 @@ Contagem de componentes que renderizaram durante a interação (build de dev,
 | 12 | tooling | `bun run typecheck` falhava num clone limpo (sem `next-env.d.ts`). | Roda `next typegen` antes. |
 
 Padrões resultantes documentados em [`../docs/`](../docs/README.md).
+
+## BI, atribuição e resgates
+
+`bun run e2e:bi` usa as contas e restaurante demo. Publica uma campanha sem
+canais externos, abre o link assinado como visitante, registra contato sem
+realizar ligação, confirma um resgate pelo painel, confere a atribuição, CSV e
+layout móvel. Não rode contra produção. O resgate permanece na auditoria demo.
+Variáveis: `FRONT_URL`, `API_URL`, `CHROMIUM_PATH`, `SCREENSHOT_PATH` opcional.
+Repetições gastam a cota diária mesmo removendo a campanha; use configuração
+local de testes com `PROMOTIONS_MAX_PER_DAY` alto. Não altere o padrão de produção.

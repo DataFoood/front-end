@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { DetailTelemetry } from '@/components/DetailTelemetry'
+import { recordDetailAction } from '@/lib/analytics'
 import { Cover } from '@/components/Illustration'
 import { CatalogProvenance } from '@/components/CatalogProvenance'
 import { FavoriteButton, OpenBadge } from '@/components/RestaurantCard'
@@ -258,7 +260,7 @@ export default function RestaurantePage() {
     const r = restaurant
     const today = todayIndex()
     const address = formatAddress(r.address)
-    const whats = r.phone ? whatsappLink(r.phone) : null
+    const whats = r.whatsapp_number ? whatsappLink(r.whatsapp_number) : null
     const rating = Number(r.average_rating)
     // editar: dono ou admin; avaliar: o back só barra o dono (admin pode avaliar)
     const canManage = !!user && (user.id === r.owner || user.role === 'admin')
@@ -288,6 +290,7 @@ export default function RestaurantePage() {
               )}
             </div>
             <h1 className="mb-4 font-serif text-[clamp(38px,5vw,52px)] leading-[1.05]">{r.name}</h1>
+            <DetailTelemetry restaurantId={r.id} />
             <div className="mb-4"><CatalogProvenance restaurant={r} links /></div>
             <p className="mb-6 max-w-md text-[15px] leading-relaxed text-ink-600">{r.description}</p>
             <div className="mb-6 flex flex-wrap gap-2">
@@ -299,11 +302,11 @@ export default function RestaurantePage() {
             </div>
             <div className="flex flex-wrap gap-3">
               {whats ? (
-                <a href={whats} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                <a href={whats} onClick={() => recordDetailAction(r.id, 'contact_click')} target="_blank" rel="noopener noreferrer" className="btn-primary">
                   {r.has_reservation ? 'Reservar pelo WhatsApp' : 'Falar com o restaurante'}
                 </a>
               ) : r.phone ? (
-                <a href={`tel:${r.phone}`} className="btn-primary">
+                <a href={`tel:${r.phone}`} onClick={() => recordDetailAction(r.id, 'contact_click')} className="btn-primary">
                   Ligar
                 </a>
               ) : null}
@@ -329,7 +332,7 @@ export default function RestaurantePage() {
                 label: 'ENDEREÇO',
                 value: address ?? 'Não informado',
                 note: mapsUrl ? (
-                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                  <a href={mapsUrl} onClick={() => recordDetailAction(r.id, 'directions_click')} target="_blank" rel="noopener noreferrer" className="underline">
                     Abrir no mapa
                   </a>
                 ) : null,
@@ -365,7 +368,7 @@ export default function RestaurantePage() {
               ))}
             </div>
             {r.menu_url && (
-              <a href={r.menu_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm text-rust underline">
+              <a href={r.menu_url} onClick={() => recordDetailAction(r.id, 'menu_click')} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm text-rust underline">
                 Ver cardápio completo
               </a>
             )}

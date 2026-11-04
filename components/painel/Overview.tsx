@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { Insights } from './Insights'
+import { CatalogProvenance } from '@/components/CatalogProvenance'
 import { useEffect, useState } from 'react'
 import { Spinner, Stars } from '@/components/ui'
 import { api, errorMessage } from '@/lib/api'
@@ -133,6 +135,8 @@ export function Overview({ restaurant }: { restaurant: Restaurant }) {
 
   return (
     <div className="flex flex-col gap-5">
+      <CatalogProvenance restaurant={restaurant} />
+      <Insights restaurantId={restaurant.id} />
       {missing.length > 0 && (
         <div className="rounded-md border-l-[3px] border-rust bg-white px-5 py-4 text-[13px] leading-relaxed text-ink-600">
           Complete o cadastro para aparecer melhor na busca inteligente: falta <strong>{missing.join(', ')}</strong>.

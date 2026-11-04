@@ -142,7 +142,7 @@ function Explorer() {
         <>
           <CardGrid>
             {items.map((r, i) => (
-              <RestaurantCard key={r.id} restaurant={r} index={i % PAGE_SIZE} />
+              <RestaurantCard trackImpression key={r.id} restaurant={r} index={i % PAGE_SIZE} />
             ))}
           </CardGrid>
           <LoadMore shown={items.length} total={count} hasMore={hasMore} loading={loadingMore} onClick={loadMore} noun="restaurantes" />
