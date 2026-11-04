@@ -15,6 +15,9 @@ const STATUS_LABEL: Record<PromotionStatus, string> = {
   scheduled: 'Agendada',
   sending: 'Enviando',
   sent: 'Enviada',
+  expired: 'Expirada',
+  partial: 'Falha parcial',
+  failed: 'Falha no envio',
 }
 
 const STATUS_CLASS: Record<PromotionStatus, string> = {
@@ -22,6 +25,9 @@ const STATUS_CLASS: Record<PromotionStatus, string> = {
   scheduled: 'border-rust text-rust',
   sending: 'border-rust bg-rust text-white',
   sent: 'border-success-line bg-success-bg text-success',
+  expired: 'border-line text-muted',
+  partial: 'border-rust text-rust',
+  failed: 'border-danger text-danger',
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`

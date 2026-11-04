@@ -214,7 +214,7 @@ export interface Address {
   is_default: boolean
 }
 
-export type PromotionStatus = 'draft' | 'scheduled' | 'sending' | 'sent'
+export type PromotionStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'expired' | 'partial' | 'failed'
 export type DeliveryStatus = 'pending' | 'sending' | 'sent' | 'failed' | 'skipped'
 
 /** gestão (dono/admin): GET/POST /api/restaurants/<id>/promotions/ */
