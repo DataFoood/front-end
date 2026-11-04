@@ -108,3 +108,13 @@ layout móvel. Não rode contra produção. O resgate permanece na auditoria dem
 Variáveis: `FRONT_URL`, `API_URL`, `CHROMIUM_PATH`, `SCREENSHOT_PATH` opcional.
 Repetições gastam a cota diária mesmo removendo a campanha; use configuração
 local de testes com `PROMOTIONS_MAX_PER_DAY` alto. Não altere o padrão de produção.
+
+## Modo escolha
+
+`bun run e2e:escolha` usa somente as contas demo. Liga a preferência pelo perfil,
+confere persistência em outro navegador, adiciona duas imagens temporárias ao
+restaurante demo e testa fotos, swipes reais via Chromium/CDP, rolagem vertical,
+arraste curto, teclado, escolha de favorito existente, erro ao salvar e retorno
+à grade. Restaura a preferência, favoritos acrescentados e fotos ao terminar.
+Não execute contra produção. Variáveis: `FRONT_URL`, `API_URL`, `CHROMIUM_PATH`
+e `SCREENSHOT_PATH` opcional.

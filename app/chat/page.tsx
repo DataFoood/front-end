@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { memo, useEffect, useRef, useState, type FormEvent, type Ref } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
+import { ChoiceDeck } from '@/components/ChoiceDeck'
+import { ChoiceModeSetting } from '@/components/ChoiceModeSetting'
 import { RestaurantCard } from '@/components/RestaurantCard'
 import { Avatar, Logo, Spinner } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
@@ -75,7 +77,7 @@ function introFor(query: string, count: number) {
 
 // memo: o histórico inteiro fica montado; mensagens antigas não re-renderizam
 // quando chega uma nova ou quando o "buscando…" liga/desliga
-const AssistantBubble = memo(function AssistantBubble({ content, query }: { content: AssistantContent; query: string }) {
+const AssistantBubble = memo(function AssistantBubble({ content, query, choiceMode }: { content: AssistantContent; query: string; choiceMode: boolean }) {
   const [expanded, setExpanded] = useState(false)
   const dot = (
     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink">
@@ -108,7 +110,8 @@ const AssistantBubble = memo(function AssistantBubble({ content, query }: { cont
     <div className="flex animate-fade-in items-start gap-3">
       {dot}
       <div className="min-w-0 flex-1">
-        <p className="mb-4 text-sm leading-relaxed text-ink-700">{content.notice ?? introFor(query, Math.min(content.results.length, RESULTS_SHOWN))}</p>
+        <p className="mb-4 text-sm leading-relaxed text-ink-700">{content.notice ?? introFor(query, choiceMode ? content.results.length : Math.min(content.results.length, RESULTS_SHOWN))}</p>
+        {choiceMode ? <ChoiceDeck restaurants={content.results.map(result => result.restaurant)} /> : <>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {visible.map((r, i) => (
             <RestaurantCard trackImpression key={r.restaurant.id} restaurant={r.restaurant} match={r.match} index={i} />
@@ -119,6 +122,7 @@ const AssistantBubble = memo(function AssistantBubble({ content, query }: { cont
             Ver mais {content.results.length - RESULTS_SHOWN} opções
           </button>
         )}
+        </>}
       </div>
     </div>
   )
@@ -420,7 +424,7 @@ function ChatApp({ user }: { user: User }) {
                     <Avatar name={user.name} url={user.avatar_url} size={28} />
                   </div>
                 ) : (
-                  <AssistantBubble key={i} content={msg.content} query={active.messages[i - 1]?.role === 'user' ? (active.messages[i - 1] as { text: string }).text : ''} />
+                  <AssistantBubble choiceMode={!!user.choice_mode} key={i} content={msg.content} query={active.messages[i - 1]?.role === 'user' ? (active.messages[i - 1] as { text: string }).text : ''} />
                 ),
               )}
               {loading && (
@@ -440,6 +444,7 @@ function ChatApp({ user }: { user: User }) {
           )}
         </div>
 
+        <div className="mx-auto w-full max-w-4xl px-4 sm:px-8"><ChoiceModeSetting compact /></div>
         <Composer onSend={send} disabled={loading} inputRef={inputRef} />
       </main>
     </div>

@@ -15,6 +15,7 @@ export interface User {
   role: Role
   level: number
   allow_info: boolean
+  choice_mode?: boolean
   is_active: boolean
   created_at: string
 }

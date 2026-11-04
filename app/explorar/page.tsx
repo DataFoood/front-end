@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
+import { useAuth } from '@/app/context/AuthContext'
+import { ChoiceDeck } from '@/components/ChoiceDeck'
+import { ChoiceModeSetting } from '@/components/ChoiceModeSetting'
 import { CardGrid, RestaurantCard } from '@/components/RestaurantCard'
 import { LocationFilter } from '@/components/LocationFilter'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
@@ -64,6 +67,7 @@ function Explorer() {
   const pathname = usePathname()
   const params = useSearchParams()
   const taxonomies = useTaxonomies()
+  const { user } = useAuth()
 
   const filters = {
     q: params.get('q') ?? '',
@@ -130,6 +134,7 @@ function Explorer() {
         )}
       </div>
 
+      <div className="mb-4 max-w-lg"><ChoiceModeSetting compact /></div>
       {error && items.length === 0 ? (
         <EmptyState title="Não foi possível carregar" text={error} />
       ) : loading ? (
@@ -140,11 +145,11 @@ function Explorer() {
         <EmptyState title="Nenhum restaurante encontrado" text="Tente remover alguns filtros." />
       ) : (
         <>
-          <CardGrid>
+          {user?.choice_mode ? <ChoiceDeck key={JSON.stringify(filters)} restaurants={items} /> : <CardGrid>
             {items.map((r, i) => (
               <RestaurantCard trackImpression key={r.id} restaurant={r} index={i % PAGE_SIZE} />
             ))}
-          </CardGrid>
+          </CardGrid>}
           <LoadMore shown={items.length} total={count} hasMore={hasMore} loading={loadingMore} onClick={loadMore} noun="restaurantes" />
         </>
       )}

@@ -49,6 +49,7 @@ interface FavoritesContextValue {
   store: FavoritesStore
   /** alterna o favorito; retorna o novo estado (ou o anterior se falhar) */
   toggle: (id: number) => Promise<boolean>
+  save: (id: number) => Promise<boolean>
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null)
@@ -90,7 +91,20 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     [store, toast],
   )
 
-  const value = useMemo(() => ({ store, toggle }), [store, toggle])
+  const save = useCallback(async (id: number) => {
+    const wasFavorite = store.getIds().has(id)
+    store.update(id, true)
+    try {
+      await api(`/api/restaurants/${id}/favorite/`, { method: 'POST' })
+      return true
+    } catch (err) {
+      store.update(id, wasFavorite)
+      toast.error(errorMessage(err, 'Não foi possível salvar sua escolha. Tente novamente.'))
+      return false
+    }
+  }, [store, toast])
+
+  const value = useMemo(() => ({ store, toggle, save }), [store, toggle, save])
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>
 }
 
@@ -122,5 +136,6 @@ export function useIsFavorite(id: number): boolean {
 
 /** Ações estáveis (não re-renderizam quem só dispara). */
 export function useFavoriteActions() {
-  return { toggle: useFavoritesContext().toggle }
+  const { toggle, save } = useFavoritesContext()
+  return { toggle, save }
 }

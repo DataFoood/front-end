@@ -98,3 +98,17 @@ de interesse no build; Do Not Track também é respeitado.
 Confirme as migrações da API ao atualizar. Os passos e pendências do catálogo real
 estão em `back/docs/implementation-status.md`. O E2E específico de BI é
 `bun run e2e:bi` em `final-tests` (somente ambiente demo/controlado).
+
+## Modo escolha
+
+Em **Perfil → Meus dados**, habilite **Modo escolha**. A preferência fica salva
+na conta e vale para a busca inteligente e a exploração por filtros. Também é
+possível alternar o modo diretamente nas buscas, mantendo a consulta atual.
+
+Arraste o card para a esquerda para recusar ou para a direita para escolher e
+salvar nos favoritos. As fotos têm setas próprias; mudar de foto não decide.
+No desktop, use os botões ou as setas do teclado com o card em foco. Escolher
+um favorito existente não o remove. Recusas são temporárias nessa lista e
+não alteram os favoritos. Sem fotos, aparece uma ilustração identificada.
+
+A API precisa aplicar a migração `users/0004_user_choice_mode` antes do uso.

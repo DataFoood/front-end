@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState, type FormEvent } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
+import { ChoiceModeSetting } from '@/components/ChoiceModeSetting'
 import { SiteFooter, SiteHeader } from '@/components/SiteHeader'
 import { Avatar, Field, LoadMore, PageLoader, Spinner, Toggle } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
@@ -466,7 +467,7 @@ function Profile() {
           </button>
         ))}
       </div>
-      {tab === 'dados' && <ProfileForm user={user} />}
+      {tab === 'dados' && <><ProfileForm user={user} /><ChoiceModeSetting /></>}
       {tab === 'privacidade' && <PrivacyPanel user={user} />}
       {tab === 'promocoes' && <PromotionsPanel user={user} />}
       {tab === 'seguranca' && <SecurityPanel user={user} />}
