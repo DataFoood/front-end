@@ -71,6 +71,8 @@ export interface RestaurantCard {
   is_favorited: boolean
   has_delivery: boolean
   has_reservation: boolean
+  is_demo?: boolean
+  sources?: { provider: string; url: string; attribution: string; license: string; fetched_at: string }[]
 }
 
 export interface MenuItem {
@@ -215,7 +217,7 @@ export interface Address {
 }
 
 export type PromotionStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'expired' | 'partial' | 'failed'
-export type DeliveryStatus = 'pending' | 'sending' | 'sent' | 'failed' | 'skipped'
+export type DeliveryStatus = 'pending' | 'sending' | 'sent' | 'failed' | 'skipped' | 'unknown'
 
 /** gestão (dono/admin): GET/POST /api/restaurants/<id>/promotions/ */
 export interface Promotion {

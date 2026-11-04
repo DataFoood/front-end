@@ -14,7 +14,7 @@ const STATUS_LABEL: Record<PromotionStatus, string> = {
   draft: 'Rascunho',
   scheduled: 'Agendada',
   sending: 'Enviando',
-  sent: 'Enviada',
+  sent: 'Publicada',
   expired: 'Expirada',
   partial: 'Falha parcial',
   failed: 'Falha no envio',
@@ -245,9 +245,11 @@ function PromotionRow({
     p.coupon_code && `Cupom ${p.coupon_code}`,
     p.valid_until && `válida até ${formatDate(p.valid_until)}`,
     p.status === 'scheduled' && p.scheduled_for && `envio em ${formatDateTime(p.scheduled_for)}`,
-    p.sent_at && `enviada em ${formatDateTime(p.sent_at)}`,
-    (p.status === 'sent' || p.status === 'sending') &&
-      `${plural(delivered, 'entregue', 'entregues')}${problems ? ` · ${plural(p.stats.failed, 'falha', 'falhas')} · ${p.stats.skipped} no limite diário` : ''}`,
+    p.sent_at && `processamento concluído em ${formatDateTime(p.sent_at)}`,
+    ['sent', 'sending', 'partial', 'failed'].includes(p.status) &&
+      `${plural(delivered, 'mensagem aceita pelo provedor', 'mensagens aceitas pelos provedores')}${problems ? ` · ${plural(p.stats.failed, 'falha', 'falhas')} · ${p.stats.skipped} ignoradas` : ''}`,
+    (p.stats.unknown ?? 0) > 0 && `${p.stats.unknown} sem confirmação de aceitação`,
+    p.stats.pending > 0 && `${p.stats.pending} aguardando nova tentativa`,
   ]
     .filter(Boolean)
     .join(' · ')
@@ -256,7 +258,7 @@ function PromotionRow({
     <li className="card p-5">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-[15px] font-medium">{p.title}</h3>
-        <span className={`rounded-full border px-2.5 py-0.5 text-[11px] ${STATUS_CLASS[p.status]}`}>{STATUS_LABEL[p.status]}</span>
+        <span className={`rounded-full border px-2.5 py-0.5 text-[11px] ${STATUS_CLASS[p.status] ?? STATUS_CLASS.draft}`}>{STATUS_LABEL[p.status] ?? 'Estado indisponível'}</span>
       </div>
       <p className="mb-3 whitespace-pre-line text-[13px] leading-relaxed text-ink-600">{p.message}</p>
       {/* frase única: só a primeira letra em maiúscula */}

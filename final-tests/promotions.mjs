@@ -114,10 +114,10 @@ async function main() {
     check(true, 'rascunho criado e listado')
 
     await row.getByRole('button', { name: 'enviar agora' }).click()
-    await row.getByText('Enviada', { exact: true }).waitFor({ timeout: 20000 })
+    await row.getByText('Publicada', { exact: true }).waitFor({ timeout: 20000 })
     check(true, 'enviar agora → enviada')
     const meta = await row.innerText()
-    check(/entregue|limite diário/.test(meta), 'estatística de entrega na linha', meta.split('\n').slice(-2).join(' | '))
+    check(/aceita pelo provedor|aceitas pelos provedores|ignoradas/.test(meta), 'estatística de aceitação na linha', meta.split('\n').slice(-2).join(' | '))
     const wa = await row.getByRole('link', { name: 'compartilhar no whatsapp' }).getAttribute('href')
     check(wa?.startsWith('https://wa.me/?text=') && decodeURIComponent(wa).includes('E2EDOBRO'), 'link do whatsapp com o texto e o cupom')
   })
