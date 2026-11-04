@@ -273,7 +273,10 @@ export interface MessagingPreference {
 }
 
 export interface InfraSuggestion {
-  level: 'ok' | 'attention' | 'hire'
+  level: 'ok' | 'attention' | 'hire' | 'insufficient'
+  calibrated?: boolean
+  observed_days?: number
+  telemetry?: { requests_24h: number; errors_24h: number; p95_upper_ms: number | null; p95_above_3000: boolean; outbox_overdue: number }
   recommend: boolean
   reasons: string[]
   weekend: { start: string; end: string }

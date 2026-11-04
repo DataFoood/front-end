@@ -48,10 +48,19 @@ export function InfraCard() {
   const slot = data.suggested_window
   const peak = `${data.projected.messages_peak_day} mensagens e ${data.projected.searches_peak_day} buscas por dia`
 
+  if (data.level === 'insufficient' || data.calibrated === false) {
+    return <div className="card p-5 text-sm text-ink-600">
+      <p className="font-medium text-ink">{data.recommend ? 'Revise os sinais de operação' : 'Capacidade local ainda não calibrada'}</p>
+      <p className="mt-2">Ainda não há base para recomendar contratação de infraestrutura. Faça medições na instalação real antes de decidir.</p>
+      {data.telemetry && <p className="mt-2 text-xs text-muted">Últimas 24 horas: {data.telemetry.requests_24h} requisições de busca, {data.telemetry.errors_24h} erros de servidor e {data.telemetry.outbox_overdue} lote(s) atrasados. {data.telemetry.requests_24h > 0 ? (data.telemetry.p95_above_3000 ? 'Latência p95 acima de 3 s.' : `Limite superior aproximado da latência p95: ${data.telemetry.p95_upper_ms} ms.`) : 'Ainda sem amostra de latência.'}</p>}
+      {data.reasons.length > 0 && <ul className="mt-2 list-inside list-disc text-xs text-muted">{data.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}
+    </div>
+  }
+
   if (!data.recommend) {
     return (
       <p className="text-[12px] text-ink-300">
-        Fim de semana tranquilo: a máquina local dá conta (pico previsto de {peak}, {Math.round(data.utilization * 100)}% da capacidade).
+        Sem sobrecarga prevista pela estimativa atual (pico previsto de {peak}, {Math.round(data.utilization * 100)}% da capacidade).
       </p>
     )
   }
@@ -62,7 +71,7 @@ export function InfraCard() {
         {data.level === 'hire' ? 'Contrate infraestrutura para o fim de semana' : 'Fim de semana movimentado à vista'}
       </p>
       <p className="mb-2">
-        O pico previsto é de {peak} — {Math.round(data.utilization * 100)}% do que a máquina local aguenta. Sugerimos subir a stack de produção numa
+        O pico previsto é de {peak} — {Math.round(data.utilization * 100)}% da capacidade local configurada. Sugerimos subir a stack de produção numa
         VPS só de <strong>{formatDateTime(slot.start)}</strong> a <strong>{formatDateTime(slot.end)}</strong> ({slot.hours} h, cerca de{' '}
         <strong>{formatMoney(data.estimated_cost.total, data.estimated_cost.currency)}</strong>) e desligar na segunda.
       </p>
@@ -74,7 +83,7 @@ export function InfraCard() {
         </ul>
       )}
       <p className="mt-2 text-[11px] text-ink-300">
-        Projeção pelas últimas {data.history_weeks} semanas + promoções já agendadas. Passo a passo no guia de infraestrutura de fim de semana (docs do back).
+        Estimativa por volume observado e promoções agendadas. O custo de servidor não inclui armazenamento, transferência e serviços externos; revise a operação antes de migrar.
       </p>
     </div>
   )
