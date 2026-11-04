@@ -85,3 +85,16 @@ origem do front em `CORS_ALLOWED_ORIGINS` na API.
 Paleta creme `#F5F0E8`, preto `#0D0D0D`, terracota `#C0603A`; Playfair Display +
 Noto Sans JP. Tokens no bloco `@theme` de `app/globals.css` (Tailwind 4 não usa mais `tailwind.config.js`);
 cor sempre por token, nunca `text-[#hex]` — ver [`docs/estilizacao.md`](docs/estilizacao.md).
+
+## Resultados e dados de origem
+
+A busca aceita cidade e proximidade, com localização opcional. Dados externos
+mostram procedência; registros demo são identificados. O painel acompanha eventos
+observados, campanhas e resgates confirmados, sem tratar contato como venda.
+Há filtros de 7/30/90 dias e CSV; sem histórico suficiente, a comparação é
+indicada como indisponível. `NEXT_PUBLIC_ANALYTICS_ENABLED=false` desliga a coleta
+de interesse no build; Do Not Track também é respeitado.
+
+Confirme as migrações da API ao atualizar. Os passos e pendências do catálogo real
+estão em `back/docs/implementation-status.md`. O E2E específico de BI é
+`bun run e2e:bi` em `final-tests` (somente ambiente demo/controlado).
