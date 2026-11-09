@@ -13,7 +13,6 @@ export interface User {
   avatar_url: string
   banner_url: string
   role: Role
-  level: number
   allow_info: boolean
   choice_mode?: boolean
   is_active: boolean
