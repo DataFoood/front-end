@@ -2,7 +2,7 @@
 
 Aplicativo de recomendação de restaurantes por momento. Next.js 16 (App Router, Turbopack) +
 React 19 + TypeScript 6 + Tailwind CSS 4, integrado à API Django do repositório `back`.
-Gerenciador de pacotes: **Bun**.
+Runtime: **Node.js 22** (`nvm use`). Gerenciador de pacotes: **Bun 1.4.4**.
 
 ## Rodando local
 
@@ -28,6 +28,7 @@ Contas de demonstração (criadas pelo `seed_demo --demo-users` do back):
 | `bun run build` / `bun run start` | build e servidor de produção |
 | `bun run lint` | ESLint (regras do Next + React Compiler) |
 | `bun run typecheck` | TypeScript sem emitir |
+| `bun run test` | validação da configuração de deploy |
 
 ## Páginas
 
@@ -70,7 +71,45 @@ Já existem TypeScript 7 e ESLint 10, mas o `eslint-config-next` depende do
 `typescript-eslint` (que ainda só suporta TS < 6.1) e do `eslint-plugin-react`
 (que quebra no ESLint 10). Ficamos nas versões mais novas que o Next suporta.
 
+O override de `minimatch` se aplica somente ao `@typescript-eslint/typescript-estree`
+para corrigir o alerta GHSA-g3hv-75wg-m249 enquanto o upstream exige a série 10.
+Ele preserva a série 3 usada pelo ESLint. O lockfile com esse override exige
+Bun 1.4.4; remova-o quando o upstream adotar uma versão corrigida.
+
 ## Produção
+
+O build exige `NEXT_PUBLIC_API_URL` com a origem HTTPS pública da API, sem
+`/api`, credenciais, query ou fragmento. A ausência da variável, HTTP e
+endereços locais interrompem o build. O fallback `http://localhost:8000`
+continua disponível no desenvolvimento com `bun run dev`.
+
+### Vercel
+
+Importe este repositório usando o preset **Next.js** e Node.js **22.x**.
+O `vercel.json` fixa Bun 1.4.4 nos comandos de instalação e build para ler
+o lockfile com overrides. Mantenha esses comandos e o diretório de saída
+padrão do preset.
+
+Antes do deploy, configure `NEXT_PUBLIC_API_URL=https://api.seudominio.com.br`
+em **Production** e **Preview**, apontando cada um para sua API correspondente.
+Para desligar a medição, configure `NEXT_PUBLIC_ANALYTICS_ENABLED=false`.
+Essas variáveis são públicas e embutidas no build; alterá-las exige novo deploy.
+O backend Django é hospedado separadamente.
+
+Prefira front e API no mesmo domínio principal (por exemplo,
+`app.seudominio.com.br` e `api.seudominio.com.br`), ambos em HTTPS. Na API,
+autorize as origens exatas do front em `CORS_ALLOWED_ORIGINS`, habilite CORS
+com credenciais e permita o cabeçalho `X-Requested-With`. Os cookies de sessão
+devem ser `HttpOnly` e `Secure`, com `SameSite` adequado à topologia. Front em
+`*.vercel.app` e API em outro domínio dependem de cookies entre sites, que
+podem ser bloqueados pelo navegador mesmo com `SameSite=None; Secure`.
+
+Antes de liberar o domínio de produção, execute os E2E de
+[`final-tests/`](final-tests/README.md) em ambiente de homologação controlado,
+com API disponível. Confirme login, renovação da sessão, logout, favoritos,
+chat e painel nos domínios finais; os testes criam e alteram dados demo.
+
+### Docker
 
 ```bash
 docker build --build-arg NEXT_PUBLIC_API_URL=https://api.seudominio.com.br -t datafood-front .
