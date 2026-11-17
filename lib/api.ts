@@ -2,7 +2,12 @@
 // back (o JS nunca vê os tokens); aqui só mandamos os cookies e rodamos o
 // refresh quando o access vence.
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+// No navegador as chamadas vão para a própria origem do front (/api/*) e o
+// proxy.ts repassa para a API: cookies first-party, sem depender de cookie
+// entre sites (que o navegador bloqueia com front e API em domínios
+// diferentes). No servidor (sem window) fala direto com a API.
+const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+export const API_URL = typeof window === 'undefined' ? API_ORIGIN : ''
 
 /** disparado quando a sessão morre (refresh recusado) — o AuthContext escuta */
 export const SESSION_EXPIRED_EVENT = 'datafood:session-expired'
@@ -142,7 +147,7 @@ export interface RequestOptions {
 }
 
 function buildUrl(path: string, query?: Query) {
-  const url = new URL(path.startsWith('http') ? path : `${API_URL}${path}`)
+  const url = new URL(path.startsWith('http') ? path : `${API_URL}${path}`, typeof window === 'undefined' ? undefined : window.location.origin)
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v))
