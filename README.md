@@ -96,13 +96,22 @@ Para desligar a medição, configure `NEXT_PUBLIC_ANALYTICS_ENABLED=false`.
 Essas variáveis são públicas e embutidas no build; alterá-las exige novo deploy.
 O backend Django é hospedado separadamente.
 
+O navegador não fala direto com a API: chama `/api/*` no próprio domínio do
+front e o `proxy.ts` repassa para `NEXT_PUBLIC_API_URL`. Assim os cookies de
+sessão são first-party mesmo com o front em `*.vercel.app` e a API em outro
+domínio (chamada direta entre sites tem os cookies bloqueados pelo navegador e
+a sessão cai no primeiro 401). Configure também `API_PROXY_SECRET` (sem
+`NEXT_PUBLIC_`) com o mesmo valor de `FRONTEND_PROXY_SECRET` da API: com ele o
+proxy repassa o IP real do usuário e o rate limit de login/cadastro não é
+dividido por todos que passam pela Vercel.
+
 Prefira front e API no mesmo domínio principal (por exemplo,
 `app.seudominio.com.br` e `api.seudominio.com.br`), ambos em HTTPS. Na API,
 autorize as origens exatas do front em `CORS_ALLOWED_ORIGINS`, habilite CORS
 com credenciais e permita o cabeçalho `X-Requested-With`. Os cookies de sessão
 devem ser `HttpOnly` e `Secure`, com `SameSite` adequado à topologia. Front em
-`*.vercel.app` e API em outro domínio dependem de cookies entre sites, que
-podem ser bloqueados pelo navegador mesmo com `SameSite=None; Secure`.
+`*.vercel.app` e API em outro domínio funcionam pelo proxy acima; não use
+`SameSite=None`, que o navegador pode bloquear mesmo com `Secure`.
 
 Antes de liberar o domínio de produção, execute os E2E de
 [`final-tests/`](final-tests/README.md) em ambiente de homologação controlado,

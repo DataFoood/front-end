@@ -13,6 +13,9 @@ const nextConfig = {
   // imagem Docker enxuta (node server.js)
   output: 'standalone',
   poweredByHeader: false,
+  // as rotas do Django terminam em "/": sem isto o Next tiraria a barra antes
+  // do proxy.ts repassar /api/* (e o POST viraria 308 -> 404 no Django)
+  skipTrailingSlashRedirect: true,
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
