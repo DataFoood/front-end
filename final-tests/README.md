@@ -132,3 +132,10 @@ rascunho, foco, progresso, erro e nova tentativa de seleção/favorito, troca de
 conversa e recarga, em 390×844, 1440×1000 e 320×640. Verifica o console.
 Variáveis: `FRONT_URL`, `CHROMIUM_PATH`, `SCREENSHOT_DIR` opcional. A inferência
 é simulada; o ensaio real no Ollama da VPS continua necessário.
+
+## Cupom premium
+
+`bun run e2e:cupom` testa o perfil em 390 e 1440 pixels com API simulada:
+código inválido, correção, ativação, recarga e reconhecimento do plano no chat,
+sem mudar consentimento ou permissões. Precisa do frontend rodando;
+`FRONT_URL` e `CHROMIUM_PATH` opcionais. O teste não usa o cupom real.

@@ -149,6 +149,11 @@ estão em `back/docs/implementation-status.md`. O E2E específico de BI é
 
 ## Modo escolha
 
+Para testar premium com um cupom, abra **Perfil → Meus dados → Cupom premium**.
+O resgate atualiza o plano na sessão; a autorização de personalização permanece
+separada, em Privacidade. A configuração do código fica somente no backend
+(`back/docs/premium-demo.md`), sem código real embutido no frontend.
+
 Em **Perfil → Meus dados**, habilite **Modo escolha**. A preferência fica salva
 na conta e vale para a exploração por filtros. Também é possível alternar o modo
 diretamente na exploração, mantendo a consulta atual.
