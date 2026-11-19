@@ -48,6 +48,8 @@ try {
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${width}px: perfil cabe na tela`)
     await page.goto(`${FRONT}/chat`, { waitUntil: 'domcontentloaded' })
     await page.getByText(/Premium ·/).waitFor()
+    check(await page.getByRole('link', { name: 'Ativar personalização no perfil', exact: true }).getAttribute('href') === '/perfil?aba=privacidade', `${width}px: premium sem consentimento orienta a ativação sem presumir autorização`)
+    check(await page.getByRole('button', { name: 'Sugira algo pelos meus gostos', exact: true }).count() === 0, `${width}px: não inicia busca pessoal sem consentimento`)
     check(errors.length === 0, `${width}px: chat reconhece o plano sem erros JavaScript`)
     await context.close()
   }

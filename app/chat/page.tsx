@@ -17,11 +17,9 @@ import { useToast } from '../context/ToastContext'
 type AssistantContent = Extract<Message, { role: 'assistant' }>['content']
 
 const SUGGESTIONS = [
-  'Um lugar tranquilo para um jantar',
-  'Almoço executivo no centro',
-  'Café com Wi-Fi para trabalhar',
-  'Comemoração de aniversário com amigos',
-  'Happy hour com chope e petiscos',
+  'Quero pizza',
+  'Quero sushi',
+  'Quero café',
 ]
 
 // As conversas ficam na conta (/api/chats/): seguem a pessoa entre
@@ -72,8 +70,9 @@ function introFor(query: string, count: number) {
 
 // memo: o histórico inteiro fica montado; mensagens antigas não re-renderizam
 // quando chega uma nova ou quando o "buscando…" liga/desliga
-const AssistantBubble = memo(function AssistantBubble({ content, query, conversationId, messageIndex }: {
+const AssistantBubble = memo(function AssistantBubble({ content, query, conversationId, messageIndex, onFollowUp, busy }: {
   content: AssistantContent; query: string; conversationId: number | null; messageIndex: number
+  onFollowUp?: (text: string) => void; busy?: boolean
 }) {
   const dot = (
     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink">
@@ -112,7 +111,16 @@ const AssistantBubble = memo(function AssistantBubble({ content, query, conversa
             initialRestaurants={content.results.map(result => result.restaurant)} />
         )}
         {content.limited && <p className="mt-2 text-xs text-muted">Selecionei até 50 opções. Continue a conversa para encontrar algo mais específico.</p>}
-        {content.personalized && <p className="mt-3 text-xs text-rust">Personalizado com o contexto que você autorizou na sua conta.</p>}
+        {content.personalized && <p className="mt-3 text-xs leading-relaxed text-rust">{content.personalization_note ?? 'Personalizado com o contexto que você autorizou na sua conta.'}</p>}
+        {onFollowUp && Array.isArray(content.suggestions) && content.suggestions.length > 0 && (
+          <div role="group" aria-label="Continuar a conversa" className="mt-4 flex flex-wrap gap-2">
+            {content.suggestions.filter((text): text is string => typeof text === 'string').slice(0, 3).map(text => (
+              <button key={text} type="button" disabled={busy} onClick={() => onFollowUp(text)} className="rounded-full border border-line-warm-strong bg-white px-4 py-2.5 text-xs text-ink-700 transition hover:border-rust disabled:opacity-50">
+                {text}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -378,9 +386,18 @@ function ChatApp({ user }: { user: User }) {
             <div className="flex min-h-full flex-col items-center justify-center text-center">
               <h1 className="mb-4 max-w-xl font-serif text-[clamp(32px,5vw,56px)] leading-[1.15]">Olá, {firstName(user.name)}.</h1>
               <p className="mb-10 text-[15px] leading-relaxed text-ink-350">
-                Descreva o momento — ocasião, companhia, vibe.
-                <br />O DataFood cuida do resto.
+                {user.level >= 2 ? 'Vamos encontrar uma opção que combine com você hoje.' : 'Conte a cidade, o tipo de comida ou o ambiente que procura.'}
               </p>
+              {user.level >= 2 && (
+                <div className="mb-6 max-w-lg rounded-2xl border border-line-warm bg-white px-6 py-5 text-left">
+                  <h2 className="mb-2 font-serif text-xl">Seu gosto, seu ponto de partida</h2>
+                  <p className="text-sm leading-relaxed text-ink-600">
+                    {user.allow_info ? 'Suas preferências, favoritos e lugares acessados podem ajudar na escolha. O que você pedir nesta conversa vem primeiro.' : 'Autorize a personalização para considerar seus gostos. Você também pode conversar usando apenas o que pedir por aqui.'}
+                  </p>
+                  {user.allow_info && <button type="button" disabled={loading} onClick={() => send('Sugira algo pelos meus gostos')} className="btn-primary mt-4">Sugira algo pelos meus gostos</button>}
+                  <Link href="/perfil?aba=privacidade" className="mt-3 block text-xs text-rust underline">{user.allow_info ? 'Ajustar meus gostos e minha privacidade' : 'Ativar personalização no perfil'}</Link>
+                </div>
+              )}
               <div className="flex max-w-2xl flex-wrap justify-center gap-2.5">
                 {SUGGESTIONS.map(s => (
                   <button key={s} onClick={() => send(s)} className="rounded-full border border-line-warm-strong px-5 py-2.5 text-[13px] text-ink-700 transition hover:border-ink-300 hover:bg-white">
@@ -398,7 +415,8 @@ function ChatApp({ user }: { user: User }) {
                     <Avatar name={user.name} url={user.avatar_url} size={28} />
                   </div>
                 ) : (
-                  <AssistantBubble key={`${active.id ?? 'draft'}:${i}`} content={msg.content} conversationId={active.id} messageIndex={i} query={active.messages[i - 1]?.role === 'user' ? (active.messages[i - 1] as { text: string }).text : ''} />
+                  <AssistantBubble key={`${active.id ?? 'draft'}:${i}`} content={msg.content} conversationId={active.id} messageIndex={i} query={active.messages[i - 1]?.role === 'user' ? (active.messages[i - 1] as { text: string }).text : ''}
+                    onFollowUp={i === active.messages.length - 1 ? send : undefined} busy={loading} />
                 ),
               )}
               {loading && (
@@ -419,7 +437,7 @@ function ChatApp({ user }: { user: User }) {
         </div>
 
         <div className="mx-auto w-full max-w-4xl px-6 pb-1 text-xs text-muted sm:px-10">
-          {user.level >= 2 ? 'Premium · Seus gostos podem ajudar na escolha quando autorizados no perfil.' : 'Plano gratuito · Vamos refinar juntos, uma mensagem por vez.'}
+          {user.level >= 2 ? (user.allow_info ? 'Premium · Personalização autorizada. Seus pedidos vêm primeiro.' : 'Premium · Ative a personalização no perfil para usar seus gostos.') : 'Plano gratuito · Vamos refinar juntos, uma mensagem por vez.'}
         </div>
         <Composer onSend={send} disabled={loading} inputRef={inputRef} />
       </main>

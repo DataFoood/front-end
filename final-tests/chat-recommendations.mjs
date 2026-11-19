@@ -19,7 +19,7 @@ const cards = Array.from({ length: 12 }, (_, i) => ({
 try {
   if (process.env.SCREENSHOT_DIR) await mkdir(process.env.SCREENSHOT_DIR, { recursive: true })
   for (const [width, height, mobile] of [[390, 844, true], [1440, 1000, false], [320, 640, true]]) {
-    const premium = !mobile
+    const premium = width !== 320
     const context = await browser.newContext({ viewport: { width, height }, isMobile: mobile, hasTouch: mobile })
     await context.addInitScript(() => localStorage.setItem('datafood.session', '1'))
     const page = await context.newPage()
@@ -55,6 +55,8 @@ try {
           kind: 'results', results: [], answer: selected.length === 4 ? 'Vamos considerar os ambientes ao ar livre.' : 'Você pode abrir as opções ou me contar mais sobre o que procura.',
           recommendation_ids: selected.map(card => card.id), count: selected.length,
           filters: { city: 'Marília' }, plan: premium ? 'premium' : 'free', personalized: premium, limited: false,
+          suggestions: selected.length === 4 ? ['Italiana'] : ['Em um lugar aberto'],
+          ...(premium ? { personalization_note: 'Restaurante 01 está nos seus favoritos e ajudou a ordenar as opções.' } : {}),
         } })
         return fulfill(conversation())
       }
@@ -79,10 +81,21 @@ try {
     })
     await page.goto(`${FRONT}/chat`, { waitUntil: 'domcontentloaded' })
     const input = page.getByRole('textbox', { name: 'Descreva o momento', exact: true })
-    await input.fill('Quero jantar em Marília')
-    await page.getByRole('button', { name: 'Buscar', exact: true }).click()
+    await input.waitFor()
+    const personalStart = page.getByRole('button', { name: 'Sugira algo pelos meus gostos', exact: true })
+    check(premium ? await personalStart.isVisible() : await personalStart.count() === 0, `${width}px: início pelos gostos acompanha o plano`)
+    if (premium) {
+      check(await page.getByRole('link', { name: 'Ajustar meus gostos e minha privacidade', exact: true }).getAttribute('href') === '/perfil?aba=privacidade', `${width}px: acesso direto às preferências autorizadas`)
+      await personalStart.click()
+    } else {
+      await input.fill('Quero jantar em Marília')
+      await page.getByRole('button', { name: 'Buscar', exact: true }).click()
+    }
     const open12 = page.getByRole('button', { name: 'Ver recomendações (12)', exact: true })
     await open12.waitFor({ timeout: 15000 })
+    if (premium) check(messages[0].text === 'Sugira algo pelos meus gostos', `${width}px: início personalizado envia um turno normal ao backend`)
+    check(await page.getByRole('button', { name: 'Em um lugar aberto', exact: true }).isVisible(), `${width}px: oferece próximo passo enviado pelo backend`)
+    if (premium) check(await page.getByText('Restaurante 01 está nos seus favoritos e ajudou a ordenar as opções.', { exact: true }).isVisible(), `${width}px: explica personalização com evidência da seleção`)
     check(await page.getByRole('group', { name: /^Card de escolha:/ }).count() === 0, `${width}px: cards só aparecem ao abrir recomendações`)
     await input.fill('meu rascunho')
     await open12.click()
@@ -120,10 +133,11 @@ try {
     await dialog.getByRole('region', { name: 'Restaurante escolhido' }).waitFor()
     check(saved.size === 1, `${width}px: escolha salva um favorito`)
     await page.keyboard.press('Escape')
-    await input.fill('e que seja em um lugar aberto')
-    await page.getByRole('button', { name: 'Buscar', exact: true }).click()
+    await page.getByRole('button', { name: 'Em um lugar aberto', exact: true }).click()
     const open4 = page.getByRole('button', { name: 'Ver recomendações (4)', exact: true })
     await open4.waitFor()
+    check(await page.getByRole('button', { name: 'Em um lugar aberto', exact: true }).count() === 0, `${width}px: próximo passo antigo não permanece clicável`)
+    check(await page.getByRole('button', { name: 'Italiana', exact: true }).isVisible(), `${width}px: apresenta refinamentos da nova seleção`)
     check(await page.getByText('Vamos considerar os ambientes ao ar livre.', { exact: true }).isVisible(), `${width}px: conversa refina sem abrir cards automaticamente`)
     check(await page.getByText(premium ? /Premium ·/ : /Plano gratuito ·/).isVisible(), `${width}px: identifica o plano da conta`)
     if (process.env.SCREENSHOT_DIR) {

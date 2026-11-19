@@ -133,6 +133,12 @@ conversa e recarga, em 390×844, 1440×1000 e 320×640. Verifica o console.
 Variáveis: `FRONT_URL`, `CHROMIUM_PATH`, `SCREENSHOT_DIR` opcional. A inferência
 é simulada; o ensaio real no Ollama da VPS continua necessário.
 
+Também cobre início pelos gostos em premium no celular/desktop, acesso às
+preferências, explicação da seleção e próximos pedidos retornados pelo servidor.
+Somente o último turno oferece os refinamentos; clicar continua a conversa
+preservando o acesso aos cards anteriores. A escolha dos refinamentos e as
+regras de consentimento são verificadas com banco nos testes do backend.
+
 ## Cupom premium
 
 `bun run e2e:cupom` testa o perfil em 390 e 1440 pixels com API simulada:
