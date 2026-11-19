@@ -302,6 +302,7 @@ export type ChatMessage =
         recommendation_ids?: number[]; count?: number; limited?: boolean
         filters?: { city?: string | null; text?: string | null; cuisine?: number | null; ambient?: number | null; price_range?: number | null; delivery?: boolean | null }
         plan?: 'free' | 'premium'; personalized?: boolean
+        personalization_note?: string; suggestions?: string[]
       } | { kind: 'error'; message: string; unavailable?: boolean }
     }
 
