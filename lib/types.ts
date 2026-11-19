@@ -13,6 +13,7 @@ export interface User {
   avatar_url: string
   banner_url: string
   role: Role
+  level: number
   allow_info: boolean
   choice_mode?: boolean
   is_active: boolean
@@ -296,7 +297,12 @@ export type ChatMessage =
   | { role: 'user'; text: string }
   | {
       role: 'assistant'
-      content: { kind: 'results'; results: SearchResult[]; notice?: string } | { kind: 'error'; message: string; unavailable?: boolean }
+      content: {
+        kind: 'results'; results: SearchResult[]; notice?: string; answer?: string
+        recommendation_ids?: number[]; count?: number; limited?: boolean
+        filters?: { city?: string | null; text?: string | null; cuisine?: number | null; ambient?: number | null; price_range?: number | null; delivery?: boolean | null }
+        plan?: 'free' | 'premium'; personalized?: boolean
+      } | { kind: 'error'; message: string; unavailable?: boolean }
     }
 
 /** item da lista lateral: GET /api/chats/ */

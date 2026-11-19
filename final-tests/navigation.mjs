@@ -1,5 +1,6 @@
 // Navegação E2E do datafood: visitante, cliente e dono, contra o front e a
-// API rodando de verdade (sem mocks). Também mede renders nas interações que
+// API rodando de verdade; no chat, só a resposta do modelo é simulada.
+// Persistência e seleção de restaurantes continuam reais. Também mede renders nas interações que
 // mais sofriam com re-render em cascata (ver render-hook.js).
 //
 // Pré-requisitos: API em :8000 com seed (`seed_demo --demo-users`) e o front
@@ -167,17 +168,26 @@ async function main() {
     check(true, 'logado não vê /cadastro de novo')
   })
 
-  await step('cliente · busca semântica e favoritos', async () => {
+  await step('cliente · conversa, recomendações e favoritos', async () => {
     await c.goto(`${FRONT}/chat`)
-    await c.getByRole('button', { name: 'um lugar tranquilo para um jantar' }).click()
-    const outcome = await Promise.race([
-      c.waitForSelector('text=Afinidade contextual', { timeout: 30000 }).then(() => 'ok'),
-      c.waitForSelector('text=a busca inteligente está indisponível', { timeout: 30000 }).then(() => 'indisponível'),
-    ])
-    check(true, `busca respondeu (${outcome})`)
-    if (outcome !== 'ok') return
-    // a conversa é salva na conta logo depois da resposta: espera aparecer na lista
-    await c.locator('aside[aria-label="conversas" i] button', { hasText: 'um lugar tranquilo para um jantar' }).waitFor()
+    await c.getByRole('textbox', { name: 'Descreva o momento', exact: true }).waitFor()
+    const selected = await (await c.context().request.get(`${FRONT}/api/restaurants/?page_size=3`)).json()
+    if (!check(selected.results?.length > 0, 'catálogo disponível para a seleção')) throw new Error('Execute o seed antes do E2E')
+    const title = 'Quero jantar em Marília'
+    const created = await c.context().request.post(`${FRONT}/api/chats/`, { headers: { 'X-Requested-With': 'datafood' }, data: {
+      title, messages: [{ role: 'user', text: title }, { role: 'assistant', content: {
+        kind: 'results', answer: 'Você pode abrir as recomendações ou continuar conversando.', results: [],
+        count: selected.results.length, recommendation_ids: selected.results.map(card => card.id), filters: { city: 'Marília' },
+      } }],
+    } })
+    if (!check(created.status() === 201, 'conversa criada na própria conta')) throw new Error('Falha ao preparar conversa')
+    const fixture = await created.json()
+    await c.route('**/api/chats/respond/', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(fixture) }), { times: 1 })
+    await c.getByRole('textbox', { name: 'Descreva o momento', exact: true }).fill(title)
+    await c.getByRole('button', { name: 'Buscar', exact: true }).click()
+    const recommendations = c.getByRole('button', { name: `Ver recomendações (${selected.results.length})`, exact: true })
+    await recommendations.waitFor()
+    check(true, 'conversa oferece recomendações sem abrir os cards automaticamente')
     await c.waitForLoadState('networkidle')
 
     await resetRenders(c)
@@ -186,18 +196,20 @@ async function main() {
     check(!typed.RestaurantCard && !typed.ChatApp, 'digitar no chat não re-renderiza o histórico', JSON.stringify(typed))
     await c.locator('input[aria-label="descreva o momento" i]').fill('')
 
-    await resetRenders(c)
-    await c.locator('button[aria-label="salvar restaurante" i]').first().click()
-    await c.waitForSelector('button[aria-label="remover dos salvos" i]')
-    const clicked = await renders(c)
-    check((clicked.FavoriteButton || 0) <= 1, `favoritar re-renderiza só o botão clicado (${clicked.FavoriteButton || 0})`)
+    await recommendations.click()
+    const dialog = c.getByRole('dialog', { name: 'Suas recomendações' })
+    await dialog.getByRole('button', { name: '♥ Escolher e salvar', exact: true }).click()
+    await dialog.getByRole('region', { name: 'Restaurante escolhido' }).waitFor()
+    check(true, 'escolher confirma o restaurante e salva o favorito')
+    await dialog.getByRole('button', { name: 'Voltar à conversa', exact: true }).click()
     const badge = await c.locator('a[href="/salvos"] span').innerText()
     check(badge.trim() === '1', 'contador de salvos atualiza na hora')
     await c.reload()
     // recarregar abre uma busca nova; a conversa fica salva na barra lateral
-    await c.locator('aside[aria-label="conversas" i] button', { hasText: 'um lugar tranquilo para um jantar' }).click()
-    await c.waitForSelector('button[aria-label="remover dos salvos" i]', { timeout: 10000 })
-    check(true, 'conversa e favorito persistem após recarregar')
+    await c.getByRole('button', { name: `Abrir conversa: ${title}`, exact: true }).click()
+    await c.getByRole('button', { name: `Ver recomendações (${selected.results.length})`, exact: true }).waitFor()
+    const persistedFavorites = await (await c.context().request.get(`${FRONT}/api/restaurants/favorites/`)).json()
+    check(persistedFavorites.results.some(row => row.restaurant.id === selected.results[0].id), 'conversa e favorito persistem após recarregar')
 
     await c.goto(`${FRONT}/salvos`)
     await c.waitForSelector('a[href^="/restaurante/"]')

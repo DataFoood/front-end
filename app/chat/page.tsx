@@ -4,20 +4,15 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { memo, useEffect, useRef, useState, type FormEvent, type Ref } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
-import { ChoiceDeck } from '@/components/ChoiceDeck'
-import { ChoiceModeSetting } from '@/components/ChoiceModeSetting'
-import { RestaurantCard } from '@/components/RestaurantCard'
+import { RecommendationDialog } from '@/components/RecommendationDialog'
 import { Avatar, Logo, Spinner } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { firstName } from '@/lib/format'
-import type { ChatSummary, Conversation, ChatMessage as Message, SearchResult, User } from '@/lib/types'
+import type { ChatSummary, Conversation, ChatMessage as Message, User } from '@/lib/types'
 import { usePaginated } from '@/lib/usePaginated'
 import { useAuth } from '../context/AuthContext'
 import { useFavoritesCount } from '../context/FavoritesContext'
 import { useToast } from '../context/ToastContext'
-
-const RESULTS_SHOWN = 3
-const RESULTS_FETCHED = 6
 
 type AssistantContent = Extract<Message, { role: 'assistant' }>['content']
 
@@ -72,13 +67,14 @@ async function doImport(userId: number): Promise<boolean> {
 function introFor(query: string, count: number) {
   if (count === 0) return `Não encontrei lugares para "${query}". Tente descrever de outro jeito — ocasião, comida ou clima.`
   if (count === 1) return `Encontrei um lugar que combina com "${query}".`
-  return `${count === RESULTS_SHOWN ? 'Três' : count} opções que combinam com "${query}", da mais alinhada para a menos.`
+  return `Encontrei ${count} opções para "${query}". Você pode ver as recomendações ou continuar refinando a busca.`
 }
 
 // memo: o histórico inteiro fica montado; mensagens antigas não re-renderizam
 // quando chega uma nova ou quando o "buscando…" liga/desliga
-const AssistantBubble = memo(function AssistantBubble({ content, query, choiceMode }: { content: AssistantContent; query: string; choiceMode: boolean }) {
-  const [expanded, setExpanded] = useState(false)
+const AssistantBubble = memo(function AssistantBubble({ content, query, conversationId, messageIndex }: {
+  content: AssistantContent; query: string; conversationId: number | null; messageIndex: number
+}) {
   const dot = (
     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink">
       <div className="h-2 w-2 rounded-full bg-rust" />
@@ -105,24 +101,18 @@ const AssistantBubble = memo(function AssistantBubble({ content, query, choiceMo
     )
   }
 
-  const visible = expanded ? content.results : content.results.slice(0, RESULTS_SHOWN)
+  const count = content.count ?? content.results.length
   return (
     <div className="flex animate-fade-in items-start gap-3">
       {dot}
       <div className="min-w-0 flex-1">
-        <p className="mb-4 text-sm leading-relaxed text-ink-700">{content.notice ?? introFor(query, choiceMode ? content.results.length : Math.min(content.results.length, RESULTS_SHOWN))}</p>
-        {choiceMode ? <ChoiceDeck restaurants={content.results.map(result => result.restaurant)} /> : <>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {visible.map((r, i) => (
-            <RestaurantCard trackImpression key={r.restaurant.id} restaurant={r.restaurant} match={r.match} index={i} />
-          ))}
-        </div>
-        {!expanded && content.results.length > RESULTS_SHOWN && (
-          <button onClick={() => setExpanded(true)} className="mt-3 text-xs text-ink-350 underline hover:text-ink">
-            Ver mais {content.results.length - RESULTS_SHOWN} opções
-          </button>
+        <p className="whitespace-pre-line text-sm leading-relaxed text-ink-700">{content.answer ?? content.notice ?? introFor(query, count)}</p>
+        {count > 0 && (
+          <RecommendationDialog count={count} conversationId={conversationId} messageIndex={messageIndex}
+            initialRestaurants={content.results.map(result => result.restaurant)} />
         )}
-        </>}
+        {content.limited && <p className="mt-2 text-xs text-muted">Selecionei até 50 opções. Continue a conversa para encontrar algo mais específico.</p>}
+        {content.personalized && <p className="mt-3 text-xs text-rust">Personalizado com o contexto que você autorizou na sua conta.</p>}
       </div>
     </div>
   )
@@ -194,6 +184,7 @@ function ChatApp({ user }: { user: User }) {
   const [sidebarOpen, setSidebarOpen] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
   const endRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const sending = useRef(false)
 
   const { reload } = chats
   useEffect(() => {
@@ -237,58 +228,40 @@ function ChatApp({ user }: { user: User }) {
     }
   }
 
-  /** grava a conversa na conta (cria na 1ª troca, depois atualiza) */
-  const persist = async (conversation: Conversation): Promise<Conversation> => {
-    const body = { title: conversation.title, messages: conversation.messages }
-    try {
-      const saved = conversation.id
-        ? await api<Conversation & ChatSummary>(`/api/chats/${conversation.id}/`, { method: 'PATCH', body: { messages: body.messages } })
-        : await api<Conversation & ChatSummary>('/api/chats/', { method: 'POST', body })
-      // sobe para o topo da lista lateral sem buscar a lista de novo
-      const summary: ChatSummary = { id: saved.id, title: saved.title, created_at: saved.created_at, updated_at: saved.updated_at }
-      chats.update(items => [summary, ...items.filter(c => c.id !== saved.id)])
-      return saved
-    } catch (err) {
-      toast.error(errorMessage(err, 'Não foi possível salvar a conversa.'))
-      return conversation
-    }
-  }
-
   const send = async (raw: string) => {
     const query = raw.trim()
-    if (!query || loading) return
+    if (!query || sending.current) return
+    sending.current = true
 
     const base: Conversation = active ?? { id: null, title: query.slice(0, 120), messages: [] }
     const withQuestion: Conversation = { ...base, messages: [...base.messages, { role: 'user', text: query }] }
     setActive(withQuestion)
     setLoading(true)
 
-    let answer: Message
     try {
-      const data = await api<{ results: SearchResult[]; notice?: string }>('/api/search/', {
+      const saved = await api<Conversation & ChatSummary>('/api/chats/respond/', {
         method: 'POST',
-        body: { query, limit: RESULTS_FETCHED },
+        body: { query, conversation_id: base.id },
       })
-      answer = { role: 'assistant', content: { kind: 'results', results: data.results, notice: data.notice } }
+      const summary: ChatSummary = { id: saved.id, title: saved.title, created_at: saved.created_at, updated_at: saved.updated_at }
+      chats.update(items => [summary, ...items.filter(c => c.id !== saved.id)])
+      setActive(current => current === withQuestion ? saved : current)
     } catch (err) {
       const status = err instanceof ApiError ? err.status : 0
       const message =
         status === 503
-          ? 'A busca inteligente está indisponível neste momento. Tente de novo em instantes ou'
+          ? 'O assistente está indisponível neste momento. Tente novamente ou'
           : status === 429
             ? 'Você fez muitas buscas seguidas. Respire um pouco e tente novamente em alguns segundos.'
             : err instanceof ApiError
               ? err.message
               : 'Não consegui buscar agora. Verifique sua conexão.'
-      answer = { role: 'assistant', content: { kind: 'error', message, unavailable: status === 503 } }
+      const answer: Message = { role: 'assistant', content: { kind: 'error', message, unavailable: status === 503 } }
+      setActive(current => current === withQuestion ? { ...withQuestion, messages: [...withQuestion.messages, answer] } : current)
+    } finally {
+      sending.current = false
+      setLoading(false)
     }
-
-    const finished: Conversation = { ...withQuestion, messages: [...withQuestion.messages, answer] }
-    setActive(finished)
-    setLoading(false)
-    const saved = await persist(finished)
-    // a pessoa pode ter trocado de conversa enquanto salvava
-    setActive(current => (current === finished ? { ...finished, id: saved.id } : current))
   }
 
   return (
@@ -301,6 +274,7 @@ function ChatApp({ user }: { user: User }) {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'
         }`}
         aria-label="Conversas"
+        inert={!sidebarOpen}
       >
         <div className="flex items-center justify-between px-4 pb-3 pt-5">
           <Logo size={30} />
@@ -333,7 +307,7 @@ function ChatApp({ user }: { user: User }) {
           )}
           {chats.items.map(chat => (
             <div key={chat.id} className={`group flex items-center rounded-md ${active?.id === chat.id ? 'bg-line-soft' : 'hover:bg-cream'}`}>
-              <button onClick={() => openChat(chat.id)} className="min-w-0 flex-1 truncate px-2.5 py-2 text-left text-[13px] text-ink-800">
+              <button onClick={() => openChat(chat.id)} aria-label={`Abrir conversa: ${chat.title}`} className="min-w-0 flex-1 truncate px-2.5 py-2 text-left text-[13px] text-ink-800">
                 {opening === chat.id ? <Spinner className="h-3 w-3" /> : chat.title}
               </button>
               <button
@@ -424,7 +398,7 @@ function ChatApp({ user }: { user: User }) {
                     <Avatar name={user.name} url={user.avatar_url} size={28} />
                   </div>
                 ) : (
-                  <AssistantBubble choiceMode={!!user.choice_mode} key={i} content={msg.content} query={active.messages[i - 1]?.role === 'user' ? (active.messages[i - 1] as { text: string }).text : ''} />
+                  <AssistantBubble key={`${active.id ?? 'draft'}:${i}`} content={msg.content} conversationId={active.id} messageIndex={i} query={active.messages[i - 1]?.role === 'user' ? (active.messages[i - 1] as { text: string }).text : ''} />
                 ),
               )}
               {loading && (
@@ -432,7 +406,7 @@ function ChatApp({ user }: { user: User }) {
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink">
                     <div className="h-2 w-2 rounded-full bg-rust" />
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-xs border border-line bg-white px-4 py-3.5" aria-label="Buscando">
+                  <div role="status" className="flex items-center gap-1.5 rounded-2xl rounded-tl-xs border border-line bg-white px-4 py-3.5" aria-label="Pensando na sua busca">
                     {[0, 1, 2].map(j => (
                       <span key={j} className="typing-dot h-1.5 w-1.5 rounded-full bg-ink-200" />
                     ))}
@@ -444,7 +418,9 @@ function ChatApp({ user }: { user: User }) {
           )}
         </div>
 
-        <div className="mx-auto w-full max-w-4xl px-4 sm:px-8"><ChoiceModeSetting compact /></div>
+        <div className="mx-auto w-full max-w-4xl px-6 pb-1 text-xs text-muted sm:px-10">
+          {user.level >= 2 ? 'Premium · Seus gostos podem ajudar na escolha quando autorizados no perfil.' : 'Plano gratuito · Vamos refinar juntos, uma mensagem por vez.'}
+        </div>
         <Composer onSend={send} disabled={loading} inputRef={inputRef} />
       </main>
     </div>

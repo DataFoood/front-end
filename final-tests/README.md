@@ -111,6 +111,10 @@ local de testes com `PROMOTIONS_MAX_PER_DAY` alto. Não altere o padrão de prod
 
 ## Modo escolha
 
+O trecho de chat simula somente a geração do turno; a conversa de teste é criada
+na API, e seleção, cookies e favoritos usam o backend real. A conversa é removida
+ao terminar. O teste não mede a qualidade ou o desempenho do modelo local.
+
 `bun run e2e:escolha` usa somente as contas demo. Liga a preferência pelo perfil,
 confere persistência em outro navegador, adiciona duas imagens temporárias ao
 restaurante demo e testa fotos, swipes reais via Chromium/CDP, rolagem vertical,
@@ -118,3 +122,13 @@ arraste curto, teclado, escolha de favorito existente, erro ao salvar e retorno
 à grade. Restaura a preferência, favoritos acrescentados e fotos ao terminar.
 Não execute contra produção. Variáveis: `FRONT_URL`, `API_URL`, `CHROMIUM_PATH`
 e `SCREENSHOT_PATH` opcional.
+
+## Conversa e recomendações em tela cheia
+
+`bun run e2e:chat` precisa somente do frontend. Usa API e contas simuladas em
+contextos de navegador isolados, sem escrever no backend. Cobre free/premium,
+contagem 12→4, abertura sob demanda, swipe real/teclado, fotos, fechar/Escape,
+rascunho, foco, progresso, erro e nova tentativa de seleção/favorito, troca de
+conversa e recarga, em 390×844, 1440×1000 e 320×640. Verifica o console.
+Variáveis: `FRONT_URL`, `CHROMIUM_PATH`, `SCREENSHOT_DIR` opcional. A inferência
+é simulada; o ensaio real no Ollama da VPS continua necessário.

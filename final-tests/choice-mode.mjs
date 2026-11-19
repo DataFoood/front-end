@@ -130,15 +130,25 @@ try {
   await pc.waitForFunction(() => document.querySelector('[aria-label="Habilitar modo escolha"]')?.getAttribute('aria-checked') === 'false')
   check(await activeCard(pc).count() === 0, 'Desligar o modo recupera a grade sem perder a busca')
   await pc.goto(`${FRONT}/chat`)
-  await pc.getByRole('switch', { name: 'Habilitar modo escolha' }).click()
   await pc.route(/\/api\/restaurants\/\d+\/$/, route => route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ detail: 'Fotos indisponíveis no teste.' }) }))
   chatTitle = `Jantar tranquilo e2e-escolha-${Date.now()}`
+  // Só a interpretação do modelo é simulada; conversa e seleção usam a API real.
+  const chatResponse = await control.post(`${API}/api/chats/`, { headers: auth(customerToken), data: {
+    title: chatTitle, messages: [{ role: 'user', text: chatTitle }, { role: 'assistant', content: {
+      kind: 'results', answer: 'Abra as recomendações ou continue refinando.', results: [], count: 1,
+      recommendation_ids: [restaurant.id], filters: {}, plan: 'free', personalized: false,
+    } }],
+  } })
+  assert.equal(chatResponse.status(), 201)
+  const chatFixture = await chatResponse.json()
+  await pc.route('**/api/chats/respond/', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(chatFixture) }), { times: 1 })
   await pc.getByRole('textbox', { name: 'Descreva o momento', exact: true }).fill(chatTitle)
   await pc.getByRole('button', { name: 'Buscar', exact: true }).click()
+  await pc.getByRole('button', { name: 'Ver recomendações (1)', exact: true }).click()
   await activeCard(pc).waitFor({ timeout: 30000 })
-  check(true, 'Resultados da busca por momento também usam o modo escolha')
+  check(true, 'Chat abre a seleção em tela cheia mesmo com a preferência do explorar desligada')
   await pc.getByText('Não foi possível carregar as fotos adicionais.', { exact: false }).waitFor()
-  check(await pc.getByRole('button', { name: 'Escolher e salvar' }).isEnabled(), 'Falha nas fotos mantém dados da busca e controles disponíveis')
+  check(await pc.getByRole('button', { name: 'Escolher e salvar', exact: false }).isEnabled(), 'Falha nas fotos mantém dados da busca e controles disponíveis')
   await pc.unroute(/\/api\/restaurants\/\d+\/$/)
   check(errors.length === 0, `Sem exceções no navegador: ${errors.join('; ')}`)
   console.log(`${count}/${count} verificações do modo escolha passaram`)

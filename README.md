@@ -38,7 +38,7 @@ Contas de demonstração (criadas pelo `seed_demo --demo-users` do back):
 | `/explorar` | público | lista com filtros (cozinha, ambiente, preço, delivery, ordem) |
 | `/restaurante/[slug]` | público (interagir: logado) | detalhe, promoções ativas, cardápio, horários, fotos, avaliações, salvar, contato/WhatsApp |
 | `/login`, `/cadastro` | público | JWT; cadastro escolhe pessoa/restaurante e consentimento LGPD |
-| `/chat` | logado | busca semântica em linguagem natural (conversas salvas na conta) |
+| `/chat` | logado | conversa com filtros acumulados, contagem real e recomendações em tela cheia; conversas salvas na conta |
 | `/salvos` | logado | favoritos |
 | `/perfil` | logado | dados, privacidade (consentimento, afinidades, histórico), promoções (opt-in, e-mail, vincular Telegram), senha, encerrar conta |
 | `/painel` | logado | dono: métricas, informações, cardápio, horários, endereço, fotos, promoções (Telegram/e-mail/WhatsApp, agendamento, sugestão de infra no fim de semana); cadastro de restaurante |
@@ -150,8 +150,14 @@ estão em `back/docs/implementation-status.md`. O E2E específico de BI é
 ## Modo escolha
 
 Em **Perfil → Meus dados**, habilite **Modo escolha**. A preferência fica salva
-na conta e vale para a busca inteligente e a exploração por filtros. Também é
-possível alternar o modo diretamente nas buscas, mantendo a consulta atual.
+na conta e vale para a exploração por filtros. Também é possível alternar o modo
+diretamente na exploração, mantendo a consulta atual.
+
+No chat, **Ver recomendações (N)** sempre abre a seleção em tela cheia. É possível
+continuar refinando a conversa antes de abrir e voltar sem perder o rascunho ou
+o progresso dos cards. O backend precisa das rotas conversacionais e da geração
+local habilitada; consulte `back/docs/conversation.md`. Free usa a conversa;
+premium acrescenta contexto da própria conta quando autorizado no perfil.
 
 Arraste o card para a esquerda para recusar ou para a direita para escolher e
 salvar nos favoritos. As fotos têm setas próprias; mudar de foto não decide.

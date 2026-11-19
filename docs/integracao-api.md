@@ -85,7 +85,7 @@ const { items, count, hasMore, loading, loadingMore, loadMore, reload, update, e
 | `/` | `GET /api/restaurants/?ordering=rating&page_size=3` |
 | `/explorar` | `GET /api/restaurants/taxonomies/` (cache), `GET /api/restaurants/?…` paginado |
 | `/restaurante/[slug]` | `GET /api/restaurants/by-slug/<slug>/`, reviews `GET` (paginado)/`POST`/`DELETE`, `GET …/<id>/promotions/active/` |
-| `/chat` | `POST /api/search/ { query, limit: 6 }`, conversas em `GET/POST /api/chats/`, `GET/PATCH/DELETE /api/chats/<id>/` |
+| `/chat` | `POST /api/chats/respond/ { query, conversation_id }` salva o turno e devolve a conversa; `GET /api/chats/<id>/recommendations/<message_index>/` carrega cards ao abrir; CRUD de conversas preservado |
 | `/salvos` | `GET /api/restaurants/favorites/` |
 | favoritos (global) | `GET …/favorites/` no login; `POST/DELETE …/<id>/favorite/` |
 | `/perfil` | `PATCH /users/me/`, `PATCH /users/consent/`, `GET /preferences/`, `GET /preferences/searches/`, `PATCH /preferences/<dim>/<id>/`, `GET/PATCH /promotions/preferences/`, `POST/DELETE /promotions/preferences/telegram/`, `POST /users/<id>/change-password/`, `DELETE /users/<id>/delete/` |
