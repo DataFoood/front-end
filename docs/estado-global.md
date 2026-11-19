@@ -18,6 +18,11 @@ bastante para React puro, desde que cada tipo de estado fique no lugar certo.
 Regra de bolso: **só vira context o que mais de uma rota lê**. Se só uma
 página precisa, é estado local, mesmo que a página seja grande.
 
+O chat envia cada turno a `/api/chats/respond/`; o servidor persiste pergunta,
+resposta, filtros e IDs selecionados. Os cards vêm de uma rota da própria conversa
+ao abrir o dialog. Rascunho, abertura e progresso são estado local, chaveado por
+conversa e mensagem; fechar mantém esse estado, recarregar reinicia os cards.
+
 ## Os contexts
 
 Montados em `app/layout.tsx`, nesta ordem (quem está dentro pode usar quem
