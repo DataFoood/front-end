@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { useToast } from '@/app/context/ToastContext'
+import { useConfirm } from '@/components/ConfirmDialog'
 import { Checkbox, Field, LoadMore, Spinner, TextArea } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { formatDate, formatDateTime, formatMoney, toDateTimeLocal } from '@/lib/format'
@@ -188,6 +189,7 @@ function PromotionRow({
   onChange: (updated?: Promotion) => void
 }) {
   const toast = useToast()
+  const { confirm, confirmation } = useConfirm()
   const [editing, setEditing] = useState(false)
   const [busy, setBusy] = useState(false)
   const url = `${base}${p.id}/`
@@ -207,15 +209,27 @@ function PromotionRow({
 
   const reach = audience ? (p.send_telegram ? audience.telegram : 0) + (p.send_email ? audience.email : 0) : null
 
-  const sendNow = () => {
+  const sendNow = async () => {
     const text =
       reach === null
-        ? 'Enviar agora?'
+        ? `“${p.title}” será publicada na página do restaurante e enviada pelos canais selecionados.`
         : reach === 0
-          ? 'Ninguém para receber por Telegram ou e-mail ainda. Publicar mesmo assim (fica na página e no WhatsApp)?'
-          : `Enviar agora? Até ${plural(reach, 'mensagem', 'mensagens')}.`
-    if (!confirm(text)) return
+          ? 'Ainda não há destinatários por Telegram ou e-mail. A promoção ficará disponível na página do restaurante e para compartilhar no WhatsApp.'
+          : `“${p.title}” será publicada e enviada pelos canais selecionados, com até ${plural(reach, 'mensagem', 'mensagens')}.`
+    if (!(await confirm({ title: 'Publicar promoção agora?', description: text, confirmLabel: 'Publicar agora' }))) return
     run(() => api(`${url}send/`, { method: 'POST', body: {} }), 'Promoção enviada para a fila.')
+  }
+
+  const remove = async () => {
+    if (!(await confirm({
+      title: p.status === 'sent' ? 'Tirar promoção da página?' : 'Remover promoção?',
+      description: p.status === 'sent'
+        ? `“${p.title}” deixará de aparecer na página do restaurante. As mensagens já enviadas não serão desfeitas.`
+        : `“${p.title}” será removida das suas promoções.`,
+      confirmLabel: p.status === 'sent' ? 'Tirar da página' : 'Remover promoção',
+      tone: 'danger',
+    }))) return
+    run(() => api(url, { method: 'DELETE' }), p.status === 'sent' ? 'Promoção retirada da página.' : 'Promoção removida.')
   }
 
   const copy = async () => {
@@ -265,6 +279,7 @@ function PromotionRow({
 
   return (
     <li className="card p-5">
+      {confirmation}
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-[15px] font-medium">{p.title}</h3>
         <span className={`rounded-full border px-2.5 py-0.5 text-[11px] ${STATUS_CLASS[p.status] ?? STATUS_CLASS.draft}`}>{STATUS_LABEL[p.status] ?? 'Estado indisponível'}</span>
@@ -308,7 +323,7 @@ function PromotionRow({
         )}
         {p.status !== 'sending' && (
           <button
-            onClick={() => confirm(p.status === 'sent' ? 'Tirar da página do restaurante? Mensagens já enviadas não voltam.' : `Remover "${p.title}"?`) && run(() => api(url, { method: 'DELETE' }))}
+            onClick={remove}
             disabled={busy}
             className="ml-auto text-xs text-ink-250 hover:text-danger"
           >

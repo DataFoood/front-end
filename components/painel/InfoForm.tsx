@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 import { useToast } from '@/app/context/ToastContext'
+import { useConfirm } from '@/components/ConfirmDialog'
 import { Field, Spinner, TextArea, Toggle } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { maskPhone, onlyDigits } from '@/lib/format'
@@ -46,6 +47,7 @@ function initialState(r: Restaurant) {
 
 export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Restaurant; onSaved: (r: Restaurant) => void; onDeleted: () => void }) {
   const toast = useToast()
+  const { confirm, confirmation } = useConfirm()
   const taxonomies = useTaxonomies()
   const [form, setForm] = useState(() => initialState(restaurant))
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -85,7 +87,12 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
   }
 
   const remove = async () => {
-    if (!confirm(`Remover "${restaurant.name}" do DataFood? Ele deixa de aparecer nas buscas.`)) return
+    if (!(await confirm({
+      title: 'Remover restaurante?',
+      description: `“${restaurant.name}” deixará de aparecer nas buscas do DataFood. Confirme se deseja remover este restaurante.`,
+      confirmLabel: 'Remover restaurante',
+      tone: 'danger',
+    }))) return
     try {
       await api(`/api/restaurants/${restaurant.id}/`, { method: 'DELETE' })
       toast.info('Restaurante removido.')
@@ -97,6 +104,7 @@ export function InfoForm({ restaurant, onSaved, onDeleted }: { restaurant: Resta
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
+      {confirmation}
       <div className="card flex flex-col gap-4 p-5 sm:p-6">
         <h3 className="text-[15px] font-medium">Dados básicos</h3>
         <Field label="Nome" name="name" value={form.name as string} onChange={e => set('name', e.target.value)} error={errors.name} required />

@@ -124,6 +124,15 @@ arraste curto, teclado, escolha de favorito existente, erro ao salvar e retorno
 Não execute contra produção. Variáveis: `FRONT_URL`, `API_URL`, `CHROMIUM_PATH`
 e `SCREENSHOT_PATH` opcional.
 
+## Confirmações na interface
+
+`bun run e2e:confirmacoes` usa respostas controladas no navegador, sem alterar
+o backend. Confere exclusão de pratos, avaliações, restaurantes e promoções,
+além da publicação de campanhas, em telas de 320, 390 e 1440 px. Valida foco,
+Escape, cancelamento pelo fundo, saída da tela, falha e nova tentativa de envio,
+confirmação única e ausência de diálogos do navegador. Variáveis: `FRONT_URL`,
+`CHROMIUM_PATH` e `SCREENSHOT_DIR` opcional.
+
 ## Conversa e recomendações em tela cheia
 
 `bun run e2e:chat` precisa somente do frontend. Usa API e contas simuladas em

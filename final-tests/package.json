@@ -9,7 +9,8 @@
     "e2e:bi": "node insights.mjs",
     "e2e:escolha": "node choice-mode.mjs",
     "e2e:chat": "node chat-recommendations.mjs",
-    "e2e:cupom": "node premium-coupon.mjs"
+    "e2e:cupom": "node premium-coupon.mjs",
+    "e2e:confirmacoes": "node confirmations.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.1"
