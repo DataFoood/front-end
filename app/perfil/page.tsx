@@ -1,5 +1,9 @@
 'use client'
 
+import { m, LayoutGroup } from 'motion/react'
+import { Settings } from 'lucide-react'
+import { Reveal } from '@/components/Motion'
+
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState, type FormEvent } from 'react'
@@ -455,23 +459,28 @@ function Profile() {
   if (!user) return null
   return (
     <>
-      <div role="tablist" className="mb-8 flex gap-1 overflow-x-auto border-b border-line">
+      <LayoutGroup id="profile-tabs">
+      <div role="tablist" aria-label="Seções do perfil" className="mb-8 flex gap-1 overflow-x-auto rounded-2xl border border-line bg-paper p-1.5">
         {TABS.map(t => (
           <button
             key={t.id}
             role="tab"
             aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className={`-mb-px whitespace-nowrap border-b-2 px-4 py-3 text-[13px] ${tab === t.id ? 'border-rust text-ink' : 'border-transparent text-ink-350 hover:text-ink'}`}
+            className={`relative flex-1 whitespace-nowrap rounded-xl px-4 py-3 text-[13px] transition-colors ${tab === t.id ? 'font-medium text-rust-deep' : 'text-muted hover:text-ink'}`}
           >
-            {t.label}
+            {tab === t.id && <m.span layoutId="profile-active-tab" className="absolute inset-0 rounded-xl bg-peach/70" transition={{ type: 'spring', stiffness: 350, damping: 32 }} />}
+            <span className="relative">{t.label}</span>
           </button>
         ))}
       </div>
+      </LayoutGroup>
+      <m.div key={tab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
       {tab === 'dados' && <><ProfileForm user={user} /><PremiumCoupon /><ChoiceModeSetting /></>}
       {tab === 'privacidade' && <PrivacyPanel user={user} />}
       {tab === 'promocoes' && <PromotionsPanel user={user} />}
       {tab === 'seguranca' && <SecurityPanel user={user} />}
+      </m.div>
     </>
   )
 }
@@ -481,8 +490,7 @@ export default function PerfilPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 pb-20 pt-10 sm:px-8">
-        <p className="eyebrow mb-3">Conta</p>
-        <h1 className="mb-8 font-serif text-4xl">Meu perfil</h1>
+        <Reveal className="mb-9 flex items-start justify-between gap-4"><div><p className="eyebrow mb-3">Do seu jeito</p><h1 className="mb-3 font-serif text-[clamp(34px,4vw,48px)] tracking-[-0.035em]">Meu perfil</h1><p className="text-sm leading-7 text-muted">Seus dados, seus gostos e suas escolhas.</p></div><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-sage text-olive"><Settings size={24} strokeWidth={1.4} aria-hidden /></span></Reveal>
         <RequireAuth>
           <Suspense fallback={<PageLoader />}>
             <Profile />

@@ -44,9 +44,10 @@ Efeitos colaterais: cria uma conta `e2e-…@e2e.test` e um restaurante
 `E2E Temp …` do dono demo, e remove os dois no fim; edita e restaura a
 descrição e salva os horários do restaurante demo.
 
-## O que é verificado (49 checagens)
+## O que é verificado (50 checagens)
 
 - **Visitante:** landing com destaques da API; `/explorar` com busca por nome,
+  momento digitado na home preservado no redirecionamento para login;
   filtro na URL e "limpar filtros"; detalhe; salvar sem login → login com
   `?next=`; `/perfil`, `/salvos`, `/painel`, `/chat` exigem login; 404; slug
   inexistente.

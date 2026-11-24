@@ -3,6 +3,22 @@
 Registro append-only. Mais recente no topo. Cada entrada: o que, por quê e
 o que foi descartado.
 
+## 2026-11-23 — linguagem visual e movimento
+
+**Motion for React com provider compartilhado.** `LazyMotion` carrega um único
+conjunto de funcionalidades; `m` mantém os componentes menores. As animações
+respondem à navegação e às ações, com `reducedMotion="user"` e proteção CSS
+equivalente. Transições de rota usam apenas opacidade para não afetar elementos
+fixos. Não foi adicionado um motor de rolagem, preservando a rolagem nativa.
+
+**Fotos e fontes institucionais locais.** A home usa fotografias WebP e
+Playfair Display/DM Sans locais. Fotos do catálogo permanecem vinculadas aos
+dados da API, com ilustrações identificadas quando não há foto cadastrada.
+
+**Momento preservado no login.** A home encaminha `?q=` à busca inteligente;
+o guarda de autenticação mantém a query em `?next=` e o chat executa a busca
+inicial uma vez. A galeria de restaurantes usa dialog nativo e teclado.
+
 ## 2026-10-21 — sessão em cookie, paginação padrão, caixa de frase
 
 **Sessão em cookies HttpOnly, não em `localStorage`.** Token no

@@ -1,6 +1,8 @@
 'use client'
 
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
+import { AnimatePresence, m } from 'motion/react'
+import { Check, Info, X } from 'lucide-react'
 
 type ToastKind = 'success' | 'error' | 'info'
 interface ToastItem {
@@ -18,11 +20,11 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 const STYLES: Record<ToastKind, string> = {
-  success: 'bg-success',
-  error: 'bg-danger',
-  info: 'bg-ink',
+  success: 'bg-success-bg text-success',
+  error: 'bg-danger-bg text-danger',
+  info: 'bg-peach text-rust',
 }
-const ICONS: Record<ToastKind, string> = { success: '✓', error: '✕', info: '•' }
+const ICONS = { success: Check, error: X, info: Info }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -50,18 +52,24 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         aria-live="polite"
         className="pointer-events-none fixed inset-x-4 top-4 z-[100] flex flex-col items-end gap-2 sm:left-auto sm:right-6 sm:top-6"
       >
-        {toasts.map(t => (
-          <div
+        <AnimatePresence initial={false}>
+        {toasts.map(t => {
+          const Icon = ICONS[t.kind]
+          return <m.div
             key={t.id}
+            layout
+            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
             role={t.kind === 'error' ? 'alert' : 'status'}
-            className={`${STYLES[t.kind]} pointer-events-auto flex max-w-sm animate-fade-in items-start gap-3 rounded-md px-5 py-3.5 text-sm leading-relaxed text-white shadow-lg`}
+            className="pointer-events-auto flex max-w-sm items-start gap-3 rounded-2xl border border-line-warm bg-paper p-4 text-sm leading-relaxed text-ink-700 shadow-xl shadow-ink/10"
           >
-            <span aria-hidden className="text-base leading-none">
-              {ICONS[t.kind]}
-            </span>
-            {t.message}
-          </div>
-        ))}
+            <span aria-hidden className={`${STYLES[t.kind]} flex h-7 w-7 shrink-0 items-center justify-center rounded-full`}><Icon size={15} /></span>
+            <span className="pt-0.5">{t.message}</span>
+          </m.div>
+        })}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   )

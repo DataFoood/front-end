@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { m } from 'motion/react'
+import { ArrowUpRight, MapPin, Utensils } from 'lucide-react'
+import { PhotoGallery } from '@/components/PhotoGallery'
 import { DetailTelemetry } from '@/components/DetailTelemetry'
 import { recordDetailAction } from '@/lib/analytics'
 import { Cover } from '@/components/Illustration'
@@ -278,9 +281,12 @@ export default function RestaurantePage() {
           Voltar
         </button>
 
-        <div className="mb-14 grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-12">
-          <Cover src={r.cover_image} seed={r.id} alt={r.name} className="aspect-[4/3] rounded-lg" />
-          <div>
+        <div className="mb-14 grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }} className="relative">
+            <Cover src={r.cover_image} seed={r.id} alt={r.name} className="aspect-[0.95] rounded-[28px] rounded-tr-[100px]" />
+            {r.address && <div className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full border border-white/50 bg-paper/95 px-4 py-2.5 text-xs text-ink-700 shadow-sm backdrop-blur-md"><MapPin size={14} className="text-rust" aria-hidden />{[r.address.neighborhood, r.address.city].filter(Boolean).join(', ')}</div>}
+          </m.div>
+          <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }}>
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <OpenBadge open={r.is_open_now} />
               {rating > 0 && (
@@ -289,7 +295,7 @@ export default function RestaurantePage() {
                 </span>
               )}
             </div>
-            <h1 className="mb-4 font-serif text-[clamp(38px,5vw,52px)] leading-[1.05]">{r.name}</h1>
+            <h1 className="mb-5 font-serif text-[clamp(38px,5vw,58px)] leading-[1.07] tracking-[-0.04em]">{r.name}</h1>
             <DetailTelemetry restaurantId={r.id} />
             <div className="mb-4"><CatalogProvenance restaurant={r} links /></div>
             <p className="mb-6 max-w-md text-[15px] leading-relaxed text-ink-600">{r.description}</p>
@@ -317,7 +323,7 @@ export default function RestaurantePage() {
                 </Link>
               )}
             </div>
-          </div>
+          </m.div>
         </div>
 
         <ActivePromotions restaurant={r} loggedIn={!!user} isOwner={isOwner} />
@@ -325,8 +331,8 @@ export default function RestaurantePage() {
         <hr className="mb-12 border-line" />
 
         <section className="mb-14">
-          <SectionTitle title="Fatos" eyebrow="01 / Informações" />
-          <div className="grid grid-cols-1 overflow-hidden rounded-md border border-line sm:grid-cols-2 lg:grid-cols-4">
+          <SectionTitle title="Bom saber antes de ir" />
+          <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-line bg-paper sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 label: 'ENDEREÇO',
@@ -355,9 +361,9 @@ export default function RestaurantePage() {
             <SectionTitle title="Destaques do cardápio" eyebrow={`02 / ${r.items.length} pratos`} />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {r.items.map((item, i) => (
-                <div key={item.id} className="card overflow-hidden transition hover:-translate-y-1 hover:shadow-md">
-                  <Cover seed={r.id + i + 1} alt="" className="h-36" />
-                  <div className="px-4 pb-5 pt-4">
+                <div key={item.id} className="card overflow-hidden transition hover:-translate-y-1 hover:border-rust/25">
+                  <div className="px-5 pb-5 pt-5">
+                    <span className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${i % 2 ? 'bg-sage text-olive' : 'bg-peach text-rust'}`}><Utensils size={18} strokeWidth={1.5} aria-hidden /></span>
                     <div className="mb-2 flex items-baseline justify-between gap-2">
                       <span className="text-[15px]">{item.name}</span>
                       {formatPrice(item.price) && <span className="whitespace-nowrap text-[13px] font-medium text-rust">{formatPrice(item.price)}</span>}
@@ -369,7 +375,7 @@ export default function RestaurantePage() {
             </div>
             {r.menu_url && (
               <a href={r.menu_url} onClick={() => recordDetailAction(r.id, 'menu_click')} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm text-rust underline">
-                Ver cardápio completo
+                <span className="inline-flex items-center gap-1.5">Ver cardápio completo <ArrowUpRight size={14} aria-hidden /></span>
               </a>
             )}
           </section>
@@ -378,13 +384,7 @@ export default function RestaurantePage() {
         {r.images.length > 0 && (
           <section className="mb-14">
             <SectionTitle title="Fotos" />
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {r.images.map(img => (
-                <a key={img.id} href={img.url} target="_blank" rel="noopener noreferrer" className="block aspect-square overflow-hidden rounded-md bg-ink">
-                  <img src={img.url} alt={`Foto de ${r.name}`} loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />
-                </a>
-              ))}
-            </div>
+            <PhotoGallery images={r.images} name={r.name} />
           </section>
         )}
 

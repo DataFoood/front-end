@@ -6,6 +6,7 @@ import { formatDate, formatMoney } from '@/lib/format'
 import { Spinner } from '@/components/ui'
 import { useToast } from '@/app/context/ToastContext'
 import type { AnalyticsKind } from '@/lib/analytics'
+import { m, useReducedMotion } from 'motion/react'
 
 type Counts = Record<AnalyticsKind, number>
 interface Report {
@@ -28,6 +29,7 @@ const METRICS: [AnalyticsKind, string][] = [
 ]
 
 export function Insights({ restaurantId }: { restaurantId: number }) {
+  const reduced = useReducedMotion()
   const toast = useToast()
   const [days, setDays] = useState(30)
   const [nonce, setNonce] = useState(0)
@@ -72,7 +74,7 @@ export function Insights({ restaurantId }: { restaurantId: number }) {
           return <div className="card p-4" key={kind}><p className="text-xs text-muted">{label}</p><p className="my-2 font-serif text-3xl">{total.toLocaleString('pt-BR')}</p><p className="text-xs text-muted">{data.comparison_available ? `${previous} no período anterior${change !== null ? ` · ${change > 0 ? '+' : ''}${change}%` : ''}` : 'Comparação indisponível'}</p></div>
         })}</div>
         <div className="card p-5"><h3 className="mb-4 text-sm font-medium">Aberturas de detalhe ao longo do período</h3>
-          {data.series.every(row => !row.views) ? <p className="py-6 text-sm text-muted">Ainda sem visitas observadas neste período.</p> : <div role="img" aria-label="Aberturas de detalhe por dia; dados completos na tabela abaixo" className="flex h-36 items-end gap-1">{data.series.map(row => <div key={row.date} title={`${formatDate(row.date)}: ${row.views}`} className="min-w-0 flex-1 rounded-t bg-rust" style={{ height: `${Math.max(1, row.views / Math.max(1, ...data.series.map(s => s.views)) * 100)}%` }} />)}</div>}
+          {data.series.every(row => !row.views) ? <p className="py-6 text-sm text-muted">Ainda sem visitas observadas neste período.</p> : <div role="img" aria-label="Aberturas de detalhe por dia; dados completos na tabela abaixo" className="flex h-36 items-end gap-1">{data.series.map((row, index) => <m.div key={row.date} title={`${formatDate(row.date)}: ${row.views}`} className="min-w-0 flex-1 rounded-t bg-rust" initial={{ height: 0 }} whileInView={{ height: `${Math.max(1, row.views / Math.max(1, ...data.series.map(s => s.views)) * 100)}%` }} viewport={{ once: true }} transition={{ duration: reduced ? 0 : 0.65, delay: reduced ? 0 : Math.min(index * 0.015, 0.3) }} />)}</div>}
           <details className="mt-4 text-xs"><summary className="cursor-pointer text-rust">Ver dados por dia</summary><table className="mt-3 w-full text-left"><caption className="sr-only">Aberturas de detalhe por data</caption><thead><tr><th scope="col">Data</th><th scope="col">Aberturas</th></tr></thead><tbody>{data.series.map(row => <tr key={row.date}><td>{formatDate(row.date)}</td><td>{row.views}</td></tr>)}</tbody></table></details>
         </div>
         <div className="grid gap-3 sm:grid-cols-2"><div className="card p-5"><p className="text-sm">Resgates confirmados pelo restaurante</p><p className="mt-2 font-serif text-3xl">{data.redemptions}</p></div><div className="card p-5"><p className="text-sm">Valor dos resgates informado</p><p className="mt-2 font-serif text-3xl">{data.redemption_value === null ? 'Não informado' : formatMoney(Number(data.redemption_value))}</p><p className="mt-1 text-xs text-muted">{data.redemptions_with_value} resgate(s) com valor. Não é cálculo de ROI.</p></div></div>

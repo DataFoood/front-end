@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from './context/AuthContext'
 import { FavoritesProvider } from './context/FavoritesContext'
 import { ToastProvider } from './context/ToastContext'
+import { MotionProvider } from '@/components/Motion'
 
 export const metadata: Metadata = {
   title: {
@@ -14,20 +15,22 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#F5F0E8', // = --color-cream (metadata não lê CSS)
+  themeColor: '#FAF7F0', // = --color-cream (metadata não lê CSS)
   width: 'device-width',
   initialScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-scroll-behavior="smooth">
       <body>
-        <ToastProvider>
-          <AuthProvider>
-            <FavoritesProvider>{children}</FavoritesProvider>
-          </AuthProvider>
-        </ToastProvider>
+        <MotionProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <FavoritesProvider>{children}</FavoritesProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </MotionProvider>
       </body>
     </html>
   )

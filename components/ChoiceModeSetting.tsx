@@ -7,6 +7,7 @@ import { useToast } from '@/app/context/ToastContext'
 import { api, errorMessage } from '@/lib/api'
 import type { User } from '@/lib/types'
 import { Toggle } from './ui'
+import { Layers } from 'lucide-react'
 
 export function ChoiceModeSetting({ compact = false }: { compact?: boolean }) {
   const { user, setUser } = useAuth()
@@ -21,7 +22,7 @@ export function ChoiceModeSetting({ compact = false }: { compact?: boolean }) {
       toast.success(enabled ? 'Modo escolha ativado.' : 'Modo escolha desativado.')
     } catch (err) { toast.error(errorMessage(err)) } finally { setSaving(false) }
   }
-  if (compact) return <div className="flex items-center justify-between gap-3 py-2 text-sm"><span>Modo escolha</span><Toggle label="Habilitar modo escolha" checked={!!user.choice_mode} disabled={saving} onChange={change} /></div>
+  if (compact) return <div className="flex items-center justify-between gap-4 rounded-full border border-line-warm bg-paper px-4 py-2.5 text-sm"><span className="flex items-center gap-2"><Layers size={16} className="text-rust" aria-hidden /> Modo escolha</span><Toggle label="Habilitar modo escolha" checked={!!user.choice_mode} disabled={saving} onChange={change} /></div>
   return (
     <section className="card mt-5 p-6" aria-label="Preferências de busca">
       <div className="flex items-start justify-between gap-4">

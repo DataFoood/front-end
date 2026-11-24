@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
+import { ArrowUpRight, Compass, Search } from 'lucide-react'
+import { Reveal } from '@/components/Motion'
 import { useAuth } from '@/app/context/AuthContext'
 import { ChoiceDeck } from '@/components/ChoiceDeck'
 import { ChoiceModeSetting } from '@/components/ChoiceModeSetting'
@@ -52,10 +54,11 @@ function SearchBox({ initial, onSearch }: { initial: string; onSearch: (q: strin
         e.preventDefault()
         onSearch(q.trim())
       }}
-      className="mb-6 flex gap-2"
+      className="mb-6 flex items-center gap-2 rounded-2xl border border-line-warm bg-paper p-2 pl-4 transition focus-within:border-rust/50 focus-within:ring-4 focus-within:ring-rust/5"
     >
-      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nome ou descrição" aria-label="Buscar por nome" className="input" />
-      <button type="submit" className="btn-primary">
+      <Search size={18} className="shrink-0 text-rust" aria-hidden />
+      <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar por nome ou descrição" aria-label="Buscar por nome" className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-ink-350" />
+      <button type="submit" className="btn-primary px-5">
         Buscar
       </button>
     </form>
@@ -105,7 +108,7 @@ function Explorer() {
       }} />
       <SearchBox key={filters.q} initial={filters.q} onSearch={v => setParam('q', v)} />
 
-      <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="mb-5 rounded-2xl border border-line bg-paper p-4 sm:p-5"><div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         {FILTERS.map(f => (
           <Select key={f.key} label={f.label} value={filters[f.key]} options={taxonomies?.[f.tax] ?? []} onChange={v => setParam(f.key, v)} />
         ))}
@@ -124,17 +127,17 @@ function Explorer() {
           Faz delivery
         </label>
       </div>
+      </div>
 
-      <div className="mb-4 flex items-center justify-between text-xs text-ink-300">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
         <span>{loading ? 'Carregando…' : `${count} restaurante${count === 1 ? '' : 's'}`}</span>
         {hasFilters && (
           <button onClick={() => router.replace(pathname, { scroll: false })} className="underline hover:text-ink">
             Limpar filtros
           </button>
         )}
+        <div className="w-full max-w-[235px] sm:w-auto"><ChoiceModeSetting compact /></div>
       </div>
-
-      <div className="mb-4 max-w-lg"><ChoiceModeSetting compact /></div>
       {error && items.length === 0 ? (
         <EmptyState title="Não foi possível carregar" text={error} />
       ) : loading ? (
@@ -161,12 +164,13 @@ export default function ExplorarPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:px-8">
-        <p className="eyebrow mb-3">Explorar</p>
-        <h1 className="mb-3 font-serif text-4xl">Todos os restaurantes</h1>
-        <p className="mb-8 max-w-xl text-sm leading-relaxed text-muted">
-          Prefere descrever o momento em vez de filtrar? Use a <Link href="/chat" className="text-rust underline">busca inteligente</Link>.
-        </p>
+      <main className="section-wrap pb-20 pt-8 sm:pt-9">
+        <Reveal className="relative mb-7 overflow-hidden rounded-[24px] bg-sage px-6 py-7 sm:px-8 sm:py-8">
+          <Compass size={130} strokeWidth={0.7} className="absolute -right-4 -top-6 rotate-12 text-olive/10 sm:right-6" aria-hidden />
+          <h1 className="relative mb-3 font-serif text-[clamp(32px,3.7vw,48px)] tracking-[-0.035em]">Seu próximo favorito está aqui.</h1>
+          <div className="relative flex flex-wrap items-center justify-between gap-3"><p className="max-w-xl text-sm leading-7 text-ink-600">Muitos sabores. Um lugar que combina com você.</p>
+          <Link href="/chat" className="inline-flex items-center gap-2 text-sm font-medium text-olive">Usar a busca inteligente <ArrowUpRight size={15} aria-hidden /></Link></div>
+        </Reveal>
         <Suspense>
           <Explorer />
         </Suspense>
