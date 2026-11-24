@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { m } from 'motion/react'
 import { ArrowUpRight, MapPin, Utensils } from 'lucide-react'
 import { PhotoGallery } from '@/components/PhotoGallery'
+import { useConfirm } from '@/components/ConfirmDialog'
 import { DetailTelemetry } from '@/components/DetailTelemetry'
 import { recordDetailAction } from '@/lib/analytics'
 import { Cover } from '@/components/Illustration'
@@ -156,6 +157,7 @@ function ReviewForm({ restaurantId, onCreated }: { restaurantId: number; onCreat
 function Reviews({ restaurant, onChange }: { restaurant: Restaurant; onChange: () => void }) {
   const { user } = useAuth()
   const toast = useToast()
+  const { confirm, confirmation } = useConfirm()
   const reviews = usePaginated<Review>(`/api/restaurants/${restaurant.id}/reviews/`, {}, 5)
   const isOwner = !!user && user.id === restaurant.owner
 
@@ -165,7 +167,12 @@ function Reviews({ restaurant, onChange }: { restaurant: Restaurant; onChange: (
   }
 
   const deleteReview = async (review: Review) => {
-    if (!confirm('Excluir sua avaliação?')) return
+    if (!(await confirm({
+      title: 'Excluir sua avaliação?',
+      description: 'Sua nota e seu comentário serão removidos da página deste restaurante.',
+      confirmLabel: 'Excluir avaliação',
+      tone: 'danger',
+    }))) return
     try {
       await api(`/api/restaurants/${restaurant.id}/reviews/${review.id}/`, { method: 'DELETE' })
       toast.success('Avaliação excluída.')
@@ -177,6 +184,7 @@ function Reviews({ restaurant, onChange }: { restaurant: Restaurant; onChange: (
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
+      {confirmation}
       <div className="flex flex-col gap-4">
         {reviews.loading && <Spinner />}
         {!reviews.loading && reviews.items.length === 0 && <p className="text-sm text-ink-300">Ainda sem avaliações. Seja o primeiro!</p>}

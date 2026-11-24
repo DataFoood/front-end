@@ -63,6 +63,15 @@ Componentes React equivalentes em `components/ui.tsx`: `Field`, `TextArea`,
 `Checkbox`, `Toggle`, `Spinner`, `PageLoader`, `EmptyState`, `SectionTitle`,
 `Stars`, `Avatar`, `Logo`. Use-os em vez de remontar o markup.
 
+Para pedir confirmação antes de uma ação, use `useConfirm()` de
+`components/ConfirmDialog.tsx` e renderize `confirmation` na tela que possui a ação.
+`await confirm({ title, description, confirmLabel, tone: 'danger' })` devolve
+`true` somente ao confirmar. Cancelar, Escape, clicar no fundo ou desmontar a
+tela devolve `false`. O dialog mantém o foco dentro dele, começa no botão de
+cancelar e devolve o foco à ação de origem. O estado fica local à tela.
+Use `useToast()` para avisar sucesso ou erro depois da requisição.
+O ESLint bloqueia `alert()`, `confirm()` e `prompt()` do navegador.
+
 ## Tipografia
 
 - `font-serif` (Playfair Display) para títulos e números grandes (métricas).

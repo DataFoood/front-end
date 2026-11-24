@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { useToast } from '@/app/context/ToastContext'
+import { useConfirm } from '@/components/ConfirmDialog'
 import { Field, Spinner, TextArea } from '@/components/ui'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { DAYS, formatPrice } from '@/lib/format'
@@ -48,6 +49,7 @@ function ItemForm({ initial, onSubmit, onCancel }: { initial?: MenuItem; onSubmi
 
 export function MenuEditor({ restaurant, onChange }: { restaurant: Restaurant; onChange: () => void }) {
   const toast = useToast()
+  const { confirm, confirmation } = useConfirm()
   const [editing, setEditing] = useState<number | null>(null)
   const items = restaurant.items
   const base = `/api/restaurants/${restaurant.id}/items/`
@@ -65,9 +67,15 @@ export function MenuEditor({ restaurant, onChange }: { restaurant: Restaurant; o
   }
 
   const remove = async (item: MenuItem) => {
-    if (!confirm(`Remover "${item.name}"?`)) return
+    if (!(await confirm({
+      title: 'Remover prato?',
+      description: `“${item.name}” será removido dos destaques do cardápio.`,
+      confirmLabel: 'Remover prato',
+      tone: 'danger',
+    }))) return
     try {
       await api(`${base}${item.id}/`, { method: 'DELETE' })
+      toast.success('Prato removido.')
       onChange()
     } catch (err) {
       toast.error(errorMessage(err))
@@ -76,6 +84,7 @@ export function MenuEditor({ restaurant, onChange }: { restaurant: Restaurant; o
 
   return (
     <div className="flex flex-col gap-5">
+      {confirmation}
       <p className="text-[13px] text-muted">
         Até {MAX_ITEMS} pratos em destaque. Eles aparecem na sua página e ajudam a busca (&quot;onde comer feijoada?&quot;).
       </p>

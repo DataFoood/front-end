@@ -48,7 +48,6 @@ function watch(page, tag) {
   })
   page.on('pageerror', e => problems.push(`[${tag}] pageerror: ${e.message}`))
   page.on('response', r => r.status() >= 500 && r.status() !== 503 && problems.push(`[${tag}] ${r.status()} ${r.request().method()} ${r.url()}`))
-  page.on('dialog', d => d.accept())
 }
 
 async function login(page, { email, password }) {
@@ -114,6 +113,7 @@ async function main() {
     check(true, 'rascunho criado e listado')
 
     await row.getByRole('button', { name: 'enviar agora' }).click()
+    await owner.getByRole('alertdialog', { name: 'Publicar promoção agora?' }).getByRole('button', { name: 'Publicar agora', exact: true }).click()
     await row.getByText('Publicada', { exact: true }).waitFor({ timeout: 20000 })
     check(true, 'enviar agora → enviada')
     const meta = await row.innerText()
@@ -158,6 +158,7 @@ async function main() {
   await step('limpeza', async () => {
     const row = owner.locator('li', { hasText: title })
     await row.getByRole('button', { name: 'tirar da página' }).click()
+    await owner.getByRole('alertdialog', { name: 'Tirar promoção da página?' }).getByRole('button', { name: 'Tirar da página', exact: true }).click()
     await row.waitFor({ state: 'detached', timeout: 10000 })
     check(true, 'promoção removida da página')
   })
