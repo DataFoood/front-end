@@ -8,10 +8,11 @@ import { Spinner, Stars } from '@/components/ui'
 import { api, errorMessage } from '@/lib/api'
 import { formatDate, formatRating } from '@/lib/format'
 import type { Restaurant, RestaurantStats } from '@/lib/types'
+import { m, useReducedMotion } from 'motion/react'
 
 function Tile({ label, value, note }: { label: string; value: string | number; note?: string }) {
   return (
-    <div className="card px-5 py-5">
+    <div className="card px-5 py-5 transition-colors hover:border-rust/25">
       <p className="mb-3 text-[10px] tracking-[0.1em] text-ink-300">{label}</p>
       <p className="font-serif text-[32px] leading-none tracking-tight">{value}</p>
       {note && <p className="mt-2 text-[11px] text-muted">{note}</p>}
@@ -21,6 +22,7 @@ function Tile({ label, value, note }: { label: string; value: string | number; n
 
 /** Barras verticais de série única (favoritos/dia), com tooltip por barra. */
 function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; windowDays: number }) {
+  const reduced = useReducedMotion()
   const [hover, setHover] = useState<number | null>(null)
   const values = series.map(s => s.favorites)
   const max = Math.max(1, ...values)
@@ -58,9 +60,12 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
               onMouseEnter={() => setHover(i)}
               onMouseLeave={() => setHover(null)}
             >
-              <div
+              <m.div
                 className={`w-full rounded-t-[4px] transition-opacity ${s.favorites ? 'bg-rust' : 'bg-ink-50'} ${hover !== null && hover !== i ? 'opacity-40' : ''}`}
-                style={{ height: s.favorites ? `${(s.favorites / max) * 100}%` : 2 }}
+                initial={{ height: 0 }}
+                whileInView={{ height: s.favorites ? `${(s.favorites / max) * 100}%` : 2 }}
+                viewport={{ once: true }}
+                transition={{ duration: reduced ? 0 : 0.65, delay: reduced ? 0 : Math.min(i * 0.015, 0.3) }}
               />
             </div>
           ))}
@@ -87,6 +92,7 @@ function DailyBars({ series, windowDays }: { series: RestaurantStats['series']; 
 }
 
 function RatingBars({ distribution, total }: { distribution: RestaurantStats['rating_distribution']; total: number }) {
+  const reduced = useReducedMotion()
   const max = Math.max(1, ...Object.values(distribution))
   return (
     <div className="card p-5 sm:p-6">
@@ -97,7 +103,7 @@ function RatingBars({ distribution, total }: { distribution: RestaurantStats['ra
           <div key={star} className="flex items-center gap-3">
             <span className="w-6 text-xs text-ink-600">{star}★</span>
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-line-soft">
-              <div className="h-full rounded-full bg-rust" style={{ width: `${(distribution[star] / max) * 100}%` }} />
+              <m.div className="h-full rounded-full bg-rust" initial={{ width: 0 }} whileInView={{ width: `${(distribution[star] / max) * 100}%` }} viewport={{ once: true }} transition={{ duration: reduced ? 0 : 0.7 }} />
             </div>
             <span className="w-6 text-right text-xs text-ink-600">{distribution[star]}</span>
           </div>
@@ -156,7 +162,7 @@ export function Overview({ restaurant }: { restaurant: Restaurant }) {
         <div className="mb-4 flex items-baseline justify-between">
           <p className="text-sm">Avaliações recentes</p>
           <Link href={`/restaurante/${restaurant.slug}`} className="text-xs text-rust underline">
-            Ver página pública
+            Ver avaliações
           </Link>
         </div>
         {stats.recent_reviews.length === 0 ? (

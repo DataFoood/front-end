@@ -61,8 +61,9 @@ export function Illustration({ seed }: { seed: number }) {
 /** Capa: foto se houver, senão a ilustração sobre fundo escuro. */
 export function Cover({ src, seed, alt, className = '' }: { src?: string; seed: number; alt: string; className?: string }) {
   return (
-    <div className={`flex items-center justify-center overflow-hidden bg-ink ${className}`}>
+    <div className={`relative flex items-center justify-center overflow-hidden ${src ? 'bg-cream-dark' : ['bg-peach', 'bg-sage', 'bg-butter/70'][Math.abs(seed) % 3]} ${className}`}>
       {src ? <img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" /> : <Illustration seed={seed} />}
+      {!src && alt && <span className="absolute bottom-2.5 right-3 rounded-full bg-paper/75 px-2 py-1 text-[9px] text-ink-600">Imagem ilustrativa</span>}
     </div>
   )
 }

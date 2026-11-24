@@ -7,9 +7,9 @@ import { initials } from '@/lib/format'
 
 export function Logo({ dark = false, size = 32 }: { dark?: boolean; size?: number }) {
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label="DataFood — início">
+    <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="DataFood — início">
       <Image src="/imgs/icon.svg" alt="" width={size} height={size} className="object-contain" priority />
-      <span className={`text-base font-medium tracking-wide ${dark ? 'text-rust-soft' : 'text-rust'}`}>DATAFOOD</span>
+      <span className={`font-serif text-[25px] font-semibold tracking-[-0.055em] ${dark ? 'text-cream' : 'text-ink'}`}>datafood<span className="text-rust">.</span></span>
     </Link>
   )
 }

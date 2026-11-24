@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { memo, useEffect, useRef } from 'react'
+import { AnimatePresence, m } from 'motion/react'
+import { ArrowUpRight, Bookmark, Check, MapPin, Star } from 'lucide-react'
 import { recordEvent } from '@/lib/analytics'
 import { useAuth } from '@/app/context/AuthContext'
 import { useFavoriteActions, useIsFavorite } from '@/app/context/FavoritesContext'
@@ -27,11 +29,7 @@ export function FavoriteButton({ restaurantId, variant = 'icon' }: { restaurantI
     toggle(restaurantId)
   }
 
-  const icon = (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" aria-hidden>
-      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-    </svg>
-  )
+  const icon = <AnimatePresence mode="wait" initial={false}><m.span key={String(saved)} className="flex" initial={{ scale: 0.5, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.15 }}>{saved ? <Check size={17} strokeWidth={2} aria-hidden /> : <Bookmark size={17} strokeWidth={1.6} aria-hidden />}</m.span></AnimatePresence>
 
   if (variant === 'full') {
     return (
@@ -46,7 +44,7 @@ export function FavoriteButton({ restaurantId, variant = 'icon' }: { restaurantI
       onClick={onClick}
       aria-pressed={saved}
       aria-label={saved ? 'Remover dos salvos' : 'Salvar restaurante'}
-      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/90 shadow-xs transition hover:scale-105 ${saved ? 'text-rust' : 'text-ink-600'}`}
+      className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/50 bg-paper/95 shadow-sm backdrop-blur-md transition hover:scale-105 active:scale-90 ${saved ? 'text-rust' : 'text-ink-600'}`}
     >
       {icon}
     </button>
@@ -86,37 +84,30 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, 
     <Link
       ref={cardRef}
       href={`/restaurante/${restaurant.slug}`}
-      className="group flex min-w-0 animate-fade-in flex-col overflow-hidden rounded-lg border border-line bg-white transition hover:-translate-y-0.5 hover:border-ink-200"
+      className="restaurant-card group animate-fade-in hover:-translate-y-1.5"
       style={{ animationDelay: `${index * 0.08}s` }}
     >
-      <div className="relative">
-        <Cover src={restaurant.cover_image} seed={restaurant.id} alt={restaurant.name} className="h-40" />
+      <div className="relative overflow-hidden">
+        <Cover src={restaurant.cover_image} seed={restaurant.id} alt={restaurant.name} className="h-52 transition-transform duration-700 group-hover:scale-105" />
+        {rating > 0 && <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-paper/95 px-2.5 py-1.5 text-xs font-medium shadow-sm backdrop-blur-md"><Star size={12} className="fill-rust text-rust" aria-hidden />{formatRating(rating)}<span className="text-ink-350">({restaurant.total_reviews})</span></div>}
         <div className="absolute right-3 top-3">
           <FavoriteButton restaurantId={restaurant.id} />
         </div>
       </div>
-      <div className="flex flex-1 flex-col px-4 pb-5 pt-4">
+      <div className="flex flex-1 flex-col px-5 pb-5 pt-5">
         <div className="mb-1.5 flex items-baseline justify-between gap-3">
-          <h3 className="truncate font-serif text-xl">{restaurant.name}</h3>
+          <h3 className="truncate font-serif text-[23px] tracking-[-0.02em] transition-colors group-hover:text-rust">{restaurant.name}</h3>
           {typeof match === 'number' && <span className="shrink-0 text-xs font-medium text-rust" title="Ordenação por similaridade; não é probabilidade de satisfação.">Afinidade contextual</span>}
         </div>
-        <p className="mb-3 text-xs text-ink-300">{cardSubtitle(restaurant) || '—'}</p>
-        <p className="mb-4 line-clamp-3 text-[13px] leading-relaxed text-ink-600">{restaurant.description}</p>
+        <p className="mb-3 flex items-center gap-1 text-xs text-muted"><MapPin size={12} className="shrink-0" aria-hidden />{cardSubtitle(restaurant) || 'Localização não informada'}</p>
+        <p className="mb-4 line-clamp-2 text-[13px] leading-6 text-ink-600">{restaurant.description}</p>
         <div className="mb-3">{typeof restaurant.distance_km === 'number' && <p className="mb-1 text-xs text-muted">A {restaurant.distance_km.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km de você</p>}<CatalogProvenance restaurant={restaurant} /></div>
-        <div className="mt-auto flex items-center justify-between gap-2">
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-4">
           <div className="flex items-center gap-2">
             <OpenBadge open={restaurant.is_open_now} />
-            {rating > 0 && (
-              <span className="text-[11px] text-muted">
-                ★ {formatRating(rating)} <span className="text-ink-200">({restaurant.total_reviews})</span>
-              </span>
-            )}
           </div>
-          <span className="flex items-center gap-1 text-xs text-rust">
-            Ver
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
+          <span className="flex items-center gap-1 text-xs font-medium text-rust">
+            Conhecer <ArrowUpRight size={15} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
           </span>
         </div>
       </div>
@@ -125,5 +116,5 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, match, 
 })
 
 export function CardGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+  return <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
 }

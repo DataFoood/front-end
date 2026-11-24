@@ -16,7 +16,7 @@ export function RequireAuth({ children, roles }: { children: ReactNode; roles?: 
 
   useEffect(() => {
     if (loading) return
-    if (!user) router.replace(`/login?next=${encodeURIComponent(pathname)}`)
+    if (!user) router.replace(`/login?next=${encodeURIComponent(pathname + window.location.search)}`)
     else if (!allowed) router.replace('/chat')
   }, [loading, user, allowed, router, pathname])
 

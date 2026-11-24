@@ -130,8 +130,10 @@ origem do front em `CORS_ALLOWED_ORIGINS` na API.
 
 ## Design
 
-Paleta creme `#F5F0E8`, preto `#0D0D0D`, terracota `#C0603A`; Playfair Display +
-Noto Sans JP. Tokens no bloco `@theme` de `app/globals.css` (Tailwind 4 não usa mais `tailwind.config.js`);
+Paleta creme `#FAF7F0`, preto `#111111`, terracota `#C4512F`, com tons de oliva e
+sálvia; Playfair Display + DM Sans, servidas localmente. Motion for React anima
+entradas, abas, feedback de ações e gráficos, respeitando movimento reduzido.
+Tokens no bloco `@theme` de `app/globals.css` (Tailwind 4 não usa mais `tailwind.config.js`);
 cor sempre por token, nunca `text-[#hex]` — ver [`docs/estilizacao.md`](docs/estilizacao.md).
 
 ## Resultados e dados de origem

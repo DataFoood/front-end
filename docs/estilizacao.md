@@ -66,7 +66,8 @@ Componentes React equivalentes em `components/ui.tsx`: `Field`, `TextArea`,
 ## Tipografia
 
 - `font-serif` (Playfair Display) para títulos e números grandes (métricas).
-- `font-sans` (Noto Sans JP) para todo o resto — é o padrão do `body`.
+- `font-sans` (DM Sans) para todo o resto — é o padrão do `body`.
+- Fontes locais em `public/fonts/`, incluindo licenças, sem requisições ao Google Fonts em runtime.
 - Tamanhos de corpo pequenos e precisos (`text-[13px]`, `text-[11px]`) são
   intencionais no layout editorial; títulos usam `clamp()` para escalar.
 
@@ -81,12 +82,11 @@ mensagens de erro e toasts.
   LGPD, CPF, CNPJ, CEP, URL, UF.
 - Nome de restaurante e de taxonomia aparecem **como cadastrados** — nada de
   `lowercase`/`capitalize`/`toLowerCase()` em dado vindo da API.
-- `.label` e `.eyebrow` ficam em caixa alta pelo CSS (`uppercase`); escreva
-  o texto em caixa de frase mesmo assim (leitores de tela e copiar/colar
-  usam o texto original).
+- `.label` e `.eyebrow` usam caixa de frase, com peso e cor para hierarquia.
 - Continuação de frase depois de `·` ou `—` segue minúscula
   ("Cupom SEXTOU · válida até 25 out.").
-- Logotipo: DATAFOOD (é imagem de marca, não texto corrido).
+- Logotipo: `datafood.` em Playfair Display, acompanhado do símbolo da marca;
+  o link mantém o nome acessível "DataFood — início".
 
 ## Layout e responsividade
 
@@ -105,5 +105,33 @@ uma `Illustration` escolhida pelo id. `next/image` só para assets locais
 
 ## Animação
 
-`animate-fade-in` (entrada de cards e mensagens, com `animationDelay`
-escalonado) e `.typing-dot` (indicador "buscando"). Nada além disso.
+Motion for React é configurado em `components/Motion.tsx`, com `LazyMotion`,
+`domMax` e `MotionConfig reducedMotion="user"`. Use `m` em vez de `motion`
+para reutilizar o pacote de funcionalidades do provider. A transição padrão
+usa a curva `[0.22, 1, 0.36, 1]`.
+
+- A home tem entrada sequenciada do título e fotografias, paralaxe suave e
+  `Reveal` nas seções. Não aplique animações contínuas a conteúdo de leitura.
+- Navegação e abas usam `layoutId` dentro de `LayoutGroup`. Formulários e
+  conteúdo de abas fazem transição por opacidade, preservando seu comportamento.
+- Favoritos e toasts usam `AnimatePresence` para confirmar ações; gráficos
+  revelam suas barras quando entram na tela.
+- A galeria usa um `<dialog>` nativo para foco, Escape e navegação por teclado.
+- `app/template.tsx` anima somente opacidade: transforms em um ancestral
+  mudariam a referência dos elementos fixos do chat e dos menus.
+- `prefers-reduced-motion` também desliga animações CSS e rolagem suave.
+
+Novos tokens: `sage`/`olive` para superfícies secundárias, `butter` para
+destaques, `peach` para feedback e `paper` para cards e campos. O creme da
+marca é `#faf7f0` e a terracota é `#c4512f`.
+
+Fotos editoriais ficam em `public/images/` em WebP. São usadas apenas nas
+seções institucionais; fotos de restaurantes continuam vindo da API.
+Sem foto cadastrada, mantenha a ilustração identificada.
+
+Fotos editoriais obtidas do Unsplash:
+[mesa compartilhada](https://images.unsplash.com/photo-1555939594-58d7cb561ad1),
+[massa fresca](https://images.unsplash.com/photo-1473093226795-af9932fe5856),
+[café](https://images.unsplash.com/photo-1511081692775-05d0f180a065) e
+[ambiente de restaurante](https://images.unsplash.com/photo-1517248135467-4c7edcad34c4).
+As licenças das fontes estão junto aos arquivos em `public/fonts/`.

@@ -84,7 +84,7 @@ function LoginForm() {
         />
       </div>
       <button type="submit" disabled={submitting} className="btn-primary mt-2 w-full py-4 tracking-wide">
-        {submitting ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'ENTRAR'}
+        {submitting ? <Spinner className="h-4 w-4 border-ink-600 border-t-white" /> : 'Entrar'}
       </button>
     </form>
   )

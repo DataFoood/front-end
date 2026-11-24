@@ -87,9 +87,14 @@ async function main() {
 
   await step('visitante · landing e explorar', async () => {
     await v.goto(FRONT)
-    check(await v.getByRole('heading', { name: /o jantar começa antes/i }).isVisible(), 'landing carrega')
-    await v.waitForSelector('text=bem avaliados agora.', { timeout: 10000 })
+    check(await v.getByRole('heading', { name: /a vida acontece ao redor da mesa/i }).isVisible(), 'landing carrega')
+    await v.getByRole('heading', { name: 'À sua próxima descoberta.' }).waitFor({ timeout: 10000 })
     check((await v.locator('a[href^="/restaurante/"]').count()) >= 1, 'destaques vindos da API')
+
+    await v.getByLabel('Que momento você quer viver?').fill('Um jantar tranquilo a dois')
+    await v.getByRole('button', { name: 'Encontrar meu lugar' }).click()
+    await v.waitForURL(/\/login\?next=/)
+    check(new URL(v.url()).searchParams.get('next') === '/chat?q=Um%20jantar%20tranquilo%20a%20dois', 'momento digitado preservado no redirecionamento para login')
 
     await v.goto(`${FRONT}/explorar`)
     await v.waitForSelector('a[href^="/restaurante/"]')
@@ -357,7 +362,7 @@ async function main() {
 
     await o.getByRole('button', { name: 'Visão geral', exact: true }).click()
     const viewsBefore = await o.locator('text=VISUALIZAÇÕES').locator('..').innerText()
-    await o.getByRole('link', { name: 'ver página pública →' }).click()
+    await o.getByRole('link', { name: /ver página pública/i }).click()
     await o.waitForSelector('text=editar no painel')
     check(true, 'dono vê atalho "editar no painel" na página pública')
     await o.getByRole('link', { name: 'editar no painel' }).click()
